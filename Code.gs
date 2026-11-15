@@ -68,18 +68,30 @@ function doGet(e) {
       '<p>リンクが正しくありません。アーカイブのページから開き直してください。</p>');
   }
 
-  if (code === AUTH_CODE) {
-    // 認証OK：動画ページへ自動で移動
-    const html =
-      '<!DOCTYPE html><html><head><meta charset="utf-8">' +
-      '<meta http-equiv="refresh" content="0;url=' + url + '">' +
-      '<title>全関映アーカイブ</title></head>' +
-      '<body style="font-family:sans-serif;padding:24px;line-height:1.8">' +
-      '<p>認証できました。動画ページへ移動します…</p>' +
-      '<p><a href="' + url + '">自動で移動しない場合はこちら</a></p>' +
-      '<script>location.replace(' + JSON.stringify(url) + ');</' + 'script>' +
-      '</body></html>';
-    return HtmlService.createHtmlOutput(html).setTitle('全関映アーカイブ');
+  // アーカイブ側からの問い合わせ（JSONP）：コードが合えば実URLだけを返す。
+  // ページ側が自分の画面から直接動画を開くので、自動遷移が可能になる。
+  const cb = String(p.callback || '');
+  if (/^[A-Za-z_$][A-Za-z0-9_$]*$/.test(cb)) {
+    const ok = code.toUpperCase() === String(AUTH_CODE).toUpperCase();
+    const payload = ok ? { ok: true, url: url } : { ok: false };
+    return ContentService
+      .createTextOutput(cb + '(' + JSON.stringify(payload) + ');')
+      .setMimeType(ContentService.MimeType.JAVASCRIPT);
+  }
+
+  if (code.toUpperCase() === String(AUTH_CODE).toUpperCase()) {
+    // 認証OK：動画へのボタンを表示する。
+    // ※GASの画面はiframe内で表示されるため、自動リダイレクトはYouTube側に
+    //   ブロックされる（「接続が拒否されました」になる）。必ず target="_top" の
+    //   リンクをクリックしてもらう形にする。
+    const body =
+      '<h2 style="font-size:19px;margin:0 0 10px">✅ 認証できました</h2>' +
+      '<p>下のボタンを押すと動画ページが開きます。</p>' +
+      '<p style="margin:26px 0"><a href="' + url + '" target="_top" ' +
+      'style="display:inline-block;background:#c00;color:#fff;font-size:17px;font-weight:700;' +
+      'padding:13px 30px;border-radius:8px;text-decoration:none">▶ 動画を開く</a></p>' +
+      '<p style="color:#666;font-size:13px">全関映・過去映画アーカイブ</p>';
+    return page_('認証できました', body);
   }
 
   // コード未入力／不一致：入力フォームを表示

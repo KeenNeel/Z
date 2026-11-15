@@ -1146,20 +1146,77 @@ document.addEventListener("keydown",function(e){
 </script>
 
 <script>
-// 限定公開作品（認証ゲート経由）: コードを一度だけ聞き、以降は使い回す
-document.addEventListener('click', function (ev) {
-  var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="script.google.com/macros"]') : null;
-  if (!a) return;
-  ev.preventDefault();
-  var code = '';
-  try { code = sessionStorage.getItem('zkeGateCode') || ''; } catch (e) {}
-  if (!code) {
-    code = window.prompt('限定公開作品の認証コードを入力してください') || '';
-    if (!code) return;
-    try { sessionStorage.setItem('zkeGateCode', code); } catch (e) {}
+// 限定公開作品（認証ゲート）: コードを確認し、合えば動画を自動で開く。
+// GAS画面の中からの自動遷移は仕様上ブロックされるため、GASには裏側で
+// 問い合わせ（JSONP）だけを行い、動画はこのページから直接開く。
+(function () {
+  var GATE_RE = /script\.google\.com\/macros/;
+  var origOpen = window.open.bind(window);
+  function getCode() {
+    var code = '';
+    try { code = sessionStorage.getItem('zkeGateCode') || ''; } catch (e) {}
+    if (!code) {
+      code = window.prompt('限定公開作品の認証コードを入力してください') || '';
+      if (!code) return '';
+      try { sessionStorage.setItem('zkeGateCode', code); } catch (e) {}
+    }
+    return code;
   }
-  window.open(a.href + '&code=' + encodeURIComponent(code), '_blank', 'noopener');
-});
+  function fallbackLink(url) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:999;background:#22354f;color:#fff;padding:14px 18px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:14px;max-width:90vw';
+    d.innerHTML = 'ポップアップがブロックされました。 ';
+    var a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = '▶ 動画を開く';
+    a.style.cssText = 'color:#ffd76a;font-weight:700';
+    var x = document.createElement('button');
+    x.textContent = '閉じる';
+    x.style.cssText = 'margin-left:12px;padding:4px 10px;cursor:pointer';
+    x.onclick = function () { d.remove(); };
+    d.appendChild(a); d.appendChild(x);
+    document.body.appendChild(d);
+  }
+  function gateOpen(gasUrl) {
+    var m = /[?&]id=(\d+)/.exec(gasUrl);
+    if (!m) { origOpen(gasUrl, '_blank', 'noopener'); return; }
+    var id = m[1];
+    var base = gasUrl.split('?')[0];
+    var code = getCode();
+    if (!code) return;
+    var cb = 'zkeCb' + Date.now();
+    var sc = document.createElement('script');
+    var done = false;
+    function cleanup() { if (done) return; done = true; try { delete window[cb]; } catch (e) { window[cb] = undefined; } if (sc.parentNode) sc.parentNode.removeChild(sc); }
+    window[cb] = function (res) {
+      cleanup();
+      if (res && res.ok && res.url) {
+        var w = origOpen(res.url, '_blank', 'noopener');
+        if (!w) fallbackLink(res.url);
+      } else {
+        try { sessionStorage.removeItem('zkeGateCode'); } catch (e) {}
+        alert('認証コードが違います。もう一度お試しください。');
+      }
+    };
+    sc.onerror = function () { cleanup(); origOpen(base + '?id=' + id, '_blank', 'noopener'); };
+    sc.src = base + '?id=' + id + '&code=' + encodeURIComponent(code) + '&callback=' + cb;
+    document.body.appendChild(sc);
+    setTimeout(function () { if (!done) { cleanup(); origOpen(base + '?id=' + id, '_blank', 'noopener'); } }, 9000);
+  }
+  document.addEventListener('click', function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="script.google.com/macros"]') : null;
+    if (!a) return;
+    ev.preventDefault();
+    gateOpen(a.href);
+  });
+  window.open = function (url, target, features) {
+    if (typeof url === 'string' && GATE_RE.test(url) && url.indexOf('callback=') < 0) {
+      gateOpen(url);
+      return null;
+    }
+    return origOpen(url, target, features);
+  };
+})();
 </script>
 </body>
 </html>
