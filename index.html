@@ -759,7 +759,7 @@ img, svg, table { max-width: 100%; }
 </div>
 <div class="bl-src"><div class="bl-src-t">出典（クリックで直接開けます）</div><ul><li><a href="https://www.kwansei.ac.jp/campuslife/club/tourokudantai.html" target="_blank" rel="noopener">関西学院大学 公式「大学登録団体」</a></li><li><a href="https://note.com/hisak0415/n/n527f3f24d097" target="_blank" rel="noopener">OBの回想エッセイ（note）</a></li><li><a href="https://bunshun.jp/articles/-/68900?page=3" target="_blank" rel="noopener">文春オンライン（三島有紀子さんインタビュー）</a></li><li><a href="https://www.kansai-u.ac.jp/headlines/entry/post_71716.php" target="_blank" rel="noopener">関西大学 公式（関西学生映画祭の紹介）</a></li><li><a href="https://www.weblio.jp/content/%E9%96%A2%E8%A5%BF%E5%AD%A6%E7%94%9F%E6%98%A0%E7%94%9F%E7%A5%AD" target="_blank" rel="noopener">関西学生映画祭（Weblio）</a></li><li><a href="https://www.kobe-np.co.jp/rentoku/campus-repo/202010/0013781199.shtml" target="_blank" rel="noopener">神戸新聞（2020年 全国学生オムニバス）</a></li><li><a href="https://kobe-eiga.net/programs/1051/" target="_blank" rel="noopener">神戸映画資料館（『CINEMAだいすき！』）</a></li><li><a href="https://www.instagram.com/p/DVvoozvkm5M/" target="_blank" rel="noopener">全関映 公式Instagram Q&A投稿</a></li><li><a href="https://www.instagram.com/kg_zke_1969/" target="_blank" rel="noopener">全関映 公式Instagram（@kg_zke_1969）</a></li></ul></div>
 
-<div class="footbar"><a class="bar-btn" href="#top">⬆ トップ</a><a class="bar-btn" href="#carouselSec">🎠 カルーセル</a><button type="button" class="bar-btn" id="fbGacha">🎰 ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v10）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top">⬆ トップ</a><a class="bar-btn" href="#carouselSec">🎠 カルーセル</a><button type="button" class="bar-btn" id="fbGacha">🎰 ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v12）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -1153,7 +1153,8 @@ document.addEventListener("keydown",function(e){
 // 動画はこのページから直接開く（GAS画面の中からの自動遷移は仕様上ブロックされるため）。
 (function () {
   var GATE_RE = /script\.google\.com\/macros/;
-  var origOpen = function (u, t, f) { try { return window.open(u, t, f); } catch (e) { return null; } };
+  var _origOpenFn = window.open;
+  var origOpen = function (u, t, f) { try { return _origOpenFn.call(window, u, t, f); } catch (e) { return null; } };
   var modal = null, inputEl = null, errEl = null, pendingId = null, pendingBase = null;
   function buildModal() {
     modal = document.createElement('div');
@@ -1174,7 +1175,9 @@ document.addEventListener("keydown",function(e){
     modal.querySelector('.zke-ok').addEventListener('click', function () {
       var code = (inputEl.value || '').trim();
       if (!code) { errEl.textContent = '認証コードを入力してください。'; errEl.style.display = 'block'; return; }
-      verify(pendingId, pendingBase, code);
+      var win = null;
+      try { win = origOpen('', '_blank'); } catch (e) {}
+      verify(pendingId, pendingBase, code, win);
     });
     modal.querySelector('.zke-cancel').addEventListener('click', hideModal);
     inputEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); modal.querySelector('.zke-ok').click(); } });
@@ -1193,20 +1196,29 @@ document.addEventListener("keydown",function(e){
   function clearCode() { try { sessionStorage.removeItem('zkeGateCode'); } catch (e) {} }
   function fallbackLink(url) {
     var d = document.createElement('div');
-    d.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:999;background:#22354f;color:#fff;padding:14px 18px;border-radius:10px;box-shadow:0 6px 24px rgba(0,0,0,.35);font-size:14px;max-width:90vw';
-    d.innerHTML = 'ポップアップがブロックされました。 ';
+    d.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:1001;background:rgba(10,15,25,.55);display:flex;align-items:center;justify-content:center;padding:18px';
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border-radius:14px;max-width:340px;width:100%;padding:22px 20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center';
+    var hd = document.createElement('div');
+    hd.style.cssText = 'font-size:17px;font-weight:800;color:#22354f;margin-bottom:8px';
+    hd.textContent = '⚠ ポップアップがブロックされました';
+    var tx = document.createElement('p');
+    tx.style.cssText = 'font-size:14px;line-height:1.7;margin:0 0 16px';
+    tx.textContent = 'ブラウザの設定で動画を自動で開けませんでした。下のボタンを押してください。';
     var a = document.createElement('a');
     a.href = url; a.target = '_blank'; a.rel = 'noopener';
     a.textContent = '▶ 動画を開く';
-    a.style.cssText = 'color:#ffd76a;font-weight:700';
+    a.style.cssText = 'display:block;background:#c00;color:#fff;font-size:16px;font-weight:700;padding:13px 0;border-radius:8px;text-decoration:none;margin-bottom:10px';
     var x = document.createElement('button');
     x.textContent = '閉じる';
-    x.style.cssText = 'margin-left:12px;padding:4px 10px;cursor:pointer';
+    x.style.cssText = 'width:100%;background:#eef1f5;color:#22354f;border:none;font-size:15px;padding:11px 0;border-radius:8px;cursor:pointer';
     x.onclick = function () { d.remove(); };
-    d.appendChild(a); d.appendChild(x);
+    d.addEventListener('click', function (ev) { if (ev.target === d) d.remove(); });
+    card.appendChild(hd); card.appendChild(tx); card.appendChild(a); card.appendChild(x);
+    d.appendChild(card);
     document.body.appendChild(d);
   }
-  function verify(id, base, code) {
+  function verify(id, base, code, win) {
     var cb = 'zkeCb' + Date.now();
     var sc = document.createElement('script');
     var done = false;
@@ -1216,9 +1228,14 @@ document.addEventListener("keydown",function(e){
       if (res && res.ok && res.url) {
         saveCode(code);
         hideModal();
-        var w = origOpen(res.url, '_blank', 'noopener');
-        if (!w) fallbackLink(res.url);
+        if (win && !win.closed) {
+          try { win.location.href = res.url; } catch (e) { fallbackLink(res.url); }
+        } else {
+          var w = origOpen(res.url, '_blank', 'noopener');
+          if (!w) fallbackLink(res.url);
+        }
       } else {
+        if (win && !win.closed) { try { win.close(); } catch (e) {} }
         clearCode();
         if (modal && modal.style.display !== 'none') {
           errEl.textContent = '認証コードが違います。もう一度お試しください。';
@@ -1229,17 +1246,26 @@ document.addEventListener("keydown",function(e){
         }
       }
     };
-    sc.onerror = function () { cleanup(); hideModal(); origOpen(base + '?id=' + id, '_blank', 'noopener'); };
+    function toGatePage() {
+      hideModal();
+      if (win && !win.closed) { try { win.location.href = base + '?id=' + id; return; } catch (e) {} }
+      origOpen(base + '?id=' + id, '_blank', 'noopener');
+    }
+    sc.onerror = function () { cleanup(); toGatePage(); };
     sc.src = base + '?id=' + id + '&code=' + encodeURIComponent(code) + '&callback=' + cb;
     document.body.appendChild(sc);
-    setTimeout(function () { if (!done) { cleanup(); hideModal(); origOpen(base + '?id=' + id, '_blank', 'noopener'); } }, 9000);
+    setTimeout(function () { if (!done) { cleanup(); toGatePage(); } }, 9000);
   }
   function gateOpen(gasUrl) {
     try {
       var m = /[?&]id=(\d+)/.exec(gasUrl);
       if (!m) { origOpen(gasUrl, '_blank', 'noopener'); return; }
       var code = storedCode();
-      if (code) verify(m[1], gasUrl.split('?')[0], code);
+      if (code) {
+        var win = null;
+        try { win = origOpen('', '_blank'); } catch (e) {}
+        verify(m[1], gasUrl.split('?')[0], code, win);
+      }
       else showModal(m[1], gasUrl.split('?')[0], '');
     } catch (e) {
       origOpen(gasUrl, '_blank', 'noopener');
