@@ -8,6 +8,8 @@ rem     extract it, move contents to the root, delete the ZIP.
 rem  2) Sync with GitHub. On conflicts, THIS folder wins.
 rem  Code.gs and deploy_gs.bat are never committed
 rem  (Code.gs contains limited-access URLs and personal data).
+rem  MP3 files in this folder (kaite_rock.mp3 and the original
+rem  songs) ARE sync targets: they are committed and pushed.
 rem ============================================================
 
 set "REPO_URL=https://github.com/KeenNeel/Z.git"
@@ -69,11 +71,14 @@ git checkout -B %BRANCH% >nul 2>nul
 if not exist ".gitignore" (
   echo Code.gs> .gitignore
   echo deploy_gs.bat>> .gitignore
+  echo zke_admin.html>> .gitignore
   echo gas_work/>> .gitignore
   echo _zip_tmp/>> .gitignore
 )
-git rm --cached --ignore-unmatch Code.gs deploy_gs.bat >nul 2>nul
+git rm --cached --ignore-unmatch Code.gs deploy_gs.bat zke_admin.html >nul 2>nul
 
+echo MP3 files in this folder (sync targets):
+for %%M in (*.mp3) do echo   %%~nxM
 git add -A
 git diff --cached --quiet || git commit -m "sync %date% %time%"
 
@@ -85,7 +90,7 @@ if "%REMOTE_EXISTS%"=="1" (
     exit /b 1
   )
   rem Make sure private files are not in the repo tree after the merge.
-  git rm --cached --ignore-unmatch Code.gs deploy_gs.bat >nul 2>nul
+  git rm --cached --ignore-unmatch Code.gs deploy_gs.bat zke_admin.html >nul 2>nul
   git add -A
   git diff --cached --quiet || git commit -m "keep private files out of repo"
 )
