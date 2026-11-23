@@ -955,7 +955,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v55）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v57）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -1831,8 +1831,7 @@ function ksPlay(midi,when,dur,vel){
 var au=document.createElement('audio'); au.loop=true; au.preload='auto';
 var mode=null; /* 'audio' | 'midi' */
 var midiTimer=null, midiData=null;
-var selVal='orgel'; try{ selVal=localStorage.getItem('zkeBgm')||'orgel'; }catch(e){}
-try{ if(!localStorage.getItem('zkeBgm')) selVal='song:music/El_Dorado.mp3'; }catch(e){}
+var selVal='none'; try{ selVal=localStorage.getItem('zkeBgm')||'none'; }catch(e){}
 var seekTo=0;
 function oldBgm(){ return typeof window.ZKE_OLD_BGM_GET==='function' ? window.ZKE_OLD_BGM_GET() : null; }
 function activeEl(){ if(selVal==='orgel'&&oldBgm()) return oldBgm(); if(mode==='audio') return au; return null; }
@@ -1874,6 +1873,7 @@ function startSelected(){
   stopAll();
   if(!sndOn()) return;
   saveState(true);
+  if(selVal==='none'){ mode=null; return; }
   if(selVal.indexOf('midi:')===0){ startMidi(selVal.slice(5)); return; }
   var src=null;
   if(selVal.indexOf('mp3:')===0){ src=selVal.slice(4); }
@@ -1934,6 +1934,7 @@ function buildUI(cfg, midiNames){
     cfg.mp3s.forEach(function(m){ var o=document.createElement('option'); o.value='mp3:'+m.url; o.textContent='🎵 '+m.name; og3.appendChild(o); });
     sel.appendChild(og3);
   }
+  var oNone=document.createElement('option'); oNone.value='none'; oNone.textContent='（音楽なし）'; sel.appendChild(oNone);
   if(USER_SONGS.length){
     var ogS=document.createElement('optgroup'); ogS.label='オリジナル曲';
     USER_SONGS.forEach(function(fn){ var o=document.createElement('option'); o.value='song:'+fn; var base=fn.split('/').pop().replace(/\.(mp3|wav|midi?)$/i,''); var mt=(typeof cfg!=='undefined'&&cfg&&cfg.meta&&cfg.meta[fn])?cfg.meta[fn]:null; o.textContent='🎵 '+base+(mt&&mt.desc?'（'+mt.desc+'）':''); ogS.appendChild(o); });
@@ -1970,7 +1971,7 @@ function initUI(){
   jsonp({action:'midi_list',code:c},function(err,d){ got.midi=(!err&&d&&d.ok)?d.midis:null; done(); });
 }
 function initWithDiscovery(){
-  if(!/\.github\.io$/.test(location.hostname)){ initUI(); return; }
+  
   var done=false;
   function go(){ if(done) return; done=true; initUI(); }
   setTimeout(go,2600);
@@ -2020,7 +2021,14 @@ document.addEventListener('pointerup',function(e){ if(pdPos&&Math.abs(e.clientX-
 var rockEl=document.createElement('audio'); rockEl.loop=true; rockEl.preload='auto'; rockEl.src='kaite_rock.mp3';
 var rockOn=false, rockSaved=null;
 function rockRestore(){
-  if(rockSaved&&sndOn()){ selVal=rockSaved.genre; seekTo=rockSaved.t||0; startSelected(); }
+  if(rockSaved){
+    selVal=rockSaved.genre; seekTo=rockSaved.t||0;
+    try{ localStorage.setItem('zkeBgm',selVal); }catch(e){}
+    var s3=document.getElementById('bgmSel'); if(s3) s3.value=selVal;
+    if(sndOn()) startSelected();
+  } else if(sndOn()){
+    selVal='song:music/El_Dorado.mp3'; try{ localStorage.setItem('zkeBgm',selVal); }catch(e){} seekTo=0; startSelected();
+  }
   rockSaved=null;
 }
 window.ZKE_NB_BGM={
@@ -2043,7 +2051,7 @@ window.ZKE_NB_BGM={
 };
 rockEl.addEventListener('error',function(){ if(rockOn){ rockOn=false; rockRestore(); } });
 /* ===== v54: random BGM for the gacha show ===== */
-au.addEventListener('error',function(){ if(selVal&&selVal.indexOf('song:')===0&&!/\.(mid|midi)$/i.test(selVal)&&sndOn()){ selVal='orgelSynth'; startSelected(); } });
+au.addEventListener('error',function(){ if(selVal&&selVal.indexOf('song:')===0&&!/\.(mid|midi)$/i.test(selVal)&&sndOn()){ selVal='none'; var s2=document.getElementById('bgmSel'); if(s2) s2.value='none'; } });
 var bgmSavedGenre=null;
 window.ZKE_BGM_RANDOM=function(){
   if(!sndOn()) return false;
@@ -2051,7 +2059,9 @@ window.ZKE_BGM_RANDOM=function(){
   var pool=[];
   var meta=window.__zkeMusicMeta||{};
   var gachaSongs=USER_SONGS.filter(function(fn){ return meta[fn]&&meta[fn].scene==='gacha'; });
-  if(gachaSongs.length){ gachaSongs.forEach(function(fn){ pool.push('song:'+fn); }); }
+  var themeSongs=USER_SONGS.filter(function(fn){ return /(^|\/)gatya_song\.(mp3|wav|mid|midi)$/i.test(fn); });
+  if(themeSongs.length){ pool.push('song:'+themeSongs[0]); }
+  else if(gachaSongs.length){ gachaSongs.forEach(function(fn){ pool.push('song:'+fn); }); }
   else { USER_SONGS.forEach(function(fn){ pool.push('song:'+fn); }); Object.keys(TRACKS).forEach(function(k){ pool.push(k); }); if(oldBgm()) pool.push('orgel'); }
   if(!pool.length) return false;
   var pick=pool[Math.floor(Math.random()*pool.length)];
@@ -2112,14 +2122,15 @@ function startMidiFile(path){
     if(!sndOn()) return;
     var md=parseSMF(buf);
     if(md) startMidiData(md);
-    else { selVal="orgelSynth"; startSelected(); }
-  }).catch(function(){ if(sndOn()){ selVal="orgelSynth"; startSelected(); } });
+    else { selVal="none"; }
+  }).catch(function(){ selVal="none"; });
 }
 
 window.ZKE_BGM_RESTORE=function(){
   if(bgmSavedGenre===null) return;
   selVal=bgmSavedGenre; bgmSavedGenre=null;
   try{ localStorage.setItem('zkeBgm',selVal); }catch(e){}
+  var s4=document.getElementById('bgmSel'); if(s4) s4.value=selVal;
   if(sndOn()) startSelected();
 };
 })();
@@ -2951,8 +2962,8 @@ setInterval(function(){
 #nb6Ed.nb7-dragover{outline:3.5px dashed #fb8500;outline-offset:-3px}
 .nb7-prov{opacity:.92}
 .nb7-prov::after{content:"送信中…";position:absolute;right:4px;top:2px;font-size:10px;color:#b8860b;font-weight:700}
-#nb7AskBtn{position:absolute;left:-6px;bottom:100%;margin-bottom:6px;z-index:5;background:linear-gradient(160deg,#7b61ff,#5a3ee0);color:#fff;border:none;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 5px 14px rgba(0,0,0,.3);white-space:nowrap}
-#nb7Panel{position:fixed;right:12px;bottom:12px;z-index:999980;width:min(368px,94vw);max-height:76dvh;display:none;flex-direction:column;background:#fffdf7;border:2px solid #7b61ff;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.4);overflow:hidden}
+#nb7AskBtn{background:linear-gradient(160deg,#7b61ff,#5a3ee0);color:#fff;border:none;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;margin-left:4px}
+#nb7Panel{position:fixed;left:12px;bottom:12px;z-index:999980;width:min(368px,94vw);max-height:76dvh;display:none;flex-direction:column;background:#fffdf7;border:2px solid #7b61ff;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.4);overflow:hidden}
 #nb7Panel.open{display:flex}
 #nb7Panel .nb7-head{background:linear-gradient(120deg,#7b61ff,#5a3ee0);color:#fff;padding:10px 13px;font-weight:900;font-size:14.5px;display:flex;justify-content:space-between;align-items:center}
 #nb7Panel .nb7-head button{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:3px 10px;cursor:pointer}
@@ -3336,15 +3347,22 @@ function buildPanel(){
   +'<button type="button" data-chip="小ネタ">🎓 小ネタ</button>'
   +'<button type="button" data-chip="男ともだち">🎥 男ともだち</button>'
   +'</div>'
-  +'<div class="nb7-srow"><input id="nb7Q" placeholder="何でも聞いてね（作品名・人名・キーワード）"><button type="button" class="nb7-go" id="nb7Go">検索</button><button type="button" class="nb7-ai" id="nb7Ai">🌐 AIに聞く</button></div>'
-  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。「🌐 AIに聞く」はChatGPTを新しいタブで開きます。</div></div>';
+  +'<div class="nb7-srow"><input id="nb7Q" maxlength="40" placeholder="作品名・人名・キーワードで検索"><button type="button" class="nb7-go" id="nb7Go">検索</button><button type="button" class="nb7-ai" id="nb7Ai">🌐 AIに聞く</button></div>'
+  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。「🌐 AIに聞く」は短い単語だけ、ChatGPTを新しいタブで開きます（文章の生成・分析はできません）。</div></div>';
   document.body.appendChild(panel);
   E("nb7Close").addEventListener("click",function(){ panel.classList.remove("open"); });
   E("nb7Go").addEventListener("click",function(){ doSearch(E("nb7Q").value); });
   E("nb7Q").addEventListener("keydown",function(e){ if(e.key==="Enter") doSearch(this.value); });
   E("nb7Ai").addEventListener("click",function(){
-    var q=E("nb7Q").value.trim()||"全関映（関西学院大学の映画サークル）について教えて";
-    window.open("https://chatgpt.com/?q="+encodeURIComponent(q),"_blank","noopener");
+    var q=E("nb7Q").value.trim();
+    var res=E("nb7Res");
+    if(!q){ if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語だけだよ。まず単語を入れてね。</div>'; return; }
+    if(q.length>20||/\s/.test(q)||/(生成|分析|書いて|作って|作成|要約|翻訳|説明|教えて|プログラム|コード|作文|長文|歌詞|作曲)/.test(q)){
+      if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語（20文字まで・スペースなし）だけだよ🙏\n文章の生成や分析みたいな重いお願いはできないの。単語で聞いてね。</div>';
+      say("AIに聞けるのは短い単語だけだよ🙏");
+      return;
+    }
+    window.open("https://chatgpt.com/?q="+encodeURIComponent(q+" とは？"),"_blank","noopener");
   });
   panel.querySelectorAll("[data-chip]").forEach(function(b){
     b.addEventListener("click",function(){ E("nb7Q").value=b.dataset.chip.split(" ")[0]; doSearch(b.dataset.chip); });
@@ -3403,12 +3421,12 @@ function openPanel(){
 }
 /* ask button on choko + menu augmentation */
 function addAskBtn(){
-  var root=E("chokoRoot");
-  if(root&&!E("nb7AskBtn")){
-    var b=document.createElement("button"); b.type="button"; b.id="nb7AskBtn"; b.textContent="❓ 何でも聞く";
-    b.addEventListener("click",function(ev){ ev.stopPropagation(); openPanel(); });
-    root.appendChild(b);
-  }
+  if(E("nb7AskBtn")) return;
+  var bar=document.querySelector(".bar-right")||document.querySelector(".volbar")||document.querySelector(".nb-head");
+  if(!bar) return;
+  var b=document.createElement("button"); b.type="button"; b.id="nb7AskBtn"; b.textContent="❓ 何でも聞く";
+  b.addEventListener("click",function(ev){ ev.stopPropagation(); openPanel(); });
+  bar.appendChild(b);
 }
 setInterval(addAskBtn,1500);
 var btnsObs=new MutationObserver(function(){
@@ -3420,6 +3438,238 @@ var btnsObs=new MutationObserver(function(){
   }
 });
 setTimeout(function(){ var b=E("chokoBtns2"); if(b) btnsObs.observe(b,{childList:true}); },2500);
+})();
+</script>
+
+
+<style id="nb8style">
+/* ===== v56 NB8: big top-right write button, mode announcements, drafts ===== */
+#nb6Pencil{top:62px!important;right:18px!important;bottom:auto!important;width:94px!important;height:94px!important;z-index:80!important;box-shadow:0 12px 28px rgba(0,0,0,.4),0 0 0 7px rgba(255,183,3,.5)!important;animation:nb8Pulse 1.7s ease-in-out infinite}
+#nb6Pencil span{display:none!important}
+#nb6Pencil::after{content:"ここに書く";position:absolute;left:50%;transform:translateX(-50%);bottom:-25px;font-size:13.5px;font-weight:900;color:#8a6d1a;white-space:nowrap;text-shadow:0 1px 0 #fff,0 0 6px #fff}
+@keyframes nb8Pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb8) return; window.__nb8=1;
+function E(id){ return document.getElementById(id); }
+function say(html,btns){
+  var t=E("chokoText2"); if(!t) return;
+  t.innerHTML=html;
+  var b=E("chokoBtns2"); if(!b) return;
+  b.innerHTML="";
+  (btns||[]).forEach(function(x){ var btn=document.createElement("button"); btn.type="button"; btn.textContent=x.label; btn.addEventListener("click",x.fn); b.appendChild(btn); });
+}
+function curPage8(){
+  var t=E("nbPgInfo"); if(!t) return 1;
+  var m=/(\d+)\s*ページ目/.exec(t.textContent||""); return m?parseInt(m[1],10):1;
+}
+function overlayOpen(){ var o=E("nbOverlay"); return !!(o&&o.classList.contains("open")); }
+function editorOpen(){ var ed=E("nb6Ed"); return !!(ed&&ed.classList.contains("open")); }
+function editorMode(){ var m=E("nb6Mode"); return m?m.textContent:""; }
+
+/* ============ mode announcer ============ */
+var MODE_TXT={
+  cover:"📕 表紙モードだよ。表紙をクリックすると開くよ",
+  browse:"📖 閲覧モードだよ。ページは◀▶ボタンや番号ジャンプでいつでもめくれるよ",
+  place:"📍 書く場所を選ぶモードだよ。ページをタップしてね",
+  write:"✏ 書き込みモードだよ。装飾は右クリック（長押し）。ページをめくっても下書きは残るよ",
+  edit:"🔧 編集モードだよ。直したら ✔決定 を押してね",
+  moveplace:"↔ 移動モードだよ。置きたい場所をタップしてね（確定ボタンはいらないよ）"
+};
+function detectMode(){
+  if(!overlayOpen()) return "off";
+  if(editorOpen()) return editorMode()==="書き込みを直す"?"edit":"write";
+  var pg=E("nbPage");
+  if(pg&&pg.classList.contains("nb6-move-placing")) return "moveplace";
+  if(pg&&pg.classList.contains("nb6-placing")) return "place";
+  var main=E("nbMain");
+  if(main&&main.style.display==="none") return "cover";
+  return "browse";
+}
+var lastMode="off", pendingMode="", pendingSince=0;
+setInterval(function(){
+  var m=detectMode();
+  if(m!==pendingMode){ pendingMode=m; pendingSince=Date.now(); return; }
+  if(m!==lastMode&&Date.now()-pendingSince>300){
+    lastMode=m;
+    if(m!=="off"&&MODE_TXT[m]) say(MODE_TXT[m]);
+  }
+},250);
+
+/* ============ drafts: page turns never lose writing ============ */
+var nb8Atts=[];
+document.addEventListener("change",function(e){
+  if(e.target&&e.target.id==="nb6File"){
+    [].forEach.call(e.target.files||[],function(f){ nb8Atts.push(f); });
+  }
+},true);
+document.addEventListener("click",function(e){
+  if(e.target&&e.target.id==="nb6Ok"){ draft=null; editDraft=null; }
+  if(e.target&&e.target.id==="nb6Clear"){ nb8Atts=[]; draft=null; }
+  var chipBtn=e.target.closest?e.target.closest("#nb6AttList .nb6-chip button"):null;
+  if(chipBtn){
+    var chips=[].slice.call(document.querySelectorAll("#nb6AttList .nb6-chip"));
+    var idx=chips.indexOf(chipBtn.closest(".nb6-chip"));
+    if(idx>-1) nb8Atts.splice(idx,1);
+  }
+},true);
+var draft=null, editDraft=null, openPage=null, lastEditId=null, restoring=false;
+document.addEventListener("click",function(e){
+  var eb=e.target.closest?e.target.closest(".nb-edit"):null;
+  if(eb){ var card=eb.closest(".nb-card"); if(card) lastEditId=card.dataset.post||null; }
+},true);
+function snapStyle(){
+  var o={};
+  var c=document.querySelector(".nb6-sw.sel"); o.c=c?c.dataset.c:"";
+  var sz=document.querySelector("#nb6Size button.sel"); o.s=sz?sz.dataset.s:"m";
+  o.b=!!(E("nb6B")&&E("nb6B").classList.contains("sel"));
+  o.u=!!(E("nb6U")&&E("nb6U").classList.contains("sel"));
+  o.fx=E("nb6Fx")?E("nb6Fx").value:"";
+  o.font=E("nb6Font")?E("nb6Font").value:"klee";
+  return o;
+}
+function snapDraft(){
+  var ed=E("nb6Ed"); if(!ed) return;
+  draft={
+    page:openPage||curPage8(),
+    text:E("nb6Text")?E("nb6Text").value:"",
+    name:E("nb6Name")?E("nb6Name").value:"",
+    link:E("nb6Link")?E("nb6Link").value:"",
+    x:ed.style.left||"3%", y:ed.style.top||"4%",
+    style:snapStyle(),
+    atts:nb8Atts.slice()
+  };
+}
+function applyStyle(st){
+  if(!st) return;
+  var f=E("nb6Font"); if(f&&st.font){ f.value=st.font; f.dispatchEvent(new Event("change")); }
+  var fx=E("nb6Fx"); if(fx&&st.fx!==undefined){ fx.value=st.fx; fx.dispatchEvent(new Event("change")); }
+  if(st.c){ var sw=document.querySelector('.nb6-sw[data-c="'+st.c+'"]'); if(sw) sw.click(); }
+  if(st.s){ var sb=document.querySelector('#nb6Size button[data-s="'+st.s+'"]'); if(sb) sb.click(); }
+  if(st.b&&E("nb6B")&&!E("nb6B").classList.contains("sel")) E("nb6B").click();
+  if(st.u&&E("nb6U")&&!E("nb6U").classList.contains("sel")) E("nb6U").click();
+}
+function restoreDraft(){
+  if(!draft||restoring) return;
+  var pencil=E("nb6Pencil"), pg=E("nbPage");
+  if(!pencil||!pg) return;
+  restoring=true;
+  var d=draft;
+  pencil.click();
+  setTimeout(function(){
+    var r=pg.getBoundingClientRect();
+    var cx=r.left+r.width*(parseFloat(d.x)||3)/100+8, cy=r.top+r.height*(parseFloat(d.y)||4)/100+8;
+    pg.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,clientX:cx,clientY:cy}));
+    var tries=0;
+    var iv=setInterval(function(){
+      tries++;
+      if(editorOpen()||tries>14){
+        clearInterval(iv);
+        if(editorOpen()){
+          var ta=E("nb6Text"); if(ta){ ta.value=d.text; ta.dispatchEvent(new Event("input",{bubbles:true})); }
+          var nm=E("nb6Name"); if(nm&&d.name) nm.value=d.name;
+          var lk=E("nb6Link"); if(lk) lk.value=d.link||"";
+          applyStyle(d.style);
+          if(d.atts&&d.atts.length){
+            try{
+              var dt=new DataTransfer();
+              d.atts.forEach(function(fl){ dt.items.add(fl); });
+              var inp=E("nb6File"); inp.files=dt.files; inp.dispatchEvent(new Event("change",{bubbles:true}));
+            }catch(e){}
+          }
+          say("さっきの書きかけを戻したよ✏ そのまま続きを書いてね");
+        }
+        restoring=false;
+      }
+    },120);
+  },260);
+}
+setInterval(function(){
+  if(!overlayOpen()){ openPage=null; return; }
+  var cp=curPage8();
+  if(editorOpen()){
+    if(openPage===null) openPage=cp;
+    if(cp!==openPage){
+      /* page turned mid-writing: record the draft and close the editor */
+      if(editorMode()==="書き込みを直す"){
+        editDraft={postId:lastEditId,text:E("nb6Text")?E("nb6Text").value:""};
+        var c=E("nb6Cancel"); if(c) c.click();
+        say("編集の途中だったから、いったん記録して閉じたよ。戻ってその書き込みの「編集」を押すと続きから直せるよ");
+      } else {
+        snapDraft();
+        var c2=E("nb6Cancel"); if(c2) c2.click();
+        say("ページをめくったから、書きかけを記録しておいたよ✏ 戻ると自動で復活するよ");
+      }
+      openPage=null;
+      return;
+    }
+    if(editorMode()!=="書き込みを直す") snapDraft();
+    else if(lastEditId) editDraft={postId:lastEditId,text:E("nb6Text")?E("nb6Text").value:""};
+  } else {
+    openPage=null;
+    if(draft&&cp===draft.page&&!restoring){
+      var main=E("nbMain");
+      if(main&&main.style.display!=="none") restoreDraft();
+    }
+    if(editDraft&&lastEditId===editDraft.postId){
+      /* handled when the editor opens below */
+    }
+  }
+},650);
+/* refill an interrupted edit when the same note is edited again */
+var editWatch=setInterval(function(){
+  if(editorOpen()&&editorMode()==="書き込みを直す"&&editDraft&&lastEditId===editDraft.postId){
+    var ta=E("nb6Text");
+    if(ta&&editDraft.text&&ta.value!==editDraft.text){
+      ta.value=editDraft.text; ta.dispatchEvent(new Event("input",{bubbles:true}));
+      say("さっきの編集の続きを戻したよ🔧");
+    }
+    if(ta&&ta.value===editDraft.text) editDraft=null;
+  }
+},800);
+
+/* ============ drag-move: no confirm button ============ */
+new MutationObserver(function(muts){
+  muts.forEach(function(mu){
+    mu.addedNodes.forEach(function(n){
+      if(n.nodeType!==1) return;
+      var bar=(n.classList&&n.classList.contains("nb6-confirm"))?n:(n.querySelector?n.querySelector(".nb6-confirm"):null);
+      if(bar){
+        var btn=bar.querySelector("button");
+        if(btn) setTimeout(function(){ btn.click(); },60);
+      }
+    });
+  });
+}).observe(document.body,{childList:true,subtree:true});
+
+/* ============ write from choko's menu ============ */
+function openNotebookAndWrite(){
+  function pencil(){ var p=E("nb6Pencil"); if(p){ p.click(); } }
+  if(!overlayOpen()){
+    var b=document.querySelector(".nb-all-btn")||document.querySelector(".nb-ic");
+    if(b) b.click();
+    setTimeout(function(){
+      var cov=E("nbCoverBook"); var main=E("nbMain");
+      if(cov&&main&&main.style.display==="none"){ cov.click(); setTimeout(pencil,750); }
+      else pencil();
+    },950);
+  } else {
+    var main2=E("nbMain"), cov2=E("nbCoverBook");
+    if(main2&&main2.style.display==="none"&&cov2){ cov2.click(); setTimeout(pencil,750); }
+    else pencil();
+  }
+}
+var nb8Obs=new MutationObserver(function(){
+  var b=E("chokoBtns2"); if(!b) return;
+  if(b.children.length&&!b.querySelector(".nb8-menu-write")){
+    var btn=document.createElement("button"); btn.type="button"; btn.className="nb8-menu-write"; btn.textContent="✏ ここに書く";
+    btn.addEventListener("click",function(){ openNotebookAndWrite(); });
+    b.appendChild(btn);
+  }
+});
+setTimeout(function(){ var b=E("chokoBtns2"); if(b) nb8Obs.observe(b,{childList:true}); },2500);
 })();
 </script>
 

@@ -838,7 +838,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 </div>
 <div class="bl-src"><div class="bl-src-t">出典（クリックで直接開けます）</div><ul><li><a href="https://www.kwansei.ac.jp/campuslife/club/tourokudantai.html" target="_blank" rel="noopener">関西学院大学 公式「大学登録団体」</a></li><li><a href="https://note.com/hisak0415/n/n527f3f24d097" target="_blank" rel="noopener">OBの回想エッセイ（note）</a></li><li><a href="https://bunshun.jp/articles/-/68900?page=3" target="_blank" rel="noopener">文春オンライン（三島有紀子さんインタビュー）</a></li><li><a href="https://www.kansai-u.ac.jp/headlines/entry/post_71716.php" target="_blank" rel="noopener">関西大学 公式（関西学生映画祭の紹介）</a></li><li><a href="https://www.weblio.jp/content/%E9%96%A2%E8%A5%BF%E5%AD%A6%E7%94%9F%E6%98%A0%E7%94%9F%E7%A5%AD" target="_blank" rel="noopener">関西学生映画祭（Weblio）</a></li><li><a href="https://www.kobe-np.co.jp/rentoku/campus-repo/202010/0013781199.shtml" target="_blank" rel="noopener">神戸新聞（2020年 全国学生オムニバス）</a></li><li><a href="https://kobe-eiga.net/programs/1051/" target="_blank" rel="noopener">神戸映画資料館（『CINEMAだいすき！』）</a></li><li><a href="https://www.instagram.com/p/DVvoozvkm5M/" target="_blank" rel="noopener">全関映 公式Instagram Q&A投稿</a></li><li><a href="https://www.instagram.com/kg_zke_1969/" target="_blank" rel="noopener">全関映 公式Instagram（@kg_zke_1969）</a></li></ul></div>
 
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v55）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v57）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -6450,8 +6450,7 @@ function ksPlay(midi,when,dur,vel){
 var au=document.createElement('audio'); au.loop=true; au.preload='auto';
 var mode=null; /* 'audio' | 'midi' */
 var midiTimer=null, midiData=null;
-var selVal='orgel'; try{ selVal=localStorage.getItem('zkeBgm')||'orgel'; }catch(e){}
-try{ if(!localStorage.getItem('zkeBgm')) selVal='song:music/El_Dorado.mp3'; }catch(e){}
+var selVal='none'; try{ selVal=localStorage.getItem('zkeBgm')||'none'; }catch(e){}
 var seekTo=0;
 function oldBgm(){ return typeof window.ZKE_OLD_BGM_GET==='function' ? window.ZKE_OLD_BGM_GET() : null; }
 function activeEl(){ if(selVal==='orgel'&&oldBgm()) return oldBgm(); if(mode==='audio') return au; return null; }
@@ -6493,6 +6492,7 @@ function startSelected(){
   stopAll();
   if(!sndOn()) return;
   saveState(true);
+  if(selVal==='none'){ mode=null; return; }
   if(selVal.indexOf('midi:')===0){ startMidi(selVal.slice(5)); return; }
   var src=null;
   if(selVal.indexOf('mp3:')===0){ src=selVal.slice(4); }
@@ -6553,6 +6553,7 @@ function buildUI(cfg, midiNames){
     cfg.mp3s.forEach(function(m){ var o=document.createElement('option'); o.value='mp3:'+m.url; o.textContent='🎵 '+m.name; og3.appendChild(o); });
     sel.appendChild(og3);
   }
+  var oNone=document.createElement('option'); oNone.value='none'; oNone.textContent='（音楽なし）'; sel.appendChild(oNone);
   if(USER_SONGS.length){
     var ogS=document.createElement('optgroup'); ogS.label='オリジナル曲';
     USER_SONGS.forEach(function(fn){ var o=document.createElement('option'); o.value='song:'+fn; var base=fn.split('/').pop().replace(/\.(mp3|wav|midi?)$/i,''); var mt=(typeof cfg!=='undefined'&&cfg&&cfg.meta&&cfg.meta[fn])?cfg.meta[fn]:null; o.textContent='🎵 '+base+(mt&&mt.desc?'（'+mt.desc+'）':''); ogS.appendChild(o); });
@@ -6589,7 +6590,7 @@ function initUI(){
   jsonp({action:'midi_list',code:c},function(err,d){ got.midi=(!err&&d&&d.ok)?d.midis:null; done(); });
 }
 function initWithDiscovery(){
-  if(!/\.github\.io$/.test(location.hostname)){ initUI(); return; }
+  
   var done=false;
   function go(){ if(done) return; done=true; initUI(); }
   setTimeout(go,2600);
@@ -6639,7 +6640,14 @@ document.addEventListener('pointerup',function(e){ if(pdPos&&Math.abs(e.clientX-
 var rockEl=document.createElement('audio'); rockEl.loop=true; rockEl.preload='auto'; rockEl.src='kaite_rock.mp3';
 var rockOn=false, rockSaved=null;
 function rockRestore(){
-  if(rockSaved&&sndOn()){ selVal=rockSaved.genre; seekTo=rockSaved.t||0; startSelected(); }
+  if(rockSaved){
+    selVal=rockSaved.genre; seekTo=rockSaved.t||0;
+    try{ localStorage.setItem('zkeBgm',selVal); }catch(e){}
+    var s3=document.getElementById('bgmSel'); if(s3) s3.value=selVal;
+    if(sndOn()) startSelected();
+  } else if(sndOn()){
+    selVal='song:music/El_Dorado.mp3'; try{ localStorage.setItem('zkeBgm',selVal); }catch(e){} seekTo=0; startSelected();
+  }
   rockSaved=null;
 }
 window.ZKE_NB_BGM={
@@ -6662,7 +6670,7 @@ window.ZKE_NB_BGM={
 };
 rockEl.addEventListener('error',function(){ if(rockOn){ rockOn=false; rockRestore(); } });
 /* ===== v54: random BGM for the gacha show ===== */
-au.addEventListener('error',function(){ if(selVal&&selVal.indexOf('song:')===0&&!/\.(mid|midi)$/i.test(selVal)&&sndOn()){ selVal='orgelSynth'; startSelected(); } });
+au.addEventListener('error',function(){ if(selVal&&selVal.indexOf('song:')===0&&!/\.(mid|midi)$/i.test(selVal)&&sndOn()){ selVal='none'; var s2=document.getElementById('bgmSel'); if(s2) s2.value='none'; } });
 var bgmSavedGenre=null;
 window.ZKE_BGM_RANDOM=function(){
   if(!sndOn()) return false;
@@ -6670,7 +6678,9 @@ window.ZKE_BGM_RANDOM=function(){
   var pool=[];
   var meta=window.__zkeMusicMeta||{};
   var gachaSongs=USER_SONGS.filter(function(fn){ return meta[fn]&&meta[fn].scene==='gacha'; });
-  if(gachaSongs.length){ gachaSongs.forEach(function(fn){ pool.push('song:'+fn); }); }
+  var themeSongs=USER_SONGS.filter(function(fn){ return /(^|\/)gatya_song\.(mp3|wav|mid|midi)$/i.test(fn); });
+  if(themeSongs.length){ pool.push('song:'+themeSongs[0]); }
+  else if(gachaSongs.length){ gachaSongs.forEach(function(fn){ pool.push('song:'+fn); }); }
   else { USER_SONGS.forEach(function(fn){ pool.push('song:'+fn); }); Object.keys(TRACKS).forEach(function(k){ pool.push(k); }); if(oldBgm()) pool.push('orgel'); }
   if(!pool.length) return false;
   var pick=pool[Math.floor(Math.random()*pool.length)];
@@ -6731,14 +6741,15 @@ function startMidiFile(path){
     if(!sndOn()) return;
     var md=parseSMF(buf);
     if(md) startMidiData(md);
-    else { selVal="orgelSynth"; startSelected(); }
-  }).catch(function(){ if(sndOn()){ selVal="orgelSynth"; startSelected(); } });
+    else { selVal="none"; }
+  }).catch(function(){ selVal="none"; });
 }
 
 window.ZKE_BGM_RESTORE=function(){
   if(bgmSavedGenre===null) return;
   selVal=bgmSavedGenre; bgmSavedGenre=null;
   try{ localStorage.setItem('zkeBgm',selVal); }catch(e){}
+  var s4=document.getElementById('bgmSel'); if(s4) s4.value=selVal;
   if(sndOn()) startSelected();
 };
 })();
@@ -7798,8 +7809,8 @@ new MutationObserver(function(){
 #nb6Ed.nb7-dragover{outline:3.5px dashed #fb8500;outline-offset:-3px}
 .nb7-prov{opacity:.92}
 .nb7-prov::after{content:"送信中…";position:absolute;right:4px;top:2px;font-size:10px;color:#b8860b;font-weight:700}
-#nb7AskBtn{position:absolute;left:-6px;bottom:100%;margin-bottom:6px;z-index:5;background:linear-gradient(160deg,#7b61ff,#5a3ee0);color:#fff;border:none;border-radius:999px;padding:6px 12px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 5px 14px rgba(0,0,0,.3);white-space:nowrap}
-#nb7Panel{position:fixed;right:12px;bottom:12px;z-index:999980;width:min(368px,94vw);max-height:76dvh;display:none;flex-direction:column;background:#fffdf7;border:2px solid #7b61ff;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.4);overflow:hidden}
+#nb7AskBtn{background:linear-gradient(160deg,#7b61ff,#5a3ee0);color:#fff;border:none;border-radius:999px;padding:5px 11px;font-size:12.5px;font-weight:800;cursor:pointer;white-space:nowrap;margin-left:4px}
+#nb7Panel{position:fixed;left:12px;bottom:12px;z-index:999980;width:min(368px,94vw);max-height:76dvh;display:none;flex-direction:column;background:#fffdf7;border:2px solid #7b61ff;border-radius:16px;box-shadow:0 18px 44px rgba(0,0,0,.4);overflow:hidden}
 #nb7Panel.open{display:flex}
 #nb7Panel .nb7-head{background:linear-gradient(120deg,#7b61ff,#5a3ee0);color:#fff;padding:10px 13px;font-weight:900;font-size:14.5px;display:flex;justify-content:space-between;align-items:center}
 #nb7Panel .nb7-head button{background:rgba(255,255,255,.2);color:#fff;border:none;border-radius:8px;padding:3px 10px;cursor:pointer}
@@ -8183,15 +8194,22 @@ function buildPanel(){
   +'<button type="button" data-chip="小ネタ">🎓 小ネタ</button>'
   +'<button type="button" data-chip="男ともだち">🎥 男ともだち</button>'
   +'</div>'
-  +'<div class="nb7-srow"><input id="nb7Q" placeholder="何でも聞いてね（作品名・人名・キーワード）"><button type="button" class="nb7-go" id="nb7Go">検索</button><button type="button" class="nb7-ai" id="nb7Ai">🌐 AIに聞く</button></div>'
-  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。「🌐 AIに聞く」はChatGPTを新しいタブで開きます。</div></div>';
+  +'<div class="nb7-srow"><input id="nb7Q" maxlength="40" placeholder="作品名・人名・キーワードで検索"><button type="button" class="nb7-go" id="nb7Go">検索</button><button type="button" class="nb7-ai" id="nb7Ai">🌐 AIに聞く</button></div>'
+  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。「🌐 AIに聞く」は短い単語だけ、ChatGPTを新しいタブで開きます（文章の生成・分析はできません）。</div></div>';
   document.body.appendChild(panel);
   E("nb7Close").addEventListener("click",function(){ panel.classList.remove("open"); });
   E("nb7Go").addEventListener("click",function(){ doSearch(E("nb7Q").value); });
   E("nb7Q").addEventListener("keydown",function(e){ if(e.key==="Enter") doSearch(this.value); });
   E("nb7Ai").addEventListener("click",function(){
-    var q=E("nb7Q").value.trim()||"全関映（関西学院大学の映画サークル）について教えて";
-    window.open("https://chatgpt.com/?q="+encodeURIComponent(q),"_blank","noopener");
+    var q=E("nb7Q").value.trim();
+    var res=E("nb7Res");
+    if(!q){ if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語だけだよ。まず単語を入れてね。</div>'; return; }
+    if(q.length>20||/\s/.test(q)||/(生成|分析|書いて|作って|作成|要約|翻訳|説明|教えて|プログラム|コード|作文|長文|歌詞|作曲)/.test(q)){
+      if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語（20文字まで・スペースなし）だけだよ🙏\n文章の生成や分析みたいな重いお願いはできないの。単語で聞いてね。</div>';
+      say("AIに聞けるのは短い単語だけだよ🙏");
+      return;
+    }
+    window.open("https://chatgpt.com/?q="+encodeURIComponent(q+" とは？"),"_blank","noopener");
   });
   panel.querySelectorAll("[data-chip]").forEach(function(b){
     b.addEventListener("click",function(){ E("nb7Q").value=b.dataset.chip.split(" ")[0]; doSearch(b.dataset.chip); });
@@ -8250,12 +8268,12 @@ function openPanel(){
 }
 /* ask button on choko + menu augmentation */
 function addAskBtn(){
-  var root=E("chokoRoot");
-  if(root&&!E("nb7AskBtn")){
-    var b=document.createElement("button"); b.type="button"; b.id="nb7AskBtn"; b.textContent="❓ 何でも聞く";
-    b.addEventListener("click",function(ev){ ev.stopPropagation(); openPanel(); });
-    root.appendChild(b);
-  }
+  if(E("nb7AskBtn")) return;
+  var bar=document.querySelector(".bar-right")||document.querySelector(".volbar")||document.querySelector(".nb-head");
+  if(!bar) return;
+  var b=document.createElement("button"); b.type="button"; b.id="nb7AskBtn"; b.textContent="❓ 何でも聞く";
+  b.addEventListener("click",function(ev){ ev.stopPropagation(); openPanel(); });
+  bar.appendChild(b);
 }
 setInterval(addAskBtn,1500);
 var btnsObs=new MutationObserver(function(){
@@ -8267,6 +8285,517 @@ var btnsObs=new MutationObserver(function(){
   }
 });
 setTimeout(function(){ var b=E("chokoBtns2"); if(b) btnsObs.observe(b,{childList:true}); },2500);
+})();
+</script>
+
+
+<style id="nb8style">
+/* ===== v56 NB8: big top-right write button, mode announcements, drafts ===== */
+#nb6Pencil{top:62px!important;right:18px!important;bottom:auto!important;width:94px!important;height:94px!important;z-index:80!important;box-shadow:0 12px 28px rgba(0,0,0,.4),0 0 0 7px rgba(255,183,3,.5)!important;animation:nb8Pulse 1.7s ease-in-out infinite}
+#nb6Pencil span{display:none!important}
+#nb6Pencil::after{content:"ここに書く";position:absolute;left:50%;transform:translateX(-50%);bottom:-25px;font-size:13.5px;font-weight:900;color:#8a6d1a;white-space:nowrap;text-shadow:0 1px 0 #fff,0 0 6px #fff}
+@keyframes nb8Pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb8) return; window.__nb8=1;
+function E(id){ return document.getElementById(id); }
+function say(html,btns){
+  var t=E("chokoText2"); if(!t) return;
+  t.innerHTML=html;
+  var b=E("chokoBtns2"); if(!b) return;
+  b.innerHTML="";
+  (btns||[]).forEach(function(x){ var btn=document.createElement("button"); btn.type="button"; btn.textContent=x.label; btn.addEventListener("click",x.fn); b.appendChild(btn); });
+}
+function curPage8(){
+  var t=E("nbPgInfo"); if(!t) return 1;
+  var m=/(\d+)\s*ページ目/.exec(t.textContent||""); return m?parseInt(m[1],10):1;
+}
+function overlayOpen(){ var o=E("nbOverlay"); return !!(o&&o.classList.contains("open")); }
+function editorOpen(){ var ed=E("nb6Ed"); return !!(ed&&ed.classList.contains("open")); }
+function editorMode(){ var m=E("nb6Mode"); return m?m.textContent:""; }
+
+/* ============ mode announcer ============ */
+var MODE_TXT={
+  cover:"📕 表紙モードだよ。表紙をクリックすると開くよ",
+  browse:"📖 閲覧モードだよ。ページは◀▶ボタンや番号ジャンプでいつでもめくれるよ",
+  place:"📍 書く場所を選ぶモードだよ。ページをタップしてね",
+  write:"✏ 書き込みモードだよ。装飾は右クリック（長押し）。ページをめくっても下書きは残るよ",
+  edit:"🔧 編集モードだよ。直したら ✔決定 を押してね",
+  moveplace:"↔ 移動モードだよ。置きたい場所をタップしてね（確定ボタンはいらないよ）"
+};
+function detectMode(){
+  if(!overlayOpen()) return "off";
+  if(editorOpen()) return editorMode()==="書き込みを直す"?"edit":"write";
+  var pg=E("nbPage");
+  if(pg&&pg.classList.contains("nb6-move-placing")) return "moveplace";
+  if(pg&&pg.classList.contains("nb6-placing")) return "place";
+  var main=E("nbMain");
+  if(main&&main.style.display==="none") return "cover";
+  return "browse";
+}
+var lastMode="off", pendingMode="", pendingSince=0;
+setInterval(function(){
+  var m=detectMode();
+  if(m!==pendingMode){ pendingMode=m; pendingSince=Date.now(); return; }
+  if(m!==lastMode&&Date.now()-pendingSince>300){
+    lastMode=m;
+    if(m!=="off"&&MODE_TXT[m]) say(MODE_TXT[m]);
+  }
+},250);
+
+/* ============ drafts: page turns never lose writing ============ */
+var nb8Atts=[];
+document.addEventListener("change",function(e){
+  if(e.target&&e.target.id==="nb6File"){
+    [].forEach.call(e.target.files||[],function(f){ nb8Atts.push(f); });
+  }
+},true);
+document.addEventListener("click",function(e){
+  if(e.target&&e.target.id==="nb6Ok"){ draft=null; editDraft=null; }
+  if(e.target&&e.target.id==="nb6Clear"){ nb8Atts=[]; draft=null; }
+  var chipBtn=e.target.closest?e.target.closest("#nb6AttList .nb6-chip button"):null;
+  if(chipBtn){
+    var chips=[].slice.call(document.querySelectorAll("#nb6AttList .nb6-chip"));
+    var idx=chips.indexOf(chipBtn.closest(".nb6-chip"));
+    if(idx>-1) nb8Atts.splice(idx,1);
+  }
+},true);
+var draft=null, editDraft=null, openPage=null, lastEditId=null, restoring=false;
+document.addEventListener("click",function(e){
+  var eb=e.target.closest?e.target.closest(".nb-edit"):null;
+  if(eb){ var card=eb.closest(".nb-card"); if(card) lastEditId=card.dataset.post||null; }
+},true);
+function snapStyle(){
+  var o={};
+  var c=document.querySelector(".nb6-sw.sel"); o.c=c?c.dataset.c:"";
+  var sz=document.querySelector("#nb6Size button.sel"); o.s=sz?sz.dataset.s:"m";
+  o.b=!!(E("nb6B")&&E("nb6B").classList.contains("sel"));
+  o.u=!!(E("nb6U")&&E("nb6U").classList.contains("sel"));
+  o.fx=E("nb6Fx")?E("nb6Fx").value:"";
+  o.font=E("nb6Font")?E("nb6Font").value:"klee";
+  return o;
+}
+function snapDraft(){
+  var ed=E("nb6Ed"); if(!ed) return;
+  draft={
+    page:openPage||curPage8(),
+    text:E("nb6Text")?E("nb6Text").value:"",
+    name:E("nb6Name")?E("nb6Name").value:"",
+    link:E("nb6Link")?E("nb6Link").value:"",
+    x:ed.style.left||"3%", y:ed.style.top||"4%",
+    style:snapStyle(),
+    atts:nb8Atts.slice()
+  };
+}
+function applyStyle(st){
+  if(!st) return;
+  var f=E("nb6Font"); if(f&&st.font){ f.value=st.font; f.dispatchEvent(new Event("change")); }
+  var fx=E("nb6Fx"); if(fx&&st.fx!==undefined){ fx.value=st.fx; fx.dispatchEvent(new Event("change")); }
+  if(st.c){ var sw=document.querySelector('.nb6-sw[data-c="'+st.c+'"]'); if(sw) sw.click(); }
+  if(st.s){ var sb=document.querySelector('#nb6Size button[data-s="'+st.s+'"]'); if(sb) sb.click(); }
+  if(st.b&&E("nb6B")&&!E("nb6B").classList.contains("sel")) E("nb6B").click();
+  if(st.u&&E("nb6U")&&!E("nb6U").classList.contains("sel")) E("nb6U").click();
+}
+function restoreDraft(){
+  if(!draft||restoring) return;
+  var pencil=E("nb6Pencil"), pg=E("nbPage");
+  if(!pencil||!pg) return;
+  restoring=true;
+  var d=draft;
+  pencil.click();
+  setTimeout(function(){
+    var r=pg.getBoundingClientRect();
+    var cx=r.left+r.width*(parseFloat(d.x)||3)/100+8, cy=r.top+r.height*(parseFloat(d.y)||4)/100+8;
+    pg.dispatchEvent(new MouseEvent("click",{bubbles:true,cancelable:true,clientX:cx,clientY:cy}));
+    var tries=0;
+    var iv=setInterval(function(){
+      tries++;
+      if(editorOpen()||tries>14){
+        clearInterval(iv);
+        if(editorOpen()){
+          var ta=E("nb6Text"); if(ta){ ta.value=d.text; ta.dispatchEvent(new Event("input",{bubbles:true})); }
+          var nm=E("nb6Name"); if(nm&&d.name) nm.value=d.name;
+          var lk=E("nb6Link"); if(lk) lk.value=d.link||"";
+          applyStyle(d.style);
+          if(d.atts&&d.atts.length){
+            try{
+              var dt=new DataTransfer();
+              d.atts.forEach(function(fl){ dt.items.add(fl); });
+              var inp=E("nb6File"); inp.files=dt.files; inp.dispatchEvent(new Event("change",{bubbles:true}));
+            }catch(e){}
+          }
+          say("さっきの書きかけを戻したよ✏ そのまま続きを書いてね");
+        }
+        restoring=false;
+      }
+    },120);
+  },260);
+}
+setInterval(function(){
+  if(!overlayOpen()){ openPage=null; return; }
+  var cp=curPage8();
+  if(editorOpen()){
+    if(openPage===null) openPage=cp;
+    if(cp!==openPage){
+      /* page turned mid-writing: record the draft and close the editor */
+      if(editorMode()==="書き込みを直す"){
+        editDraft={postId:lastEditId,text:E("nb6Text")?E("nb6Text").value:""};
+        var c=E("nb6Cancel"); if(c) c.click();
+        say("編集の途中だったから、いったん記録して閉じたよ。戻ってその書き込みの「編集」を押すと続きから直せるよ");
+      } else {
+        snapDraft();
+        var c2=E("nb6Cancel"); if(c2) c2.click();
+        say("ページをめくったから、書きかけを記録しておいたよ✏ 戻ると自動で復活するよ");
+      }
+      openPage=null;
+      return;
+    }
+    if(editorMode()!=="書き込みを直す") snapDraft();
+    else if(lastEditId) editDraft={postId:lastEditId,text:E("nb6Text")?E("nb6Text").value:""};
+  } else {
+    openPage=null;
+    if(draft&&cp===draft.page&&!restoring){
+      var main=E("nbMain");
+      if(main&&main.style.display!=="none") restoreDraft();
+    }
+    if(editDraft&&lastEditId===editDraft.postId){
+      /* handled when the editor opens below */
+    }
+  }
+},650);
+/* refill an interrupted edit when the same note is edited again */
+var editWatch=setInterval(function(){
+  if(editorOpen()&&editorMode()==="書き込みを直す"&&editDraft&&lastEditId===editDraft.postId){
+    var ta=E("nb6Text");
+    if(ta&&editDraft.text&&ta.value!==editDraft.text){
+      ta.value=editDraft.text; ta.dispatchEvent(new Event("input",{bubbles:true}));
+      say("さっきの編集の続きを戻したよ🔧");
+    }
+    if(ta&&ta.value===editDraft.text) editDraft=null;
+  }
+},800);
+
+/* ============ drag-move: no confirm button ============ */
+new MutationObserver(function(muts){
+  muts.forEach(function(mu){
+    mu.addedNodes.forEach(function(n){
+      if(n.nodeType!==1) return;
+      var bar=(n.classList&&n.classList.contains("nb6-confirm"))?n:(n.querySelector?n.querySelector(".nb6-confirm"):null);
+      if(bar){
+        var btn=bar.querySelector("button");
+        if(btn) setTimeout(function(){ btn.click(); },60);
+      }
+    });
+  });
+}).observe(document.body,{childList:true,subtree:true});
+
+/* ============ write from choko's menu ============ */
+function openNotebookAndWrite(){
+  function pencil(){ var p=E("nb6Pencil"); if(p){ p.click(); } }
+  if(!overlayOpen()){
+    var b=document.querySelector(".nb-all-btn")||document.querySelector(".nb-ic");
+    if(b) b.click();
+    setTimeout(function(){
+      var cov=E("nbCoverBook"); var main=E("nbMain");
+      if(cov&&main&&main.style.display==="none"){ cov.click(); setTimeout(pencil,750); }
+      else pencil();
+    },950);
+  } else {
+    var main2=E("nbMain"), cov2=E("nbCoverBook");
+    if(main2&&main2.style.display==="none"&&cov2){ cov2.click(); setTimeout(pencil,750); }
+    else pencil();
+  }
+}
+var nb8Obs=new MutationObserver(function(){
+  var b=E("chokoBtns2"); if(!b) return;
+  if(b.children.length&&!b.querySelector(".nb8-menu-write")){
+    var btn=document.createElement("button"); btn.type="button"; btn.className="nb8-menu-write"; btn.textContent="✏ ここに書く";
+    btn.addEventListener("click",function(){ openNotebookAndWrite(); });
+    b.appendChild(btn);
+  }
+});
+setTimeout(function(){ var b=E("chokoBtns2"); if(b) nb8Obs.observe(b,{childList:true}); },2500);
+})();
+</script>
+
+<style id="zg3style">
+/* ===== v57 ZG3: velvet-blue darkness, lightning, thunder, outlet staging ===== */
+.zg-card.zg3-room{background:radial-gradient(130% 95% at 50% 28%,#1a2c66 0%,#0b1642 46%,#02030d 100%)!important}
+.zg-card.zg3-room::before{content:"";position:absolute;inset:0;pointer-events:none;background:repeating-linear-gradient(97deg,rgba(255,255,255,.014) 0 3px,transparent 3px 7px);z-index:1}
+.zg3-shine{position:absolute;left:16%;right:16%;top:1%;height:64%;z-index:6;pointer-events:none;opacity:0;transition:opacity 1s;background:linear-gradient(112deg,transparent 26%,rgba(200,225,255,.13) 42%,rgba(255,255,255,.20) 50%,rgba(200,225,255,.10) 58%,transparent 76%);background-size:250% 100%;border-radius:24px}
+.zg-stage.zg3-live .zg3-shine{opacity:1;animation:zg3sweep 5.5s ease-in-out infinite alternate}
+@keyframes zg3sweep{from{background-position:110% 0}to{background-position:-30% 0}}
+.zg-stage.zg3-live .zg-chamber{box-shadow:inset 0 0 0 2.5px rgba(190,225,255,.5),inset 0 0 52px rgba(150,200,255,.35),0 0 40px rgba(100,160,255,.4)!important}
+.zg-stage.zg3-live .zg-ball-in{animation:zg3ball 1.15s ease-in-out infinite}
+.zg-stage.zg3-live .zg-ball-in:nth-child(7n+1){--c:#ff2d55;box-shadow:0 0 17px 5px #ff2d55}
+.zg-stage.zg3-live .zg-ball-in:nth-child(7n+2){--c:#ff9500;box-shadow:0 0 17px 5px #ff9500}
+.zg-stage.zg3-live .zg-ball-in:nth-child(7n+3){--c:#ffd60a;box-shadow:0 0 17px 5px #ffd60a}
+.zg-stage.zg3-live .zg-ball-in:nth-child(7n+4){--c:#32d74b;box-shadow:0 0 17px 5px #32d74b}
+.zg-stage.zg3-live .zg-ball-in:nth-child(7n+5){--c:#0a84ff;box-shadow:0 0 17px 5px #0a84ff}
+.zg-stage.zg3-live .zg-ball-in:nth-child(7n+6){--c:#5e5ce6;box-shadow:0 0 17px 5px #5e5ce6}
+.zg-stage.zg3-live .zg-ball-in:nth-child(7n+0){--c:#bf5af2;box-shadow:0 0 17px 5px #bf5af2}
+@keyframes zg3ball{0%,100%{filter:brightness(1.05)}50%{filter:brightness(1.65) saturate(1.6)}}
+.zg3-flash{position:absolute;inset:0;z-index:45;pointer-events:none;background:#eaf4ff;opacity:0}
+.zg3-bolt{position:absolute;top:-2%;width:64px;height:58%;z-index:46;pointer-events:none;background:linear-gradient(180deg,#fffbe8,#ffd93d 70%,#ffb300);clip-path:polygon(58% 0,18% 56%,40% 56%,26% 100%,78% 38%,54% 38%,86% 0);filter:drop-shadow(0 0 16px #ffe66d) drop-shadow(0 0 42px #ffd93d);opacity:0}
+#zgCoin{scale:1;animation:zg3coin 0.9s ease-in-out infinite!important}
+@keyframes zg3coin{0%,100%{scale:1}50%{scale:1.42}}
+.zg3-spark{position:absolute;z-index:20;pointer-events:none;color:#ffe66d;font-size:15px;text-shadow:0 0 9px #ffd93d,0 0 20px #ffb300;animation:zg3spark 0.95s ease-out forwards}
+@keyframes zg3spark{0%{transform:translate(0,0) scale(.5) rotate(0deg);opacity:0}25%{opacity:1}100%{transform:translate(var(--dx,10px),-46px) scale(1.35) rotate(160deg);opacity:0}}
+.zg3-out{position:absolute;left:25%;top:66%;width:100px;height:100px;border-radius:50%;border:3.5px solid rgba(60,30,0,.5);z-index:14;overflow:hidden;padding:0;box-shadow:0 0 34px 10px rgba(255,220,120,.75),0 12px 22px rgba(0,0,0,.5);animation:zg3outIn .38s cubic-bezier(.2,1.6,.4,1)}
+.zg3-out img{width:100%;height:100%;object-fit:cover;display:block}
+@keyframes zg3outIn{from{transform:scale(.25) translateY(-30px);opacity:0}to{transform:scale(1) translateY(0);opacity:1}}
+#zg3Row{position:absolute;left:0;right:0;bottom:0;z-index:9;display:flex;flex-direction:column;align-items:center;gap:3px;pointer-events:none;padding:0 4px}
+#zg3Row .zg3-label{pointer-events:none;background:rgba(8,10,34,.85);color:#ffe9b8;font-size:11.5px;font-weight:700;padding:2px 10px;border-radius:999px;white-space:nowrap}
+#zg3Row .zg3-caps{display:flex;justify-content:center;align-items:flex-end;gap:7px;flex-wrap:wrap;max-width:100%}
+.zg3-cap{pointer-events:auto;width:66px;height:66px;border-radius:50%;border:3px solid rgba(60,30,0,.45);cursor:pointer;padding:0;overflow:hidden;box-shadow:0 8px 16px rgba(0,0,0,.45);position:relative;flex:0 0 auto;background:#fff;transition:box-shadow .25s}
+.zg3-cap img{width:100%;height:100%;object-fit:cover;display:block}
+.zg3-cap:hover{box-shadow:0 0 22px 7px rgba(255,230,150,.85),0 8px 16px rgba(0,0,0,.45)}
+.zg3-cap.gold{border-color:#b8860b;box-shadow:0 0 24px 8px rgba(255,200,40,.85),0 8px 16px rgba(0,0,0,.45)}
+.zg3-cap.zg3-sel{outline:4px solid #ffb300;outline-offset:1.5px}
+.zg3-cap.zg3-picked{box-shadow:0 0 44px 16px rgba(255,240,170,.98),0 0 90px 30px rgba(255,190,40,.55)!important;animation:zg3picked .13s linear infinite;z-index:15}
+@keyframes zg3picked{0%{transform:translate(0,0) rotate(-2.4deg) scale(1.14)}25%{transform:translate(2.5px,-2px) rotate(2.2deg) scale(1.18)}50%{transform:translate(-2.5px,1.5px) rotate(-2deg) scale(1.13)}75%{transform:translate(2px,2px) rotate(2.4deg) scale(1.17)}100%{transform:translate(0,0) rotate(-2.4deg) scale(1.14)}}
+.zg3-confetti{position:absolute;width:9px;height:14px;z-index:40;pointer-events:none;border-radius:2px}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__zg3) return; window.__zg3=1;
+function E(id){ return document.getElementById(id); }
+function on(){ return !!(window.ZKE_SND_ON&&window.ZKE_SND_ON()); }
+function P(n){ if(window.ZKE_PLAY) window.ZKE_PLAY(n); }
+var card=E("zgCard"), stage=E("zgStage"), ov=document.querySelector(".zg-overlay");
+if(!card||!stage||!ov) return;
+/* ================= ZG3 sound synth (thunder / explosion / sparkle) ================= */
+var ac3=null, master3=null, noiseB=null;
+function AC3(){
+  if(!ac3){
+    try{ ac3=new (window.AudioContext||window.webkitAudioContext)(); master3=ac3.createGain(); master3.gain.value=0.85; master3.connect(ac3.destination); }catch(e){ return null; }
+  }
+  if(ac3.state==="suspended") ac3.resume();
+  return ac3;
+}
+function getNoise(ac){
+  if(noiseB) return noiseB;
+  var len=ac.sampleRate*2, buf=ac.createBuffer(1,len,ac.sampleRate), d=buf.getChannelData(0);
+  for(var i=0;i<len;i++) d[i]=Math.random()*2-1;
+  noiseB=buf; return buf;
+}
+function thunder(){
+  if(!on()) return; var ac=AC3(); if(!ac) return; var t=ac.currentTime;
+  var crack=ac.createBufferSource(); crack.buffer=getNoise(ac);
+  var cf=ac.createBiquadFilter(); cf.type="highpass"; cf.frequency.value=750;
+  var cg=ac.createGain(); cg.gain.setValueAtTime(0.55,t); cg.gain.exponentialRampToValueAtTime(0.001,t+0.35);
+  crack.connect(cf); cf.connect(cg); cg.connect(master3); crack.start(t); crack.stop(t+0.4);
+  var rum=ac.createBufferSource(); rum.buffer=getNoise(ac); rum.playbackRate.value=0.5;
+  var rf=ac.createBiquadFilter(); rf.type="lowpass"; rf.frequency.setValueAtTime(320,t+0.06); rf.frequency.exponentialRampToValueAtTime(48,t+1.7);
+  var rg=ac.createGain(); rg.gain.setValueAtTime(0.0001,t+0.06); rg.gain.exponentialRampToValueAtTime(0.95,t+0.22); rg.gain.exponentialRampToValueAtTime(0.001,t+1.9);
+  rum.connect(rf); rf.connect(rg); rg.connect(master3); rum.start(t+0.06); rum.stop(t+2.0);
+}
+function explosion(vol){
+  if(!on()) return; var ac=AC3(); if(!ac) return; var t=ac.currentTime, v=vol||1;
+  var n=ac.createBufferSource(); n.buffer=getNoise(ac); n.playbackRate.value=0.7;
+  var f=ac.createBiquadFilter(); f.type="lowpass"; f.frequency.setValueAtTime(950,t); f.frequency.exponentialRampToValueAtTime(70,t+0.8);
+  var g=ac.createGain(); g.gain.setValueAtTime(0.9*v,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.9);
+  n.connect(f); f.connect(g); g.connect(master3); n.start(t); n.stop(t+1.0);
+  var o=ac.createOscillator(); o.type="sine"; o.frequency.setValueAtTime(150,t); o.frequency.exponentialRampToValueAtTime(30,t+0.65);
+  var og=ac.createGain(); og.gain.setValueAtTime(0.8*v,t); og.gain.exponentialRampToValueAtTime(0.001,t+0.7);
+  o.connect(og); og.connect(master3); o.start(t); o.stop(t+0.75);
+}
+function sparkleSnd(){
+  if(!on()) return; var ac=AC3(); if(!ac) return; var t=ac.currentTime;
+  [2093,2637,3136,3951].forEach(function(fr,i){
+    var o=ac.createOscillator(); o.type="sine"; o.frequency.value=fr;
+    var g=ac.createGain(); var st=t+i*0.055;
+    g.gain.setValueAtTime(0.0001,st); g.gain.exponentialRampToValueAtTime(0.16,st+0.02); g.gain.exponentialRampToValueAtTime(0.001,st+0.16);
+    o.connect(g); g.connect(master3); o.start(st); o.stop(st+0.2);
+  });
+}
+/* ================= lightning ================= */
+function strike(n,withSound){
+  for(var i=0;i<(n||1);i++){
+    (function(k){
+      setTimeout(function(){
+        var fl=document.createElement("div"); fl.className="zg3-flash";
+        card.appendChild(fl);
+        fl.animate([{opacity:0},{opacity:0.5,offset:0.12},{opacity:0.05,offset:0.3},{opacity:0.34,offset:0.45},{opacity:0}],{duration:430,easing:"steps(6)"});
+        setTimeout(function(){ if(fl.parentNode) fl.parentNode.removeChild(fl); },480);
+        var b=document.createElement("div"); b.className="zg3-bolt";
+        b.style.left=(8+Math.random()*76)+"%";
+        b.style.height=(44+Math.random()*22)+"%";
+        card.appendChild(b);
+        b.animate([{opacity:0},{opacity:1,offset:0.15},{opacity:0.15,offset:0.4},{opacity:0.95,offset:0.55},{opacity:0}],{duration:460,easing:"steps(5)"});
+        setTimeout(function(){ if(b.parentNode) b.parentNode.removeChild(b); },520);
+      },k*190);
+    })(i);
+  }
+  if(withSound) setTimeout(thunder,240);
+}
+/* ================= room / shine / sparkles ================= */
+var shine=document.createElement("div"); shine.className="zg3-shine"; stage.appendChild(shine);
+var sparkTimer=null, stormTimer=null;
+function coinSparkles(){
+  var coin=E("zgCoin"); if(!coin||!stage.contains(coin)) return;
+  var sr=stage.getBoundingClientRect(), cr=coin.getBoundingClientRect();
+  if(!cr.width) return;
+  var s=document.createElement("span"); s.className="zg3-spark"; s.textContent="✦";
+  s.style.left=(cr.left-sr.left+cr.width*(0.15+Math.random()*0.7))+"px";
+  s.style.top=(cr.top-sr.top-2)+"px";
+  s.style.setProperty("--dx",((Math.random()-0.5)*54)+"px");
+  s.style.fontSize=(11+Math.random()*11)+"px";
+  stage.appendChild(s);
+  setTimeout(function(){ if(s.parentNode) s.parentNode.removeChild(s); },1000);
+}
+function startAmbience(){
+  if(sparkTimer) return;
+  sparkTimer=setInterval(coinSparkles,330);
+  var loop=function(){
+    stormTimer=setTimeout(function(){
+      if(ov.classList.contains("open")&&stage.classList.contains("zg3-live")&&Math.random()<0.6) strike(1,true);
+      loop();
+    },4200+Math.random()*5200);
+  };
+  loop();
+}
+function stopAmbience(){
+  if(sparkTimer){ clearInterval(sparkTimer); sparkTimer=null; }
+  if(stormTimer){ clearTimeout(stormTimer); stormTimer=null; }
+}
+/* ================= wiring: coin / crank ================= */
+var coinBtn=E("zgCoinBtn");
+if(coinBtn) coinBtn.addEventListener("click",function(){
+  P("click"); sparkleSnd();
+  setTimeout(function(){ stage.classList.add("zg3-live"); },1150);
+  setTimeout(function(){ strike(1,true); },1500);
+});
+function crankFx(){
+  strike(2,true);
+  setTimeout(function(){ explosion(0.9); },1120);
+}
+var crankBtn=E("zgCrankBtn"), handle=E("zgHandle");
+if(crankBtn) crankBtn.addEventListener("click",crankFx);
+if(handle) handle.addEventListener("click",crankFx);
+/* ================= reveal ================= */
+var PALETTE=["#ff5d5d","#ffd93d","#6bcbef","#c77dff","#7bf1a8","#ff9f43"];
+var revealing=false;
+function confetti3(){
+  for(var i=0;i<24;i++){
+    var s=document.createElement("span"); s.className="zg3-confetti";
+    s.style.background=PALETTE[i%PALETTE.length];
+    s.style.left="50%"; s.style.top="60%";
+    stage.appendChild(s);
+    var dx=(Math.random()-0.5)*300, dy=-(60+Math.random()*150), rot=(Math.random()-0.5)*640;
+    s.animate([{transform:"translate(0,0) rotate(0deg)",opacity:1},{transform:"translate("+dx+"px,"+(dy+210)+"px) rotate("+rot+"deg)",opacity:0}],{duration:1000+Math.random()*450,easing:"cubic-bezier(.2,.7,.3,1)"});
+    (function(node){ setTimeout(function(){ if(node.parentNode) node.parentNode.removeChild(node); },1550); })(s);
+  }
+}
+function pickReveal(it,el){
+  if(revealing) return; revealing=true;
+  document.querySelectorAll(".zg3-cap.zg3-sel").forEach(function(x){ x.classList.remove("zg3-sel"); });
+  el.classList.add("zg3-sel","zg3-picked");
+  sparkleSnd();
+  var n=0, iv=95;
+  (function tick(){
+    P("click"); n++;
+    if(n<9){ iv=Math.max(36,iv-10); setTimeout(tick,iv); return; }
+    explosion(1); strike(2,false);
+    if(window.ZKE_FANFARE) window.ZKE_FANFARE(); else P("chime");
+    var R=E("zgReveal");
+    if(R){
+      var ri=E("zgRImg");
+      if(it.img){ ri.style.display=""; ri.src=it.img; } else ri.style.display="none";
+      E("zgRTitle").textContent="No."+it.no+" 『"+it.title+"』";
+      E("zgRMeta").textContent="ゼンカンガシャで選ばれました";
+      var w=E("zgRWatch"); if(w&&it.url) w.setAttribute("href",it.url);
+      R.classList.add("open");
+      confetti3();
+      R.scrollIntoView({behavior:"smooth",block:"nearest"});
+    }
+    setTimeout(function(){ el.classList.remove("zg3-picked"); },1700);
+    revealing=false;
+  })();
+}
+/* ================= tray: every capsule appears at the outlet first ================= */
+window.ZKE_TRAY=function(){
+  ["zgTray","zgFrontRow","zg2Row","zg3Row"].forEach(function(id){ var n=E(id); if(n) n.remove(); });
+  var drawn=window.__zgDrawn||[]; if(!drawn.length) return;
+  var row=document.createElement("div"); row.id="zg3Row";
+  var lab=document.createElement("div"); lab.className="zg3-label"; lab.textContent="出たカプセル（タップで開ける）";
+  row.appendChild(lab);
+  var caps=document.createElement("div"); caps.className="zg3-caps"; row.appendChild(caps);
+  stage.appendChild(row);
+  drawn.forEach(function(it,idx){
+    setTimeout(function(){
+      /* bump capsules already at the front */
+      [].forEach.call(caps.children,function(c){
+        c.animate([{transform:"translateX(0)"},{transform:"translateX(17px) rotate(7deg)",offset:.4},{transform:"translateX(0)"}],{duration:320,easing:"ease-out"});
+      });
+      var el=document.createElement("button"); el.type="button"; el.className="zg3-out"; el.title="カプセル";
+      el.style.background="linear-gradient(180deg,"+PALETTE[idx%PALETTE.length]+" 50%,"+PALETTE[(idx+2)%PALETTE.length]+" 50%)";
+      if(it.img){ var im=document.createElement("img"); im.src=it.img; im.alt=""; el.appendChild(im); }
+      stage.appendChild(el);
+      P("drop"); explosion(0.55);
+      if(idx===0) strike(1,true);
+      setTimeout(function(){
+        var r1=el.getBoundingClientRect();
+        el.classList.remove("zg3-out"); el.classList.add("zg3-cap");
+        if(Math.random()<0.15) el.classList.add("gold");
+        el.style.position="relative"; el.style.left=""; el.style.top="";
+        caps.insertBefore(el,caps.firstChild);
+        var r2=el.getBoundingClientRect();
+        var dx=r1.left-r2.left, dy=r1.top-r2.top;
+        el.style.transform="translate("+dx+"px,"+dy+"px) rotate(-150deg) scale(1.3)";
+        el.style.transition="none";
+        requestAnimationFrame(function(){
+          el.style.transition="transform .58s cubic-bezier(.3,.7,.4,1)";
+          el.style.transform="translate(0,0) rotate(0deg) scale(1.1)";
+          setTimeout(function(){ el.style.transition=""; el.style.transform=""; },640);
+        });
+        P("clatter");
+        el.addEventListener("click",function(){ pickReveal(it,el); });
+        if(idx===drawn.length-1){
+          setTimeout(function(){ if(window.ZKE_BGM_RANDOM) window.ZKE_BGM_RANDOM(); },700);
+        }
+      },640);
+    }, 320+idx*1400);
+  });
+};
+/* ================= overlay lifecycle ================= */
+var wasOpen=ov.classList.contains("open");
+new MutationObserver(function(){
+  var now=ov.classList.contains("open");
+  if(now===wasOpen) return; wasOpen=now;
+  if(now){
+    card.classList.add("zg3-room");
+    startAmbience();
+    setTimeout(function(){ if(window.ZKE_BGM_RANDOM) window.ZKE_BGM_RANDOM(); },900);
+  } else {
+    card.classList.remove("zg3-room");
+    stage.classList.remove("zg3-live");
+    stopAmbience();
+    var r=E("zg3Row"); if(r) r.remove();
+  }
+}).observe(ov,{attributes:true,attributeFilter:["class"]});
+var again=E("zgRAgain");
+if(again) again.addEventListener("click",function(){
+  stage.classList.remove("zg3-live");
+  var r=E("zg3Row"); if(r) r.remove();
+});
+/* ================= SFX everywhere (when sound is ON) ================= */
+document.addEventListener("click",function(e){
+  if(!on()) return;
+  var t=e.target;
+  if(!t.closest) return;
+  if(t.closest("#nbPgPrev,#nbPgNext,#nbEdgePrev,#nbEdgeNext")) P("page");
+  else if(t.closest(".nb-all-btn,.nb-ic")) P("whoosh");
+  else if(t.closest("#nbCoverBook")) P("page");
+  else if(t.closest("#nb6Pencil")) P("pop");
+  else if(t.closest("#chokoImg2")) P("pop");
+  else if(t.closest("#nb7AskBtn")) P("pop");
+  else if(t.closest(".car-item")) P("pop");
+  else if(t.closest("#zgRAgain")) P("whoosh");
+},true);
 })();
 </script>
 
