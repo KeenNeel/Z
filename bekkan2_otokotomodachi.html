@@ -265,7 +265,7 @@ function nbSet(){
   });
   return notes;
 }
-function nbPageCount(set){ var c=1; set.forEach(function(n){ if(n._pg>c) c=n._pg; }); if(nbWrite.page>c) c=nbWrite.page; return c; }
+function nbPageCount(set){ var c=1; set.forEach(function(n){ if(n._pg>c) c=n._pg; }); if(nbWrite.page>c) c=nbWrite.page; if(window.__nbFloor&&window.__nbFloor>c) c=window.__nbFloor; return c; }
 function nbParseStyle(n){ try{ var o=JSON.parse(n.style||""); return (o&&typeof o==="object")?o:{}; }catch(e){ return {}; } }
 function nbIsMine(n){ try{ var my=(el("nbName").value||localStorage.getItem("zkeNick")||localStorage.getItem("nbName")||"").trim(); return !!my && !!n.name && String(n.name).trim()===my; }catch(e){ return false; } }
 function nbCard(n){
@@ -305,10 +305,10 @@ function nbRenderPage(){
   if(!here.length){ var em=document.createElement("div"); em.className="nb-empty"; em.textContent="このページはまだ白紙です"; page.appendChild(em); }
   here.forEach(function(n){ var c=nbCard(n); if(nbJustWroteId && n.id===nbJustWroteId) c.classList.add("nb-new"); page.appendChild(c); });
   el("nbPgInfo").textContent=nbPageCur+" ページ目 ／ 全 "+count+" ページ（全 "+set.length+" 件）";
-  el("nbPgPrev").disabled=(nbPageCur<=1);
-  el("nbPgNext").disabled=(nbPageCur>=count);
-  el("nbEdgePrev").disabled=(nbPageCur<=1);
-  el("nbEdgeNext").disabled=(nbPageCur>=count);
+  el("nbPgPrev").disabled=false;
+  el("nbPgNext").disabled=false;
+  el("nbEdgePrev").disabled=false;
+  el("nbEdgeNext").disabled=false;
   var mk=el("nbMarker");
   if(nbMovePost){ mk.style.display="none"; }
   else if(nbWrite.page===nbPageCur && nbWrite.x!=null){ mk.style.display=""; mk.style.left=nbWrite.x+"%"; mk.style.top=nbWrite.y+"%"; }
@@ -848,7 +848,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻2 ― 『男ともだち』（v47）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻2 ― 『男ともだち』（v49）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -1256,7 +1256,31 @@ new MutationObserver(function(){
   if(t!==lastPgInfo){ var first=!lastPgInfo; lastPgInfo=t; if(!first) armPick(); }
 }).observe(E("nbPgInfo"),{childList:true,characterData:true,subtree:true});
 ["nbPgPrev","nbPgNext","nbEdgePrev","nbEdgeNext"].forEach(function(id){
-  E(id).addEventListener("click",function(){ hideArrow(); setTimeout(function(){ chokoSay(curPageNum()+"ページ目だよ。<br>書く場所をページ上でクリック／タップしてね。入力窓が開くよ。","stand"); },200); });
+  E(id).addEventListener("click",function(){
+    hideArrow();
+    var before=curPageNum(), isPrev=(id==="nbPgPrev"||id==="nbEdgePrev");
+    setTimeout(function(){
+      var now=curPageNum();
+      var info=E("nbPgInfo")?E("nbPgInfo").textContent:"";
+      var tm=/\u5168\s*(\d+)\s*ページ/.exec(info); var total=tm?+tm[1]:now;
+      if(isPrev && now===before && now<=1){
+        chokoSay("1ページ目だよ。<br>これ以上前には戻れないよ。","stand"); setBtns([]); return;
+      }
+      if(!isPrev && now===before && now>=total){
+        chokoSay(now+"ページ目が最後のページだよ。<br>新しいページを作る？","wave");
+        setBtns([
+          {label:"📄 新しいページを作る",fn:function(){
+             var nf=now+1; window.__nbFloor=nf; try{ localStorage.setItem("zkeNbFloor",String(nf)); }catch(e){}
+             var nx=E("nbPgNext"); if(nx) nx.click();
+             setTimeout(function(){ chokoSay(nf+"ページ目を作ったよ！<br>書く場所をクリック／タップしてね。何か書くとページが残るよ。","jump"); setBtns([]); },260);
+          }},
+          {label:"やめておく",sub:true,fn:function(){ chokoSay("わかった、このページでいいよ。","stand"); setBtns([]); }}
+        ]);
+        return;
+      }
+      chokoSay(now+"ページ目だよ。<br>書く場所をページ上でクリック／タップしてね。入力窓が開くよ。","stand"); setBtns([]);
+    },220);
+  });
 });
 /* ================= choko ================= */
 var root=document.createElement("div");
@@ -1271,11 +1295,12 @@ try{ chokoOn=localStorage.getItem("zkeChoko")!=="0"; }catch(e){}
 var toggleBtn=document.createElement("button");
 toggleBtn.type="button"; toggleBtn.className="choko-toggle";
 var head=ov.querySelector(".nb-head"), closeBtn=E("nbClose");
-if(head&&closeBtn) head.insertBefore(toggleBtn,closeBtn);
+var menu=document.querySelector(".bar-right")||document.querySelector(".volbar");
+if(menu) menu.appendChild(toggleBtn); else if(head&&closeBtn) head.insertBefore(toggleBtn,closeBtn);
 function refreshChokoVis(){
   toggleBtn.textContent=chokoOn?"🐱 チョウ子 ON":"🐱 チョウ子 OFF";
   toggleBtn.classList.toggle("off",!chokoOn);
-  root.classList.toggle("on",chokoOn&&ov.classList.contains("open"));
+  root.classList.toggle("on",chokoOn);
   root.classList.toggle("flip",root.offsetTop>0&&root.offsetTop<330);
 }
 toggleBtn.addEventListener("click",function(){
@@ -1322,7 +1347,7 @@ function setBtns(list){
   });
 })();
 var TALK_LINES=["チョウ子はいつも帳面の味方だよ。","映画の話、聞かせてね。チョウ子は8ミリの音が好き。","今日のページ、なんだかワクワクするね。","書き込みは短くても大丈夫。気持ちが大事！","チョウ子、ただいま絶好調にガイド中。"];
-var TIPS=["小ネタ：全関映の創立は1969年ごろと伝わっています（諸説あり）。","小ネタ：8ミリフィルムは1フィート約72コマ。3分半の作品で約50フィートです。","小ネタ：『ハワイに行きたし金はなし』はこのアーカイブの1-1。タイトルは「行きたし」が正解。","小ネタ：おみくじは全100種。巻物で結果が出るよ。","小ネタ：ガチャは最大500円分まで連続で回せます。","小ネタ：@名前 と書くとメンバーにメンションできます。候補も出ます。","小ネタ：写真はテキスト欄に貼り付け（Ctrl+V）でも添付できます。","小ネタ：手書きメモには落款代わりのサインを描く人もいます。","小ネタ：カルーセルの音楽はスピーカーONで流れます。ジャンルも選べます。","小ネタ：三島有紀子監督『男ともだち』は別巻2に特集があります。"];
+var TIPS=["小ネタ：全関映の創立は1969年ごろと伝わっています（諸説あり）。","小ネタ：8ミリフィルムは1フィート約72コマ。3分半の作品で約50フィートです。","小ネタ：『ハワイに行きたし金はなし』はこのアーカイブの1-1。タイトルは「行きたし」が正解。","小ネタ：カルーセルの音楽は、MyDAWの音色がベースだよ。","小ネタ：ガチャは最大500円分まで連続で回せます。","小ネタ：@名前 と書くとメンバーにメンションできます。候補も出ます。","小ネタ：写真はテキスト欄に貼り付け（Ctrl+V）でも添付できます。","小ネタ：手書きメモには落款代わりのサインを描く人もいます。","小ネタ：カルーセルの音楽はスピーカーONで流れます。ジャンルも選べます。","小ネタ：三島有紀子監督『男ともだち』は別巻2に特集があります。"];
 var TIPS_SERVER=[];
 function tipPool(){ return TIPS_SERVER.length?TIPS_SERVER.concat(TIPS):TIPS; }
 function fetchTips(){
@@ -1595,6 +1620,390 @@ window.NB_REP_FLAG="data:image/webp;base64,UklGRmIIAABXRUJQVlA4WAoAAAAQAAAAfwAAf
     if(!/youtube\.com|youtu\.be|facebook\.com|script\.google\.com/.test(href)) return;
     if(window.ZKE_SND_ON&&window.ZKE_SND_ON()){ var b=document.querySelector(".snd-btn"); if(b) b.click(); }
   },true);
+})();
+</script>
+
+<style id="v48style">
+/* ===== v48: auth dialogs front-most + noticeable; choko above notebook, gate above all ===== */
+.nb-overlay{z-index:999950!important}
+#chokoRoot{z-index:999970!important}
+#pgModal{z-index:999985!important}
+#nickModal{z-index:999985!important}
+#zkeGateModal>div{border:3px solid #d9a441!important;animation:authPulse 1.1s ease-in-out infinite}
+#pgModal .nb-panel{border:3px solid #d9a441;animation:authPulse 1.1s ease-in-out infinite}
+@keyframes authPulse{0%,100%{box-shadow:0 0 0 0 rgba(217,164,65,.55),0 18px 50px rgba(0,0,0,.5)}50%{box-shadow:0 0 0 18px rgba(217,164,65,0),0 18px 50px rgba(0,0,0,.5)}}
+</style>
+<style id="music4style">
+#showBtn{display:none!important}
+.zke-toolbar{display:flex;gap:6px;justify-content:center;align-items:center;flex-wrap:wrap;margin:3px auto 0;padding:0 4px}
+.zke-toolbar .ca-btn,.zke-toolbar #recoBtn{padding:4px 11px!important;font-size:12.5px!important;border-radius:999px!important;margin:0!important}
+.zke-toolbar .ctl-bgm{display:inline-flex;align-items:center;gap:4px;font-weight:700;font-size:12px;color:#5a4a2a}
+.zke-toolbar select{font-size:12px;padding:3px 6px;border-radius:8px;max-width:168px}
+.ctl-wrap{display:none!important}
+#recoPanel{margin-top:4px!important}
+</style>
+<script>
+(function(){
+"use strict";
+/* ===== v48 MUSIC4: fully composed genre loops, MyDAW voices + Karplus-Strong, cross-page continuity ===== */
+var API="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec";
+function gateCode(){ try{ return sessionStorage.getItem("zkeGateCode")||""; }catch(e){ return ""; } }
+function sndOn(){ return typeof window.ZKE_SND_ON==="function" ? !!window.ZKE_SND_ON() : false; }
+function jsonp(params,cb){
+  var cbn="__mu4cb"+Math.random().toString(36).slice(2,9), done=false;
+  var timer=setTimeout(function(){ if(!done){ done=true; cb(new Error("t")); } },10000);
+  window[cbn]=function(d){ if(done) return; done=true; clearTimeout(timer); cb(null,d); try{ delete window[cbn]; }catch(e){} };
+  var qs=Object.keys(params).map(function(k){ return k+"="+encodeURIComponent(params[k]); }).join("&");
+  var s=document.createElement("script"); s.src=API+"?"+qs+"&callback="+cbn;
+  s.onerror=function(){ if(!done){ done=true; clearTimeout(timer); cb(new Error("e")); } };
+  document.head.appendChild(s);
+}
+/* ---------- audio graph ---------- */
+var AC=null, master=null, revIn=null, dlyIn=null, noiseBuf=null;
+function ctx(){
+  if(AC) return AC;
+  var C=window.AudioContext||window.webkitAudioContext; AC=new C();
+  master=AC.createGain(); master.gain.value=.9;
+  var comp=AC.createDynamicsCompressor(); comp.threshold.value=-15; comp.knee.value=18; comp.ratio.value=4; comp.attack.value=.004; comp.release.value=.18;
+  master.connect(comp); comp.connect(AC.destination);
+  var len=Math.floor(AC.sampleRate*2.8), ir=AC.createBuffer(2,len,AC.sampleRate);
+  for(var ch=0;ch<2;ch++){ var d=ir.getChannelData(ch); for(var i=0;i<len;i++){ d[i]=(Math.random()*2-1)*Math.pow(1-i/len,2.7)*.5; } }
+  var conv=AC.createConvolver(); conv.buffer=ir;
+  var rg=AC.createGain(); rg.gain.value=.5; conv.connect(rg); rg.connect(master);
+  revIn=AC.createGain(); revIn.connect(conv);
+  var dly=AC.createDelay(1); dly.delayTime.value=.27;
+  var fb=AC.createGain(); fb.gain.value=.3; var dw=AC.createGain(); dw.gain.value=.15;
+  dly.connect(fb); fb.connect(dly); dly.connect(dw); dw.connect(master);
+  dlyIn=AC.createGain(); dlyIn.connect(dly);
+  noiseBuf=AC.createBuffer(1,AC.sampleRate*0.5,AC.sampleRate);
+  var nd=noiseBuf.getChannelData(0); for(var j=0;j<nd.length;j++) nd[j]=Math.random()*2-1;
+  return AC;
+}
+/* ---------- MyDAW tone table ---------- */
+var TONES={
+  piano:  {w:'triangle',a:.004,d:.7, s:.12,r:.35,f:3800,g:.55,rev:.16},
+  epiano: {w:'sine',    a:.004,d:.9, s:.25,r:.4, f:6000,g:.6, rev:.22,dly:.05,trem:4.6},
+  organ:  {w:'square',  a:.01, d:.05,s:.8, r:.1, f:1800,g:.22,rev:.12},
+  saw:    {w:'sawtooth',a:.01, d:.2, s:.6, r:.2, f:3200,g:.26,rev:.14},
+  pad:    {w:'sawtooth',det:9,  a:.6, d:.5, s:.7, r:1.2,f:1200,g:.18,rev:.36},
+  pluck:  {w:'square',  a:.002,d:.22,s:0,  r:.1, f:2600,g:.28,rev:.12,dly:.06},
+  subbass:{w:'sine',    a:.01, d:.3, s:.8, r:.15,f:700, g:.75,rev:.03},
+  sawbass:{w:'sawtooth',a:.005,d:.2, s:.5, r:.12,f:800, g:.4, rev:.04},
+  strings:{w:'sawtooth',det:8,  a:.35,d:.3, s:.8, r:.6, f:2000,g:.17,rev:.32},
+  brass:  {w:'sawtooth',a:.07, d:.2, s:.7, r:.15,f:1800,g:.24,rev:.14},
+  bell:   {w:'sine',partial:2.76,a:.002,d:1.6,s:0,r:.6,f:9000,g:.35,rev:.3, dly:.08}
+};
+function mf(m){ return 440*Math.pow(2,(m-69)/12); }
+function voice(midi,tn,when,dur,vel){
+  var T=TONES[tn]; if(!T||!AC) return;
+  var f=mf(midi);
+  var out=AC.createGain(), lp=AC.createBiquadFilter();
+  lp.type='lowpass'; lp.frequency.value=Math.min(T.f+f*2,16000); lp.Q.value=.4;
+  var oscs=[];
+  function mk(freq,det){ var o=AC.createOscillator(); o.type=T.w; o.frequency.value=freq; if(det) o.detune.value=det; o.connect(lp); oscs.push(o); }
+  mk(f); if(T.det){ mk(f,T.det); mk(f,-T.det); } if(T.partial) mk(f*T.partial);
+  var dest=out;
+  if(T.trem){ var tg=AC.createGain(); tg.gain.value=.86; var lfo=AC.createOscillator(), lg=AC.createGain(); lfo.frequency.value=T.trem; lg.gain.value=.14; lfo.connect(lg); lg.connect(tg.gain); lp.connect(tg); tg.connect(out); oscs.push(lfo); }
+  else lp.connect(out);
+  out.connect(master);
+  if(T.rev){ var rs=AC.createGain(); rs.gain.value=T.rev; out.connect(rs); rs.connect(revIn); }
+  if(T.dly){ var ds=AC.createGain(); ds.gain.value=T.dly; out.connect(ds); ds.connect(dlyIn); }
+  if(tn==='piano'){ var so=AC.createOscillator(), sg=AC.createGain(); so.type='sine'; so.frequency.value=f/2; sg.gain.value=.1; so.connect(sg); sg.connect(master); so.start(when); so.stop(when+Math.max(dur,.3)+.4); }
+  var peak=T.g*(vel==null?.8:vel)*(T.det?.6:1), g=out.gain, rel=when+Math.max(dur,.06);
+  g.setValueAtTime(0,when);
+  g.linearRampToValueAtTime(peak,when+T.a);
+  g.setTargetAtTime(peak*T.s,when+T.a,T.d/3);
+  g.setTargetAtTime(0,rel,T.r/3);
+  var stop=rel+T.r*1.6+.1;
+  oscs.forEach(function(o){ o.start(when); o.stop(stop); });
+}
+/* ---------- Karplus-Strong plucked string (guitar / sanshin) ---------- */
+var ksCache={};
+function ksBuffer(midi){
+  if(ksCache[midi]) return ksCache[midi];
+  var sr=AC.sampleRate, f=mf(midi), N=Math.max(2,Math.round(sr/f)), dur=1.1, len=Math.floor(sr*dur);
+  var buf=AC.createBuffer(1,len,sr), d=buf.getChannelData(0), ring=new Float32Array(N), i, idx=0;
+  for(i=0;i<N;i++) ring[i]=Math.random()*2-1;
+  var damp=.996-Math.min(.012,(f-80)/9000);
+  for(i=0;i<len;i++){ var cur=ring[idx]; d[i]=cur; var nxt=ring[(idx+1)%N]; ring[idx]=damp*.5*(cur+nxt); idx=(idx+1)%N; }
+  ksCache[midi]=buf; return buf;
+}
+function ksPlay(midi,when,dur,vel){
+  if(!AC) return;
+  var src=AC.createBufferSource(); src.buffer=ksBuffer(midi);
+  var lp=AC.createBiquadFilter(); lp.type='lowpass'; lp.frequency.value=Math.min(1200+mf(midi)*2.2,9000);
+  var g=AC.createGain(); var peak=.5*(vel==null?.8:vel), rel=when+Math.max(dur,.15);
+  g.gain.setValueAtTime(peak,when); g.gain.setTargetAtTime(peak*.25,when+.02,.09); g.gain.setTargetAtTime(0,rel,.06);
+  src.connect(lp); lp.connect(g); g.connect(master);
+  var rs=AC.createGain(); rs.gain.value=.14; g.connect(rs); rs.connect(revIn);
+  src.start(when); src.stop(rel+.5);
+}
+function playTone(tn,midi,when,dur,vel){ if(tn==='ks') ksPlay(midi,when,dur,vel); else voice(midi,tn,when,dur,vel); }
+/* ---------- drums ---------- */
+function kick(t,v){
+  var o=AC.createOscillator(), g=AC.createGain(); o.type='sine';
+  o.frequency.setValueAtTime(132,t); o.frequency.exponentialRampToValueAtTime(43,t+.11);
+  g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.001,t+.24);
+  o.connect(g); g.connect(master); o.start(t); o.stop(t+.26);
+}
+function noiseHit(t,v,dur,ftype,ffreq){
+  var src=AC.createBufferSource(); src.buffer=noiseBuf;
+  var fl=AC.createBiquadFilter(); fl.type=ftype; fl.frequency.value=ffreq;
+  var g=AC.createGain(); g.gain.setValueAtTime(v,t); g.gain.exponentialRampToValueAtTime(.001,t+dur);
+  src.connect(fl); fl.connect(g); g.connect(master); src.start(t); src.stop(t+dur+.02);
+}
+function snare(t,v){ noiseHit(t,v,.13,'bandpass',1900); var o=AC.createOscillator(),g=AC.createGain(); o.type='triangle'; o.frequency.value=192; g.gain.setValueAtTime(v*.5,t); g.gain.exponentialRampToValueAtTime(.001,t+.08); o.connect(g); g.connect(master); o.start(t); o.stop(t+.1); }
+function hat(t,v,open){ noiseHit(t,v,open?.22:.05,'highpass',7800); }
+/* ---------- composed songs: mel = [step(0..31), degree(1-based), lenSteps, vel] ---------- */
+var QUALS={maj:[0,4,7],min:[0,3,7],maj7:[0,4,7,11],m7:[0,3,7,10],dom7:[0,4,7,10]};
+var MAJ=[0,2,4,5,7,9,11], MIN=[0,2,3,5,7,8,10], RYU=[0,4,5,7,11];
+var SONGS={
+  orgelSynth:{bpm:96,root:72,scale:MAJ,prog:[[0,'maj7'],[7,'maj7'],[9,'m7'],[5,'maj7']],melTone:'bell',chordTone:'epiano',chordPat:'block0',bassPat:'long',bassTone:'epiano',drums:{},
+    mel:[[0,5,2,.5],[2,4,1,.44],[3,5,1,.44],[4,6,2,.5],[6,5,1,.44],[7,4,1,.44],[8,3,2,.5],[10,4,1,.44],[11,3,1,.42],[12,2,3,.5],[16,3,2,.48],[18,4,1,.44],[19,5,1,.44],[20,6,2,.5],[22,5,1,.44],[23,4,1,.44],[24,3,2,.5],[26,2,1,.42],[27,3,1,.44],[28,1,4,.55]]},
+  piano:{bpm:84,root:60,scale:MAJ,prog:[[0,'maj7'],[9,'m7'],[5,'maj7'],[7,'dom7']],melTone:'piano',chordTone:'piano',chordPat:'arp',bassPat:'root5',bassTone:'piano',drums:{},
+    mel:[[0,5,2,.5],[2,4,1,.45],[3,3,1,.45],[4,2,2,.5],[6,3,2,.45],[8,4,2,.5],[10,5,1,.45],[11,4,1,.4],[12,3,3,.5],[16,2,2,.45],[18,3,1,.4],[19,4,1,.45],[20,5,2,.5],[22,4,2,.45],[24,3,2,.5],[26,2,1,.45],[27,1,1,.4],[28,1,4,.55]]},
+  jazz:{bpm:112,root:53,scale:MAJ,prog:[[0,'maj7'],[9,'m7'],[2,'m7'],[7,'dom7']],melTone:'piano',chordTone:'piano',chordPat:'comp',bassPat:'walk',bassTone:'subbass',swing:.16,
+    drums:{H:[0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30],S:[4,12,20,28],K:[0,8,16,24]},
+    mel:[[0,5,1,.46],[1,4,1,.4],[2,3,1,.42],[3,4,1,.4],[4,6,2,.5],[6,5,1,.42],[7,4,1,.4],[8,3,2,.48],[10,2,1,.4],[11,3,1,.42],[12,4,2,.48],[14,5,1,.42],[15,6,1,.44],[16,7,2,.5],[18,6,1,.42],[19,5,1,.42],[20,4,1,.4],[21,3,1,.4],[22,2,2,.46],[24,3,1,.42],[25,4,1,.42],[26,5,1,.44],[27,6,1,.44],[28,7,3,.52]]},
+  rock:{bpm:122,root:45,scale:MIN,prog:[[0,'min'],[8,'maj'],[3,'maj'],[10,'maj']],melTone:'saw',chordTone:'pluck',chordPat:'stab',bassPat:'eight',bassTone:'sawbass',
+    drums:{K:[0,8,16,24],S:[4,12,20,28],H:[0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26,27,28,29,30,31]},
+    mel:[[0,1,1,.5],[2,1,1,.46],[4,3,1,.5],[6,1,1,.46],[8,4,2,.54],[10,3,1,.46],[12,1,2,.5],[16,1,1,.5],[18,1,1,.46],[20,3,1,.5],[22,4,1,.5],[24,5,2,.56],[26,4,1,.48],[27,3,1,.46],[28,2,3,.52]]},
+  country:{bpm:108,root:55,scale:MAJ,prog:[[0,'maj'],[5,'maj'],[7,'maj'],[0,'maj']],melTone:'ks',chordTone:'pluck',chordPat:'chick',bassPat:'boom',bassTone:'piano',
+    drums:{K:[0,8,16,24],H:[1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31]},
+    mel:[[0,3,2,.55],[2,2,1,.5],[4,1,2,.55],[6,2,1,.5],[8,3,2,.55],[10,4,1,.5],[12,5,2,.58],[14,4,1,.5],[16,3,2,.55],[18,2,1,.5],[20,1,2,.55],[22,2,1,.5],[24,3,3,.6],[27,2,1,.5],[28,1,3,.58]]},
+  techno:{bpm:128,root:45,scale:MIN,prog:[[0,'min'],[0,'min'],[8,'maj'],[10,'maj']],melTone:'saw',chordTone:'pad',chordPat:'padbar',bassPat:'offbeat',bassTone:'subbass',arp:true,
+    drums:{K:[0,4,8,12,16,20,24,28],Ho:[2,6,10,14,18,22,26,30],S:[4,12,20,28]},
+    mel:[[0,8,2,.3],[8,7,2,.3],[16,8,2,.3],[24,10,2,.32]]},
+  okinawa:{bpm:96,root:62,scale:RYU,prog:[[0,'maj'],[5,'maj'],[7,'maj'],[0,'maj']],melTone:'ks',chordTone:'epiano',chordPat:'block0',bassPat:'sanshin',bassTone:'subbass',drums:{},
+    mel:[[0,3,2,.6],[2,2,1,.52],[3,3,1,.52],[4,4,2,.6],[6,3,1,.52],[8,2,2,.58],[10,1,1,.5],[11,2,1,.52],[12,3,3,.62],[16,4,2,.6],[18,3,1,.52],[19,4,1,.54],[20,5,2,.62],[22,4,1,.54],[24,3,2,.6],[26,2,1,.52],[28,1,4,.64]]},
+  bossa:{bpm:100,root:57,scale:MAJ,prog:[[0,'maj7'],[9,'m7'],[2,'m7'],[7,'dom7']],melTone:'pluck',chordTone:'epiano',chordPat:'bossa',bassPat:'bossaB',bassTone:'subbass',
+    drums:{H:[0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30],S:[6,14,22,30]},
+    mel:[[0,5,3,.4],[4,4,2,.36],[6,3,1,.34],[8,4,2,.38],[11,5,1,.36],[12,6,3,.42],[16,5,2,.4],[19,4,1,.34],[20,3,2,.38],[22,4,1,.36],[24,5,4,.44]]},
+  guitar:{bpm:96,root:57,scale:MAJ,prog:[[0,'maj7'],[9,'m7'],[5,'maj7'],[7,'dom7']],melTone:'ks',chordTone:'ks',chordPat:'arp',bassPat:'root5',bassTone:'ks',drums:{},
+    mel:[[0,5,2,.5],[4,4,2,.46],[8,3,2,.48],[12,4,2,.46],[16,5,2,.5],[20,6,2,.52],[24,5,2,.5],[28,4,3,.52]]},
+  pad:{bpm:72,root:60,scale:MAJ,prog:[[0,'maj7'],[9,'m7'],[5,'maj7'],[4,'maj7']],melTone:'epiano',chordTone:'pad',chordPat:'padlong',bassPat:'long',bassTone:'subbass',drums:{},
+    mel:[[0,5,6,.36],[8,4,6,.34],[16,3,6,.36],[24,4,6,.38]]}
+};
+var state={timer:null,mode:null,step:0,nextT:0,midi:null,midiIdx:0,midiStart:0,saveTimer:null};
+function hum(t,v){ return [t+(Math.random()-.5)*.009, v*(.92+Math.random()*.16)]; }
+function chordTones(g,ch){ var r=g.root+ch[0]; return QUALS[ch[1]].map(function(iv){ return r+iv; }); }
+function degMidi(g,d){ var L=g.scale.length; return g.root+12+g.scale[(d-1)%L]+12*Math.floor((d-1)/L); }
+function playStep(id,g,s,t){
+  var bar=Math.floor(s/8)%4, pos=s%8, ch=g.prog[bar], tones=chordTones(g,ch), bass=g.root-12+ch[0], sd=60/g.bpm/2;
+  var tt=t+((g.swing&&pos%2===1)?sd*g.swing:0);
+  /* melody (composed) */
+  for(var i=0;i<g.mel.length;i++){ var m=g.mel[i]; if(m[0]===s%32){ var hv=hum(tt,m[3]); playTone(g.melTone,degMidi(g,m[1]),hv[0],m[2]*sd*.95,hv[1]); } }
+  /* chords */
+  var cp=g.chordPat;
+  if(cp==='block0'){ if(pos===0){ tones.forEach(function(x){ playTone(g.chordTone,x,t,sd*7,.3); }); } }
+  else if(cp==='arp'){ var pat=[0,1,2,3,2,1,2,3]; playTone(g.chordTone,tones[pat[pos]%tones.length]+12,t,sd*1.6,.3); if(pos===0) tones.forEach(function(x){ voice(x,'epiano',t,sd*7,.07); }); }
+  else if(cp==='comp'){ if(pos===0||pos===3){ var hv2=hum(tt,.4); voice(tones[1],g.chordTone,hv2[0],sd*1.6,hv2[1]); voice(tones[tones.length-1],g.chordTone,tt,sd*1.6,.36); voice(tones[0]+12,g.chordTone,tt,sd*1.6,.3); } }
+  else if(cp==='stab'){ if(pos%2===1) tones.forEach(function(x){ playTone(g.chordTone,x,t,sd*.7,.26); }); }
+  else if(cp==='chick'){ if(pos===2||pos===6) tones.forEach(function(x){ playTone(g.chordTone,x,t,sd*1.2,.28); }); }
+  else if(cp==='bossa'){ if(pos===0||pos===3||pos===6) tones.forEach(function(x){ playTone(g.chordTone,x,t,sd*1.5,.27); }); }
+  else if(cp==='padbar'){ if(pos===0) tones.forEach(function(x){ voice(x,'pad',t,sd*8,.15); }); }
+  else if(cp==='padlong'){ if(pos===0&&bar%2===0) tones.forEach(function(x){ voice(x,'pad',t,sd*16,.26); voice(x+12,'strings',t,sd*16,.12); }); }
+  /* techno arp */
+  if(g.arp){ var ap=[0,1,2,3,2,1]; for(var k=0;k<2;k++){ voice(tones[ap[(pos*2+k)%6]%tones.length]+24,'saw',t+k*sd/2,sd*.42,.17); } }
+  /* bass */
+  var bp=g.bassPat, third=(ch[1]==='m7'||ch[1]==='min')?3:4;
+  if(bp==='root5'){ if(pos===0) playTone(g.bassTone,bass,t,sd*3,.5); if(pos===4) playTone(g.bassTone,bass+7,t,sd*2,.38); }
+  else if(bp==='walk'){ if(pos%2===0){ var wd=[0,third,7,(bar===3?11:9)][pos/2]; voice(bass+wd,'subbass',tt,sd*1.7,.5); } }
+  else if(bp==='eight'){ voice(bass,'sawbass',t,sd*.95,pos%2?.32:.42); }
+  else if(bp==='boom'){ if(pos===0||pos===4) playTone(g.bassTone,bass,t,sd*1.6,.48); }
+  else if(bp==='offbeat'){ if(pos%2===1) voice(bass,'subbass',t,sd*.9,.52); }
+  else if(bp==='long'){ if(pos===0) playTone(g.bassTone,bass,t,sd*7,.4); }
+  else if(bp==='sanshin'){ if(pos===0) voice(bass,'subbass',t,sd*6,.32); if(pos===4) voice(bass+7,'subbass',t,sd*2,.24); }
+  else if(bp==='bossaB'){ if(pos===0) voice(bass,'subbass',t,sd*2.4,.42); if(pos===3) voice(bass+7,'subbass',t,sd*1.6,.32); }
+  /* drums */
+  var dr=g.drums||{}, gs=s%32;
+  if(dr.K&&dr.K.indexOf(gs)>-1) kick(tt,id==='jazz'||id==='bossa'?.22:.75);
+  if(dr.S&&dr.S.indexOf(gs)>-1) snare(tt,id==='jazz'?.07:(id==='bossa'?.05:.45));
+  if(dr.H&&dr.H.indexOf(gs)>-1) hat(tt,id==='jazz'?.06:.1);
+  if(dr.Ho&&dr.Ho.indexOf(gs)>-1) hat(tt,.13,true);
+}
+function startSynth(id){
+  stopSynth(); stopMidi(); stopMp3();
+  var g=SONGS[id]; if(!g) g=SONGS.orgelSynth;
+  ctx(); if(AC.state==='suspended') AC.resume();
+  state.mode='synth'; state.step=0; state.nextT=AC.currentTime+0.08;
+  var sd=60/g.bpm/2;
+  state.timer=setInterval(function(){
+    while(state.nextT<AC.currentTime+0.18){
+      playStep(id,g,state.step,state.nextT);
+      state.nextT+=sd; state.step++;
+    }
+  },40);
+}
+function stopSynth(){ if(state.timer&&state.mode==='synth'){ clearInterval(state.timer); state.timer=null; } if(state.mode==='synth') state.mode=null; }
+/* ---------- MIDI ---------- */
+function startMidi(name){
+  stopSynth(); stopMidi(); stopMp3();
+  jsonp({action:'midi_get',code:gateCode(),name:name},function(err,d){
+    if(err||!d||!d.ok||!d.data) return;
+    var md; try{ md=JSON.parse(d.data); }catch(e){ return; }
+    if(!md.notes||!md.notes.length) return;
+    ctx(); if(AC.state==='suspended') AC.resume();
+    state.midi=md; state.midiIdx=0; state.mode='midi';
+    state.midiStart=AC.currentTime+0.1;
+    var spb=60/(md.bpm||96), loopBeats=md.len||16;
+    state.timer=setInterval(function(){
+      var horizon=AC.currentTime+0.2;
+      for(var guard=0;guard<2000;guard++){
+        var n=md.notes[state.midiIdx%md.notes.length];
+        var nt=state.midiStart+n[0]*spb;
+        if(nt>horizon) break;
+        if(nt>=AC.currentTime-0.05) voice(n[1],'piano',nt,n[2]*spb*1.05,(n[3]||80)/127*0.85);
+        state.midiIdx++;
+        if(state.midiIdx%md.notes.length===0) state.midiStart+=loopBeats*spb;
+      }
+    },40);
+  });
+}
+function stopMidi(){ if(state.mode==='midi'){ if(state.timer){ clearInterval(state.timer); state.timer=null; } state.mode=null; state.midi=null; } }
+function oldBgm(){ return typeof window.ZKE_OLD_BGM_GET==='function' ? window.ZKE_OLD_BGM_GET() : null; }
+function stopMp3(){ var a=oldBgm(); if(a) a.pause(); }
+/* ---------- selection + cross-page continuity ---------- */
+var GENRE_LABELS=[["orgel","ファンタジーオルゴール"],["orgelSynth","オルゴール（シンセ）"],["piano","ピアノソロ"],["jazz","ジャズ"],["rock","ロック"],["country","カントリー"],["techno","テクノ"],["okinawa","沖縄"],["bossa","ボサノバ"],["guitar","ギター"],["pad","パッド"]];
+var selVal='orgel'; try{ selVal=localStorage.getItem('zkeBgm')||'orgel'; }catch(e){}
+var seekTo=0;
+function saveState(on){
+  try{
+    if(!on){ sessionStorage.setItem('zkeMusicState', JSON.stringify({on:0})); return; }
+    var a=oldBgm();
+    sessionStorage.setItem('zkeMusicState', JSON.stringify({on:1, genre:selVal, t:(a&&state.mode==='mp3')?a.currentTime:0}));
+  }catch(e){}
+}
+function startSelected(){
+  stopSynth(); stopMidi(); stopMp3();
+  if(!sndOn()) return;
+  saveState(true);
+  if(selVal==='orgel'){
+    var a=oldBgm();
+    if(a){
+      if(seekTo>0){ try{ a.currentTime=seekTo; }catch(e){} seekTo=0; }
+      var p=a.play(); if(p&&p.catch) p.catch(function(){ startSynth('orgelSynth'); });
+      state.mode='mp3'; return;
+    }
+    startSynth('orgelSynth'); return;
+  }
+  if(selVal.indexOf('midi:')===0){ startMidi(selVal.slice(5)); return; }
+  startSynth(selVal);
+}
+window.ZKE_BGM_HOOK=function(on){
+  if(on){ ctx(); if(AC.state==='suspended') AC.resume(); startSelected(); }
+  else { stopSynth(); stopMidi(); stopMp3(); saveState(false); }
+};
+setInterval(function(){ if(state.mode==='mp3') saveState(true); },3000);
+window.addEventListener('pagehide',function(){ if(sndOn()) saveState(true); });
+/* resume after navigation: browsers require one tap on the new page */
+try{
+  var st=JSON.parse(sessionStorage.getItem('zkeMusicState')||'null');
+  if(st&&st.on){
+    if(st.genre){ selVal=st.genre; try{ localStorage.setItem('zkeBgm',selVal); }catch(e){} }
+    if(st.t) seekTo=st.t;
+    var resume=function(e){
+      document.removeEventListener('pointerdown',resume,true);
+      if(e.target&&e.target.closest&&e.target.closest('.snd-btn')) return;
+      if(!sndOn()){ var b=document.querySelector('.snd-btn'); if(b) b.click(); }
+    };
+    document.addEventListener('pointerdown',resume,true);
+  }
+}catch(e){}
+/* ---------- toolbar (main volume only) ---------- */
+function buildUI(midiNames){
+  var sec=document.getElementById('carouselSec');
+  if(!sec||document.getElementById('bgmSel')) return;
+  var bar=document.createElement('div'); bar.className='zke-toolbar';
+  var ctl=sec.querySelector('.ctl-wrap');
+  if(ctl) sec.insertBefore(bar,ctl); else sec.appendChild(bar);
+  var carBtn=null, lightBtn=null;
+  [].slice.call(sec.querySelectorAll('button')).forEach(function(b){
+    if(b.textContent.indexOf('別窓で開く')>-1) carBtn=b;
+    if(b.textContent.indexOf('ライトアップ')>-1) lightBtn=b;
+  });
+  if(carBtn) bar.appendChild(carBtn);
+  var wrap=document.createElement('span'); wrap.className='ctl-bgm';
+  wrap.innerHTML='<span aria-hidden="true">🎵</span><label for="bgmSel">音楽</label>';
+  var sel=document.createElement('select'); sel.id='bgmSel'; sel.title='カルーセルの音楽を選ぶ';
+  if(midiNames&&midiNames.length){
+    var og=document.createElement('optgroup'); og.label='オリジナルMIDI';
+    midiNames.forEach(function(nm){ var o=document.createElement('option'); o.value='midi:'+nm; o.textContent='🎵 '+nm; og.appendChild(o); });
+    sel.appendChild(og);
+  }
+  var og2=document.createElement('optgroup'); og2.label='アプリデフォルト';
+  GENRE_LABELS.forEach(function(g2){ var o=document.createElement('option'); o.value=g2[0]; o.textContent=g2[1]+'（アプリデフォ）'; og2.appendChild(o); });
+  sel.appendChild(og2);
+  sel.value=selVal; if(!sel.value) sel.value='orgel';
+  sel.addEventListener('change',function(){
+    selVal=sel.value;
+    try{ localStorage.setItem('zkeBgm',selVal); }catch(e){}
+    if(sndOn()) startSelected();
+  });
+  wrap.appendChild(sel); bar.appendChild(wrap);
+  if(lightBtn) bar.appendChild(lightBtn);
+  var recoBtn=document.getElementById('recoBtn'); if(recoBtn) bar.appendChild(recoBtn);
+  if(ctl) ctl.style.display='none';
+}
+function initUI(){
+  if(!document.getElementById('carouselSec')) return;
+  var c=gateCode();
+  if(c) jsonp({action:'midi_list',code:c},function(err,d){ buildUI(!err&&d&&d.ok?d.midis:null); });
+  else buildUI(null);
+}
+if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',initUI); else initUI();
+/* ---------- HQ sound effects / fanfare ---------- */
+var prevPlay=window.ZKE_PLAY;
+function hqPlay(name){
+  if(!AC||!sndOn()) return false;
+  var t=AC.currentTime+0.01;
+  if(name==='bell'||name==='chime'){ voice(88,'bell',t,1.4,.5); voice(93,'bell',t+0.09,1.6,.34); return true; }
+  if(name==='pop'){ ksPlay(76,t,.18,.5); return true; }
+  if(name==='coin'){ voice(83,'bell',t,.5,.4); voice(88,'bell',t+1*.07,1,.4); return true; }
+  return false;
+}
+window.ZKE_PLAY=function(name){
+  if(hqPlay(name)) return;
+  if(prevPlay) prevPlay(name);
+};
+var prevFanfare=window.ZKE_FANFARE;
+window.ZKE_FANFARE=function(){
+  if(!AC||!sndOn()){ if(prevFanfare) prevFanfare(); return; }
+  var t=AC.currentTime+0.02;
+  [60,64,67,72,76,79,84].forEach(function(m,i){ voice(m,'piano',t+i*0.085,1.6,.5); voice(m+12,'bell',t+i*0.085,1.8,.2); });
+  voice(88,'bell',t+0.65,2.2,.4);
+};
+/* ---------- shows on carousel interaction ---------- */
+var lastShow=0;
+function maybeShow(p){
+  var now=Date.now();
+  if(now-lastShow<6000||Math.random()>p) return;
+  lastShow=now;
+  if(window.ZKE_SHOW_NOW) window.ZKE_SHOW_NOW();
+}
+document.addEventListener('click',function(e){ if(e.target.closest('.car-item')) maybeShow(0.5); },true);
+var pdPos=null;
+document.addEventListener('pointerdown',function(e){ if(e.target.closest('#carViewport')) pdPos={x:e.clientX,y:e.clientY}; },true);
+document.addEventListener('pointerup',function(e){ if(pdPos&&Math.abs(e.clientX-pdPos.x)>50) maybeShow(0.75); pdPos=null; },true);
+})();
+</script>
+
+<style id="v49style">
+/* ===== v49: admin link at the bottom right ===== */
+.zke-admin-link{color:#8ea6bd!important;font-size:11px;text-decoration:none!important;margin-left:auto;padding:2px 6px}
+.zke-admin-link:hover{color:#fff!important;text-decoration:underline!important}
+</style>
+<script>
+(function(){
+  try{ window.__nbFloor=+localStorage.getItem("zkeNbFloor")||0; }catch(e){}
+  function addAdmin(){
+    if(document.querySelector('.zke-admin-link')) return;
+    var a=document.createElement('a'); a.href='zke_admin.html'; a.className='zke-admin-link'; a.textContent='admin';
+    var fb=document.querySelector('.footbar');
+    if(fb){ fb.appendChild(a); return; }
+    var d=document.createElement('div'); d.style.cssText='text-align:right;padding:10px 14px 26px'; d.appendChild(a); document.body.appendChild(d);
+  }
+  if(document.readyState==='loading') document.addEventListener('DOMContentLoaded',addAdmin); else addAdmin();
 })();
 </script>
 </body>
