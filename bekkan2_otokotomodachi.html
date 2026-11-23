@@ -848,7 +848,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻2 ― 『男ともだち』（v57）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻2 ― 『男ともだち』（v58）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -3563,6 +3563,118 @@ var nb8Obs=new MutationObserver(function(){
   }
 });
 setTimeout(function(){ var b=E("chokoBtns2"); if(b) nb8Obs.observe(b,{childList:true}); },2500);
+})();
+</script>
+
+<style id="nb9style">
+/* ===== v58 NB9: concierge spot guide — choko moves and points ===== */
+.zke-spot{outline:4px solid #ff2d2d!important;outline-offset:3px;animation:zkeSpotPulse .45s ease-in-out infinite alternate!important}
+@keyframes zkeSpotPulse{from{box-shadow:0 0 0 4px rgba(255,45,45,.35),0 0 20px 8px rgba(255,45,45,.6)}to{box-shadow:0 0 0 10px rgba(255,45,45,.5),0 0 48px 20px rgba(255,45,45,.95)}}
+.nb9-guides{display:flex;flex-wrap:wrap;gap:5px;padding:8px 12px 2px}
+.nb9-guides .nb9-g{border:1.5px solid #ffb300;background:#fff8ea;color:#7a4d00;border-radius:999px;padding:4px 10px;font-size:12px;font-weight:700;cursor:pointer}
+.nb9-guides .nb9-g:hover{background:#ffedb8}
+.nb9-cap{padding:6px 12px 0;font-size:11.5px;color:#8a6d1a;font-weight:700}
+.nb9-showbtn{display:inline-block;margin-top:8px;border:none;background:linear-gradient(160deg,#ff5252,#d50000);color:#fff;border-radius:999px;padding:6px 14px;font-size:12.5px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(213,0,0,.4)}
+#chokoRoot.nb9-wave{animation:nb9wave .5s ease-in-out 3}
+@keyframes nb9wave{0%,100%{transform:rotate(0)}25%{transform:rotate(-4deg)}75%{transform:rotate(4deg)}}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb9) return; window.__nb9=1;
+function E(id){ return document.getElementById(id); }
+function say(html,btns){
+  var t=E("chokoText2"); if(!t) return;
+  t.innerHTML=html;
+  var b=E("chokoBtns2"); if(!b) return;
+  b.innerHTML="";
+  (btns||[]).forEach(function(x){ var btn=document.createElement("button"); btn.type="button"; btn.textContent=x.label; btn.addEventListener("click",x.fn); b.appendChild(btn); });
+}
+var SPOTS=[
+ {key:"gacha",btn:"🎰 ガチャは？",sel:"#tbGacha",kw:/ガチャ|抽選/,msg:"これがガチャのボタンだよ🎰 コインを入れて回すと、作品カプセルが出てくるよ"},
+ {key:"note",btn:"📒 書いて帳は？",sel:".nb-all-btn",kw:/書いて帳|付箋|ふせん/,msg:"これが書いて帳だよ📒 作品ごとに感想の付箋を貼れるよ"},
+ {key:"music",btn:"🎵 音楽は？",sel:"#bgmSel",fb:'a[href="index.html"]',kw:/音楽|曲|BGM/,msg:"曲はここで選ぶよ🎵 「（音楽なし）」も選べるよ"},
+ {key:"sound",btn:"🔊 音は？",sel:".snd-btn",kw:/音|サウンド|効果音/,msg:"音のON・OFFはこのボタンだよ🔊 ▲がON、✕がOFFだよ"},
+ {key:"contact",btn:"✉ 連絡は？",sel:".ct-btn",kw:/連絡|メール|運営/,msg:"運営者への連絡はここからだよ✉"},
+ {key:"carousel",btn:"🎠 カルーセルは？",sel:"#carouselSec",kw:/カルーセル/,msg:"ここがカルーセルだよ🎠 作品がぐるぐる回っているよ"},
+ {key:"tips",btn:"🎓 小ネタは？",sel:"#chokoImg2",kw:/小ネタ/,msg:"小ネタは私が話すよ🎓 私をクリックして「小ネタ」を選んでね"},
+ {key:"admin",btn:"🔐 管理画面は？",sel:null,kw:/管理/,msg:"管理者画面は、ページ一番下の「admin」から開くよ🔐"}
+];
+function findAdmin(){ var as=document.querySelectorAll("a"); for(var i=0;i<as.length;i++){ if(as[i].textContent.trim()==="admin") return as[i]; } return null; }
+function resolveTarget(sp){
+  if(sp.key==="admin") return findAdmin();
+  var el=sp.sel?document.querySelector(sp.sel):null;
+  if(!el&&sp.fb) el=document.querySelector(sp.fb);
+  return el;
+}
+var prevPos=null;
+function moveChokoNear(r){
+  var root=E("chokoRoot"); if(!root) return;
+  if(!prevPos) prevPos={l:root.style.left,t:root.style.top,r:root.style.right,b:root.style.bottom};
+  var w=root.offsetWidth||160, hgt=root.offsetHeight||200;
+  var x=r.left-w-14; if(x<6) x=r.right+14;
+  if(x+w>window.innerWidth-6) x=Math.max(6,window.innerWidth-w-6);
+  var y=r.top-40; if(y<54) y=r.bottom+12;
+  if(y+hgt>window.innerHeight-6) y=Math.max(54,window.innerHeight-hgt-6);
+  root.style.left=x+"px"; root.style.top=y+"px"; root.style.right="auto"; root.style.bottom="auto";
+}
+function restoreChoko(){
+  var root=E("chokoRoot"); if(!root||!prevPos) return;
+  root.style.left=prevPos.l; root.style.top=prevPos.t; root.style.right=prevPos.r; root.style.bottom=prevPos.b;
+  prevPos=null;
+}
+function spot(sp){
+  var panel=E("nb7Panel"); if(panel) panel.classList.remove("open");
+  var el=resolveTarget(sp);
+  if(!el){ say("ごめん、このページには無いみたい…本編のページで見てね🙏"); return; }
+  el.scrollIntoView({behavior:"smooth",block:"center"});
+  setTimeout(function(){
+    var r=el.getBoundingClientRect();
+    el.classList.add("zke-spot");
+    setTimeout(function(){ el.classList.remove("zke-spot"); },3000);
+    if(sp.key==="tips"){
+      var root=E("chokoRoot"); if(root){ root.classList.add("nb9-wave"); setTimeout(function(){ root.classList.remove("nb9-wave"); },1600); }
+    } else {
+      moveChokoNear(r);
+    }
+    say(sp.msg,[{label:"元の場所にもどる",fn:function(){ restoreChoko(); say("もどったよ。また何か聞いてね"); }}]);
+    if(window.ZKE_PLAY) window.ZKE_PLAY("pop");
+  },700);
+}
+/* guide buttons inside the concierge panel */
+function addGuides(){
+  var panel=E("nb7Panel"), res=E("nb7Res");
+  if(!panel||!res||panel.querySelector(".nb9-guides")) return;
+  var cap=document.createElement("div"); cap.className="nb9-cap"; cap.textContent="📍 案内してほしいものは？（チョウ子が近くまで行って示すよ）";
+  var g=document.createElement("div"); g.className="nb9-guides";
+  SPOTS.forEach(function(sp){
+    var b=document.createElement("button"); b.type="button"; b.className="nb9-g"; b.textContent=sp.btn;
+    b.addEventListener("click",function(){ spot(sp); });
+    g.appendChild(b);
+  });
+  panel.insertBefore(cap,res); panel.insertBefore(g,res);
+}
+var tries=0;
+var giv=setInterval(function(){ tries++; addGuides(); if(E("nb7Panel")&&E("nb7Panel").querySelector(".nb9-guides")) clearInterval(giv); if(tries>20) clearInterval(giv); },800);
+/* answers gain a "show me" button when they match a feature */
+function augment(){
+  var res=E("nb7Res"); if(!res) return;
+  var ans=res.querySelector(".nb7-ans"); if(!ans||ans.querySelector(".nb9-showbtn")) return;
+  var q=(E("nb7Q")?E("nb7Q").value:"")+" "+ans.textContent;
+  for(var i=0;i<SPOTS.length;i++){
+    if(SPOTS[i].kw.test(q)){
+      (function(sp){
+        var b=document.createElement("button"); b.type="button"; b.className="nb9-showbtn"; b.textContent="👉 実物を見せて";
+        b.addEventListener("click",function(){ spot(sp); });
+        ans.appendChild(document.createElement("br")); ans.appendChild(b);
+      })(SPOTS[i]);
+      return;
+    }
+  }
+}
+setTimeout(function(){
+  var res=E("nb7Res"); if(res) new MutationObserver(augment).observe(res,{childList:true,subtree:true});
+},2000);
 })();
 </script>
 
