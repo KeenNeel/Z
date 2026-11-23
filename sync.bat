@@ -10,6 +10,9 @@ rem  Code.gs and deploy_gs.bat are never committed
 rem  (Code.gs contains limited-access URLs and personal data).
 rem  MP3 files in this folder (kaite_rock.mp3 and the original
 rem  songs) ARE sync targets: they are committed and pushed.
+rem  The music subfolder is a sync target too: every mp3, wav,
+rem  mid and midi file in music\ is committed and pushed, and
+rem  the archive page lists them automatically as its songs.
 rem ============================================================
 
 set "REPO_URL=https://github.com/KeenNeel/Z.git"
@@ -79,7 +82,14 @@ git rm --cached --ignore-unmatch Code.gs deploy_gs.bat zke_admin.html >nul 2>nul
 
 echo MP3 files in this folder (sync targets):
 for %%M in (*.mp3) do echo   %%~nxM
+if exist music (
+  echo Music folder files ^(sync targets^):
+  for %%M in (music\*.mp3 music\*.wav music\*.mid music\*.midi) do echo   music\%%~nxM
+) else (
+  echo Music folder not found - create a "music" folder here and put songs in it.
+)
 git add -A
+if exist music git add -A -- music
 git diff --cached --quiet || git commit -m "sync %date% %time%"
 
 if "%REMOTE_EXISTS%"=="1" (
