@@ -329,7 +329,7 @@ function renderUsage(){
     +'<tr><th style="text-align:left;padding:4px 10px">アクセス記録</th><td>'+u.accessRows+' 件</td></tr>'
     +'<tr><th style="text-align:left;padding:4px 10px">通報</th><td>'+u.reports+' 件</td></tr>'
     +'<tr><th style="text-align:left;padding:4px 10px">登録MIDI</th><td>'+u.midis+' 曲</td></tr>'
-    +'<tr><th style="text-align:left;padding:4px 10px">本日のメール送信残り枠</th><td>約 '+u.mailLeft+' 通（上限 100 通/日）</td></tr>'
+    +'<tr><th style="text-align:left;padding:4px 10px">本日のメール送信残り枠</th><td>'+(u.mailLeft>=0?('約 '+u.mailLeft+' 通（上限 100 通/日）'):'—（メール送信の承認がまだです）')+'</td></tr>'
     +'</tbody></table>'
     +'<p class="small" style="margin-top:8px">このシステムは Google Apps Script の無料枠で動いています。実行時間（6分/回）・メール送信（100通/日）などの上限はありますが、<strong>現在の使い方では追加料金はかかりません（料金概算：¥0／月）</strong>。スプレッドシートの容量上限（セル数 約1,000万）に対しても、投稿が数万件規模までは余裕があります。</p>';
   });
