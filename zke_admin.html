@@ -45,17 +45,17 @@ textarea{width:100%;font-size:14px}
   <p class="err" id="lockErr"></p>
 </div>
 <main id="main" style="display:none">
-<p style="margin:2px 0 12px"><button type="button" id="openSheet" style="background:#2e7d4f;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer">📊 Googleスプレッドシートを開く（書いて帳データベース）</button></p>
+<p style="margin:2px 0 12px"><button type="button" id="openSheet" style="background:#2e7d4f;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer">📊 Googleスプレッドシートを開く（かいて帳データベース）</button></p>
   <div class="cards" id="cards"></div>
   <section><h2>アクセス分析</h2><div id="accPage"></div><h3 style="font-size:14.5px;margin:14px 0 6px">日別（直近14日）</h3><div id="accDay"></div></section>
-  <section><h2>書いて帳データベース（直接編集）</h2>
+  <section><h2>かいて帳データベース（直接編集）</h2>
     <p class="small">本文・名前の編集と削除ができます。編集は即座にスプレッドシートへ反映されます。「要確認」は自動チェックで不適切な表現の可能性がある投稿です。</p>
     <div class="tblwrap"><table id="notesTbl"><thead><tr><th>日時</th><th>項目</th><th>名前</th><th>本文</th><th>状態</th><th>操作</th></tr></thead><tbody></tbody></table></div>
   </section>
   <section><h2>通報の集計</h2><div class="tblwrap"><table id="repTbl"><thead><tr><th>日時</th><th>種別</th><th>対象</th><th>通報者</th><th>理由</th></tr></thead><tbody></tbody></table></div></section>
   <section><h2>利用者（ニックネーム登録）</h2><div class="tblwrap"><table id="usrTbl"><thead><tr><th>ニックネーム</th><th>登録日</th><th>最終アクセス</th></tr></thead><tbody></tbody></table></div></section>
   <section><h2>画面デザインの変更</h2>
-    <p class="small">アクセントカラーは書いて帳の見出し・ボタンなどに、お知らせ文は全ページ上部の帯に反映されます（次回アクセス時）。</p>
+    <p class="small">アクセントカラーはかいて帳の見出し・ボタンなどに、お知らせ文は全ページ上部の帯に反映されます（次回アクセス時）。</p>
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
       <label>アクセントカラー <input type="color" id="dzAccent" value="#d9a441"> <input type="text" id="dzAccentTx" style="width:90px"></label>
       <label style="flex:1;min-width:240px">お知らせ文 <input type="text" id="dzNotice" placeholder="（空欄で非表示）" style="width:100%"></label>
@@ -105,7 +105,7 @@ function render(){
   var serious=d.reports.length-joke;
   var cards=[
     [d.access.total,"総アクセス数"],[d.access.today,"今日のアクセス"],[d.users.length,"登録者数"],
-    [d.notes.length,"書いて帳の投稿数"],[d.flagged,"要確認（自動チェック）"],
+    [d.notes.length,"かいて帳の投稿数"],[d.flagged,"要確認（自動チェック）"],
     [d.reactions.total,"リアクション合計"],[d.reports.length,"通報（冗談"+joke+"／マジ"+serious+"）"]
   ];
   document.getElementById("cards").innerHTML=cards.map(function(c){ return '<div class="card"><b>'+c[0]+"</b><span>"+c[1]+"</span></div>"; }).join("")
@@ -212,7 +212,7 @@ secMusic.innerHTML='<h2>🎶 音楽MP3の登録と、リスト表示の設定</h
 main.appendChild(secMusic);
 var secMeta=document.createElement("section");
 secMeta.innerHTML='<h2>🎼 曲の説明とシーン設定（GitHubのmusicフォルダ）</h2>'
-+'<p class="small">GitHubリポジトリの music フォルダに入っている曲（mp3 / wav / midi）が対象です。各曲に「説明」を付けると音楽リストに表示され、「シーン」を選ぶとその場面専用の曲になります（書いて帳＝書いて帳を開いたときのBGM、ガチャ＝ガチャの抽選後に流れる曲）。空欄で保存すると設定が消えます。</p>'
++'<p class="small">GitHubリポジトリの music フォルダに入っている曲（mp3 / wav / midi）が対象です。各曲に「説明」を付けると音楽リストに表示され、「シーン」を選ぶとその場面専用の曲になります（かいて帳＝かいて帳を開いたときのBGM、ガチャ＝ガチャの抽選後に流れる曲）。空欄で保存すると設定が消えます。</p>'
 +'<div id="smList"><p class="small">読み込み中…</p></div>';
 main.appendChild(secMeta);
 function renderSongMeta(){
@@ -233,7 +233,7 @@ function renderSongMeta(){
         row.innerHTML='<span style="min-width:170px">🎵 '+s.label.replace(/</g,"&lt;")+'</span>';
         var di=document.createElement("input"); di.type="text"; di.placeholder="説明（例：同窓会テーマソング）"; di.value=cur.desc||""; di.style.minWidth="220px";
         var se=document.createElement("select");
-        se.innerHTML='<option value="">通常（音楽リスト）</option><option value="notebook">書いて帳で使う</option><option value="gacha">ガチャで使う</option>';
+        se.innerHTML='<option value="">通常（音楽リスト）</option><option value="notebook">かいて帳で使う</option><option value="gacha">ガチャで使う</option>';
         se.value=cur.scene||"";
         var sv=document.createElement("button"); sv.type="button"; sv.textContent="保存";
         sv.addEventListener("click",function(){
@@ -360,7 +360,7 @@ function renderUsage(){
     if(err||!d||!d.ok||!d.usage){ box.innerHTML='<p class="small">使用量を取得できませんでした（GASの再デプロイが必要です）。</p>'; return; }
     var u=d.usage;
     box.innerHTML='<table><tbody>'
-    +'<tr><th style="text-align:left;padding:4px 10px">書いて帳の投稿数</th><td>'+u.posts+' 件</td></tr>'
+    +'<tr><th style="text-align:left;padding:4px 10px">かいて帳の投稿数</th><td>'+u.posts+' 件</td></tr>'
     +'<tr><th style="text-align:left;padding:4px 10px">登録ユーザー（ニックネーム）</th><td>'+u.users+' 人</td></tr>'
     +'<tr><th style="text-align:left;padding:4px 10px">アクセス記録</th><td>'+u.accessRows+' 件</td></tr>'
     +'<tr><th style="text-align:left;padding:4px 10px">通報</th><td>'+u.reports+' 件</td></tr>'
@@ -449,23 +449,23 @@ var ADMIN_TIPS=[
 "カルーセルはドラッグでぐるっと回せます。作品をクリックすると中央に寄ります。",
 "「今のあなたへのおすすめ」はカルーセルの下のボタンから。ファンファーレ付きです。",
 "ガチャは最大500円分まで連続で回せます。出たカプセルはタップで何度でも開けられます。",
-"書いて帳は @名前 でメンバーにメンションできます。候補も自動で出ます。",
-"書いて帳は付箋スタイル。大きな鉛筆ボタンから書く場所を選べます。",
-"書いて帳では音声入力もできます（対応ブラウザのみ）。",
-"書いて帳にはファイルや音楽を3つまで添付できます（各10MB未満）。",
-"書いて帳のBGMは、開いている間「書いて帳ロック」に切り替わります。",
+"かいて帳は @名前 でメンバーにメンションできます。候補も自動で出ます。",
+"かいて帳は付箋スタイル。大きな鉛筆ボタンから書く場所を選べます。",
+"かいて帳では音声入力もできます（対応ブラウザのみ）。",
+"かいて帳にはファイルや音楽を3つまで添付できます（各10MB未満）。",
+"かいて帳のBGMは、開いている間「かいて帳ロック」に切り替わります。",
 "他の人の書き込みも直せますが、チョウ子が確認してくれます。削除は自分のものだけ。",
 "音楽はページを移動しても続きます（同じタブの中で）。",
 "音のON/OFFは上のスピーカーボタン。最初はOFFになっています。",
 "チョウ子はドラッグで好きな場所に置けます。クリックでおしゃべりします。",
 "チョウ子は上のメニューからON/OFFできます。",
 "限定公開の動画は認証コードで開きます。コードは同窓生だけに。",
-"作品の行の書いて帳アイコンから、その作品専用のメモが開けます。",
+"作品の行のかいて帳アイコンから、その作品専用のメモが開けます。",
 "管理者画面は一番下の右端「admin」から。管理者コードが必要です。",
-"書いて帳のページは番号ジャンプもできます。",
+"かいて帳のページは番号ジャンプもできます。",
 "書き込みにマウスを当てると付箋の枠がうっすら見え、上の帯をつまんで動かせます。",
 "絵文字や色・フォントはパレットから。入力にその場で反映されます。",
-"書いて帳の表紙ロゴは開くたびに変わります。ギャグ版が出たらラッキー。",
+"かいて帳の表紙ロゴは開くたびに変わります。ギャグ版が出たらラッキー。",
 "二次会の目玉はゼンカンガシャの抽選会。大きな音で盛り上がりましょう。",
 "同窓会の一次会は西宮北口「ふじや本店」で15時から。",
 "二次会はジャンカラで18時から21時まで。",
@@ -484,7 +484,7 @@ var ADMIN_TIPS=[
 "打ち上げの乾杯までが上映会、というのがサークルの常識でした。",
 "卒業しても映画でつながる。それが全関映です。",
 "この小ネタは全部で150個。全部読んだら全関映マスターです。",
-"小ネタはチョウ子が教えてくれます。書いて帳で会いましょう。",
+"小ネタはチョウ子が教えてくれます。かいて帳で会いましょう。",
 "関西学院の創立は1889年。創立者はアメリカ人宣教師W.R.ランバスです。",
 "関西学院の創立記念日は9月28日。1927年からこの日が記念日になっています。",
 "関学は「二人のニュートン」から始まりました（ニュートン院長と、名前がニュートンのアトレー）。",
@@ -512,9 +512,9 @@ var ADMIN_TIPS=[
 "『男ともだち』は第39回東京国際映画祭のコンペティション部門出品作です。",
 "別巻3はOB会とアカデミー賞（2012〜2019年）の記録です（管理者のみ）。",
 "全関映アカデミー賞の実務の中心は、佐伯明寛さん（4期）でした。",
-"書いて帳の付箋は、ページの好きな場所に置けます。",
-"書いて帳の装飾メニューは右クリック（スマホは長押し）で出ます。",
-"書いて帳では、他の人の書き込みも確認のうえで直せます。削除は自分のものだけです。",
+"かいて帳の付箋は、ページの好きな場所に置けます。",
+"かいて帳の装飾メニューは右クリック（スマホは長押し）で出ます。",
+"かいて帳では、他の人の書き込みも確認のうえで直せます。削除は自分のものだけです。",
 "ガチャは100円で1個、最大5個（500円分）まで出ます。",
 "ガチャの金のカプセルはレア演出です。",
 "音楽リストの「オリジナル曲」は、GitHubのmusicフォルダから自動で並びます。",
@@ -523,10 +523,10 @@ var ADMIN_TIPS=[
 "認証コードは、入力したタブを開いている間だけ保持されます。",
 "管理者画面は、ページ最下部右端の「admin」から開けます。",
 "第7節（人名リンク）は管理者パスワードでロックされています。",
-"書いて帳は作品ごとに付けられます。表の「タイトル」列が目印です。",
+"かいて帳は作品ごとに付けられます。表の「タイトル」列が目印です。",
 "カルーセルの音楽は、MyDAWの音色がベースです。",
 "動画の視聴が始まると、BGMは自動で止まります。",
-"書いて帳やガチャから出ると、入る前に流れていたBGMに戻ります（途中で選択を変えても同じ）。",
+"かいて帳やガチャから出ると、入る前に流れていたBGMに戻ります（途中で選択を変えても同じ）。",
 "ガチャのテーマ曲は gatya_song です。",
 "ガチャではコインを入れると部屋が暗くなり、ケースが光ります。",
 "小ネタは管理者が更新ボタンを押したときだけ増えます。",

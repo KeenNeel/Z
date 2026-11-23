@@ -46,7 +46,7 @@ html.a11y-zoom-2{zoom:1.32}
   /* ---- aria labels for icon buttons + landmarks ---- */
   try{
     document.querySelectorAll('.snd-btn').forEach(function(b){ if(!b.getAttribute('aria-label')) b.setAttribute('aria-label','音のオン・オフ'); });
-    document.querySelectorAll('.nb-all-btn,.nb-icon-btn').forEach(function(b){ if(!b.getAttribute('aria-label')) b.setAttribute('aria-label','書いて帳を全件表示'); });
+    document.querySelectorAll('.nb-all-btn,.nb-icon-btn').forEach(function(b){ if(!b.getAttribute('aria-label')) b.setAttribute('aria-label','かいて帳を全件表示'); });
     var tb=document.querySelector('.topbar,.volbar'); if(tb && !tb.getAttribute('role')) tb.setAttribute('role','banner');
     var nv=document.querySelector('.topnav'); if(nv){ nv.setAttribute('role','navigation'); nv.setAttribute('aria-label','目次'); }
   }catch(e){}
