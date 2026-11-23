@@ -410,6 +410,29 @@ tr[id] { scroll-margin-top: calc(var(--hdrH, 118px) + 30px); }
 </style>
 </head>
 <body>
+<script>
+/* ===== v79 NB16: remember auth codes in this browser + stop BGM when opening a work from a companion volume ===== */
+(function(){
+"use strict";
+try{
+  var KEYS=["zkeGateCode","zkeAdminCode"];
+  var oSet=Storage.prototype.setItem, oRem=Storage.prototype.removeItem;
+  Storage.prototype.setItem=function(k,v){ oSet.call(this,k,v); if(this===sessionStorage&&KEYS.indexOf(k)>=0){ try{ oSet.call(localStorage,k,v); }catch(e){} } };
+  Storage.prototype.removeItem=function(k){ oRem.call(this,k); if(this===sessionStorage&&KEYS.indexOf(k)>=0){ try{ oRem.call(localStorage,k); }catch(e){} } };
+  KEYS.forEach(function(k){ try{ if(!sessionStorage.getItem(k)&&localStorage.getItem(k)) sessionStorage.setItem(k,localStorage.getItem(k)); }catch(e){} });
+}catch(e){}
+if(/bekkan/.test(location.pathname)){
+  document.addEventListener("click",function(ev){
+    var a=ev.target&&ev.target.closest?ev.target.closest('a[href^="http"]'):null;
+    if(!a) return;
+    if(a.closest("table")||a.classList.contains("gate")){
+      if(window.ZKE_BGM_STOP) window.ZKE_BGM_STOP();
+    }
+  },true);
+}
+})();
+</script>
+
 <div class="topbar" id="top"><span class="topbar-title">全関映 過去映画アーカイブ（関係者外秘）</span><span class="bar-right"><button type="button" class="bar-btn" id="tbGacha"><span class="ui-ic ic-gacha"></span> ガチャ</button><button type="button" class="bar-btn nb-all-btn">かいて帳</button><button type="button" class="bar-btn" id="tbShare">SHARE</button></span><nav class="topnav"><a href="#top" data-desc="ページの先頭に戻ります">トップに戻る</a><a class="nv-work" href="#sec-fb" data-desc="Facebookグループ内の動画（No.1-1〜1-25）">1. Facebook</a><a class="nv-work" href="#sec-yt" data-desc="YouTubeの作品（公開・限定公開）">2. YouTube</a><a class="nv-work" href="#sec-gen" data-desc="岩本淳チャンネルの「現る」シリーズ">2-1 現る</a><a class="nv-work" href="#sec-y2024" data-desc="2024年度・現役生の作品（OB向け限定公開）">2-2 2024現役生</a><a class="nv-work" href="#sec-channels" data-desc="全関映の公式YouTubeチャンネル">2-3 公式ch</a><a class="nv-info" href="#sec-records" data-desc="映像リンクのない、記録だけの作品">3. 記録のみ</a><a class="nv-work" href="#sec-takakubo" data-desc="高久保浩ムービー集（チャンネル「ワンダバ駄馬」）">4. 高久保浩</a><a class="nv-info" href="#sec-memo" data-desc="調査の経緯とメモ">5. 調査メモ</a><a class="nv-info" href="#sec-factcheck" data-desc="記載内容のファクトチェック結果">6. ファクトチェック</a><a class="nv-info" href="#sec-people" data-desc="OBグループのメンバー49人のリンク集">7. 人名リンク</a><a class="nv-info" href="#sec-about" data-desc="全関映（ZKE）の概要と沿革">8. 全関映について</a><a class="nv-info" href="#sec-links" data-desc="アクセス・部室への道順・年表などの図解リンク集">9. 便利リンク集</a><a class="nv-extra" data-gate-page href="bekkan1_reunion2026.html" target="_blank" rel="noopener" data-desc="別巻：2026年大同窓会に向けた投稿まとめ（別ファイルで開きます）">別巻1：大同窓会2026</a><a class="nv-extra" data-gate-page href="bekkan2_otokotomodachi.html" target="_blank" rel="noopener" data-desc="別巻2：三島有紀子監督『男ともだち』特集（別ファイルで開きます）">別巻2：男ともだち</a><a class="nv-extra" data-gate-page href="bekkan3_ob_academy.html" target="_blank" rel="noopener" data-desc="別巻3：OB会と全関映アカデミー賞の記録（別ファイルで開きます）">別巻3：OB会とアカデミー賞</a></nav></div>
 
 <div class="carousel-sec" id="carouselSec">
@@ -838,7 +861,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 </div>
 <div class="bl-src"><div class="bl-src-t">出典（クリックで直接開けます）</div><ul><li><a href="https://www.kwansei.ac.jp/campuslife/club/tourokudantai.html" target="_blank" rel="noopener">関西学院大学 公式「大学登録団体」</a></li><li><a href="https://note.com/hisak0415/n/n527f3f24d097" target="_blank" rel="noopener">OBの回想エッセイ（note）</a></li><li><a href="https://bunshun.jp/articles/-/68900?page=3" target="_blank" rel="noopener">文春オンライン（三島有紀子さんインタビュー）</a></li><li><a href="https://www.kansai-u.ac.jp/headlines/entry/post_71716.php" target="_blank" rel="noopener">関西大学 公式（関西学生映画祭の紹介）</a></li><li><a href="https://www.weblio.jp/content/%E9%96%A2%E8%A5%BF%E5%AD%A6%E7%94%9F%E6%98%A0%E7%94%9F%E7%A5%AD" target="_blank" rel="noopener">関西学生映画祭（Weblio）</a></li><li><a href="https://www.kobe-np.co.jp/rentoku/campus-repo/202010/0013781199.shtml" target="_blank" rel="noopener">神戸新聞（2020年 全国学生オムニバス）</a></li><li><a href="https://kobe-eiga.net/programs/1051/" target="_blank" rel="noopener">神戸映画資料館（『CINEMAだいすき！』）</a></li><li><a href="https://www.instagram.com/p/DVvoozvkm5M/" target="_blank" rel="noopener">全関映 公式Instagram Q&A投稿</a></li><li><a href="https://www.instagram.com/kg_zke_1969/" target="_blank" rel="noopener">全関映 公式Instagram（@kg_zke_1969）</a></li></ul></div>
 
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v78）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v80）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -1354,7 +1377,7 @@ document.addEventListener("keydown",function(e){
   }
   function gateOpen(gasUrl) {
     try {
-      var m = /[?&]id=(\d+)/.exec(gasUrl);
+      var m = /[?&]id=([\w-]+)/.exec(gasUrl);
       if (!m) { origOpen(gasUrl, '_blank', 'noopener'); return; }
       var code = storedCode();
       if (code) {
@@ -5704,7 +5727,7 @@ tr.pink td{background:#ffe3ee!important}
 #nbPgInfo{font-weight:800;font-size:14.5px;color:#26324a}
 .nb-page{position:relative;height:min(54vh,540px);min-height:330px;background:repeating-linear-gradient(#fffdf4,#fffdf4 27px,#d8e2f0 28px);border:1.5px solid #b9c6da;border-radius:10px;overflow:hidden;box-shadow:inset 0 0 24px rgba(38,50,74,.07)}
 .nb-page.picking{cursor:crosshair;box-shadow:inset 0 0 0 2px #c0392b,inset 0 0 24px rgba(192,57,43,.10)}
-.nb-card{position:absolute;width:32%;max-height:47%;overflow:auto;background:#fffef9;border:1px solid #d9d2b8;border-radius:8px;box-shadow:2px 3px 8px rgba(38,50,74,.18);padding:7px 9px;font-size:13px;line-height:1.55;z-index:2}
+.nb-card{position:absolute;width:16%;max-height:47%;overflow:auto;background:#fffef9;border:1px solid #d9d2b8;border-radius:8px;box-shadow:2px 3px 8px rgba(38,50,74,.18);padding:7px 9px;font-size:13px;line-height:1.55;z-index:2}
 .nb-card .nb-meta{font-size:11px;color:#7a7466;margin-bottom:3px}
 .nb-card .nb-text{word-break:break-word}
 .nb-card .nb-img{max-width:100%;border-radius:6px;margin-top:4px}
@@ -5725,7 +5748,7 @@ tr.pink td{background:#ffe3ee!important}
 .nb-where2{font-size:13.5px;color:#5a5344}
 .nb-wstep{font-size:13.5px;color:#5a5344;margin:6px 0 0;line-height:1.7}
 .nb-wstep button{margin-left:6px;padding:5px 10px;font-size:13px;border-radius:7px;border:1px solid #26324a;background:#fff;cursor:pointer}
-@media (max-width:760px){ .nb-page{height:46vh;min-height:290px} .nb-card{font-size:12.5px;width:47.5%} }
+@media (max-width:760px){ .nb-page{height:46vh;min-height:290px} .nb-card{font-size:12.5px;width:24%} }
 /* ===== v42: notebook icon — no thread doodles, no tilt ===== */
 .nb-ic::after{display:none!important;content:none!important}
 .nb-ic::before{transform:translateX(-50%) rotate(0deg)!important}
@@ -6173,10 +6196,11 @@ function greet(){
   else if(main&&main.style.display!=="none"){ fetchTips(); }
 }
 ["nbAuth","nbCover","nbMain"].forEach(function(id){ var n=E(id); if(n) new MutationObserver(function(){ if(ov.classList.contains("open")) greet(); }).observe(n,{attributes:true,attributeFilter:["style"]}); });
+var nb4WasOpen=false;
 new MutationObserver(function(){
   refreshChokoVis();
-  if(ov.classList.contains("open")) greet();
-  else { hideArrow(); setBtns([]); closeEditor(); }
+  if(ov.classList.contains("open")){ greet(); nb4WasOpen=true; }
+  else if(nb4WasOpen){ hideArrow(); setBtns([]); closeEditor(); nb4WasOpen=false; }
 }).observe(ov,{attributes:true,attributeFilter:["class"]});
 E("nbCoverBook").addEventListener("click",function(){
   setTimeout(function(){
@@ -6492,7 +6516,7 @@ function startSelected(){
   stopAll();
   if(!sndOn()) return;
   saveState(true);
-  songSince=Date.now();
+  songSince=Date.now(); window.__zkeBgmStopped=false;
   if(selVal==='none'){ mode=null; return; }
   if(selVal.indexOf('midi:')===0){ startMidi(selVal.slice(5)); return; }
   var src=null;
@@ -6513,6 +6537,7 @@ window.ZKE_BGM_HOOK=function(on){ if(on){ ctx(); if(AC.state==='suspended') AC.r
 setInterval(function(){ if(mode==='audio'&&sndOn()) saveState(true); },3000);
 var songSince=Date.now(), autoAlt=0;
 setInterval(function(){
+  if(window.__zkeBgmStopped) return;
   if(!sndOn()||Date.now()-songSince<600000) return;
   if(window.ZKE_NB_BGM&&window.ZKE_NB_BGM.active()) return;
   if(document.querySelector('.zg-overlay.open')) return;
@@ -6760,6 +6785,7 @@ function startMidiFile(path){
   }).catch(function(){ selVal="none"; });
 }
 
+window.ZKE_BGM_STOP=function(){ try{ stopAll(); }catch(e){} window.__zkeBgmStopped=true; try{ sessionStorage.removeItem("zkeMusicState"); }catch(e){} };
 window.ZKE_BGM_RESTORE=function(){
   if(bgmSavedGenre===null) return;
   selVal=bgmSavedGenre; bgmSavedGenre=null; window.__gatyaCur=null;
@@ -7379,7 +7405,7 @@ function openEditor(opts){
     style:opts.style?JSON.parse(JSON.stringify(opts.style)):{font:"klee",s:"m"},atts:opts.atts||[]};
   var pg=E("nbPage"); var r=pg.getBoundingClientRect();
   ed.style.left=(edState.x)+"%"; ed.style.top=(edState.y)+"%";
-  if(opts.w){ ed.style.width=opts.w+"%"; } else ed.style.width="36%";
+  if(opts.w){ ed.style.width=opts.w+"%"; } else ed.style.width="18%";
   if(opts.h){ ed.style.height=opts.h+"%"; } else ed.style.height="";
   E("nb6Mode").textContent=edState.mode==="edit"?"書き込みを直す":"新しい付箋";
   E("nb6Name").value=myName();
@@ -9279,6 +9305,7 @@ function attachBubbleObs(){
 }
 function fireTip(){
   var t=E("chokoText2"); if(!t) return false;
+  var bm=E("chokoBtns2"); if(bm&&bm.children.length) return false;
   t.textContent="💡 小ネタ：" + TIPS13[Math.floor(Math.random()*TIPS13.length)];
   var b=E("chokoBtns2"); if(b) b.innerHTML="";
   lastBubble=Date.now();
@@ -9295,6 +9322,7 @@ setInterval(function(){
   var ov=E("nbOverlay"); if(ov&&ov.classList.contains("open")) return;
   if(Date.now()-lastInteract<40000) return;
   if(Date.now()-lastBubble<25000) return;
+  var bb=E("chokoBtns2"); if(bb&&bb.children.length) return;
   if(Math.random()<0.5) fireTip();
 },20000);
 })();
@@ -9413,6 +9441,50 @@ window.addEventListener("resize",clampChoko);
 })();
 </script>
 
+
+<style id="nb17style">
+/* ===== v80 NB17: smaller choko, always reachable; attachment images fit whole inside the card ===== */
+#chokoRoot{width:118px!important;z-index:999989!important}
+#chokoImg2{width:118px!important;height:auto!important}
+.nb6-atts2 img{object-fit:contain;max-height:none!important}
+.nb6-atts2{min-width:0}
+.nb-card.nb15-imgonly{width:34%!important}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb17) return; window.__nb17=1;
+function nudge(){
+  var root=document.getElementById("chokoRoot");
+  if(!root) return;
+  var r=root.getBoundingClientRect();
+  if(!r.width||!r.height) return;
+  var iw=window.innerWidth, ih=window.innerHeight, m=4, dx=0, dy=0;
+  if(r.left<m) dx=r.left-m; else if(r.right>iw-m) dx=r.right-(iw-m);
+  if(r.top<m) dy=r.top-m; else if(r.bottom>ih-m) dy=r.bottom-(ih-m);
+  if(dx||dy){
+    root.style.left=Math.round(r.left-dx)+"px";
+    root.style.top=Math.round(r.top-dy)+"px";
+    root.style.right="auto"; root.style.bottom="auto";
+  }
+}
+setInterval(nudge,700);
+window.addEventListener("resize",nudge);
+document.addEventListener("pointerdown",function(ev){
+  var nm=ev.target&&ev.target.closest?ev.target.closest(".choko-name2"):null;
+  if(!nm) return;
+  var root=document.getElementById("chokoRoot"); if(!root) return;
+  var r=root.getBoundingClientRect();
+  var ox=ev.clientX-r.left, oy=ev.clientY-r.top;
+  root.style.left=r.left+"px"; root.style.top=r.top+"px"; root.style.right="auto"; root.style.bottom="auto";
+  function mv(e){ root.style.left=Math.round(e.clientX-ox)+"px"; root.style.top=Math.round(e.clientY-oy)+"px"; }
+  function up(){ document.removeEventListener("pointermove",mv); document.removeEventListener("pointerup",up);
+    try{ localStorage.setItem("zkeChokoPos",JSON.stringify({l:parseInt(root.style.left,10)||0,t:parseInt(root.style.top,10)||0})); }catch(e){} nudge(); }
+  document.addEventListener("pointermove",mv);
+  document.addEventListener("pointerup",up);
+},true);
+})();
+</script>
 
 </body>
 </html>

@@ -78,6 +78,29 @@ body { padding-top: 64px; }
 </style>
 </head>
 <body>
+<script>
+/* ===== v79 NB16: remember auth codes in this browser + stop BGM when opening a work from a companion volume ===== */
+(function(){
+"use strict";
+try{
+  var KEYS=["zkeGateCode","zkeAdminCode"];
+  var oSet=Storage.prototype.setItem, oRem=Storage.prototype.removeItem;
+  Storage.prototype.setItem=function(k,v){ oSet.call(this,k,v); if(this===sessionStorage&&KEYS.indexOf(k)>=0){ try{ oSet.call(localStorage,k,v); }catch(e){} } };
+  Storage.prototype.removeItem=function(k){ oRem.call(this,k); if(this===sessionStorage&&KEYS.indexOf(k)>=0){ try{ oRem.call(localStorage,k); }catch(e){} } };
+  KEYS.forEach(function(k){ try{ if(!sessionStorage.getItem(k)&&localStorage.getItem(k)) sessionStorage.setItem(k,localStorage.getItem(k)); }catch(e){} });
+}catch(e){}
+if(/bekkan/.test(location.pathname)){
+  document.addEventListener("click",function(ev){
+    var a=ev.target&&ev.target.closest?ev.target.closest('a[href^="http"]'):null;
+    if(!a) return;
+    if(a.closest("table")||a.classList.contains("gate")){
+      if(window.ZKE_BGM_STOP) window.ZKE_BGM_STOP();
+    }
+  },true);
+}
+})();
+</script>
+
 <div class="volbar"><a class="volbtn" href="index.html">← 本編アーカイブ</a><a class="volbtn" data-gate-page href="bekkan1_reunion2026.html">別巻1：大同窓会2026</a><a class="volbtn cur" href="bekkan2_otokotomodachi.html">別巻2：男ともだち</a><a class="volbtn" data-gate-page href="bekkan3_ob_academy.html">別巻3：OB会とアカデミー賞</a><button class="volbtn nb-all-btn" type="button">かいて帳</button><span class="voltitle">別巻2：男ともだち（関係者外秘）</span></div>
 <header>
 <h1>全関映アーカイブ 別巻2 ― 映画『男ともだち』（関係者外秘）</h1>
@@ -848,7 +871,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻2 ― 『男ともだち』（v78）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻2 ― 『男ともだち』（v80）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -1025,7 +1048,7 @@ tr.pink td{background:#ffe3ee!important}
 #nbPgInfo{font-weight:800;font-size:14.5px;color:#26324a}
 .nb-page{position:relative;height:min(54vh,540px);min-height:330px;background:repeating-linear-gradient(#fffdf4,#fffdf4 27px,#d8e2f0 28px);border:1.5px solid #b9c6da;border-radius:10px;overflow:hidden;box-shadow:inset 0 0 24px rgba(38,50,74,.07)}
 .nb-page.picking{cursor:crosshair;box-shadow:inset 0 0 0 2px #c0392b,inset 0 0 24px rgba(192,57,43,.10)}
-.nb-card{position:absolute;width:32%;max-height:47%;overflow:auto;background:#fffef9;border:1px solid #d9d2b8;border-radius:8px;box-shadow:2px 3px 8px rgba(38,50,74,.18);padding:7px 9px;font-size:13px;line-height:1.55;z-index:2}
+.nb-card{position:absolute;width:16%;max-height:47%;overflow:auto;background:#fffef9;border:1px solid #d9d2b8;border-radius:8px;box-shadow:2px 3px 8px rgba(38,50,74,.18);padding:7px 9px;font-size:13px;line-height:1.55;z-index:2}
 .nb-card .nb-meta{font-size:11px;color:#7a7466;margin-bottom:3px}
 .nb-card .nb-text{word-break:break-word}
 .nb-card .nb-img{max-width:100%;border-radius:6px;margin-top:4px}
@@ -1046,7 +1069,7 @@ tr.pink td{background:#ffe3ee!important}
 .nb-where2{font-size:13.5px;color:#5a5344}
 .nb-wstep{font-size:13.5px;color:#5a5344;margin:6px 0 0;line-height:1.7}
 .nb-wstep button{margin-left:6px;padding:5px 10px;font-size:13px;border-radius:7px;border:1px solid #26324a;background:#fff;cursor:pointer}
-@media (max-width:760px){ .nb-page{height:46vh;min-height:290px} .nb-card{font-size:12.5px;width:47.5%} }
+@media (max-width:760px){ .nb-page{height:46vh;min-height:290px} .nb-card{font-size:12.5px;width:24%} }
 /* ===== v42: notebook icon — no thread doodles, no tilt ===== */
 .nb-ic::after{display:none!important;content:none!important}
 .nb-ic::before{transform:translateX(-50%) rotate(0deg)!important}
@@ -1391,10 +1414,11 @@ function greet(){
   else if(main&&main.style.display!=="none"){ fetchTips(); }
 }
 ["nbAuth","nbCover","nbMain"].forEach(function(id){ var n=E(id); if(n) new MutationObserver(function(){ if(ov.classList.contains("open")) greet(); }).observe(n,{attributes:true,attributeFilter:["style"]}); });
+var nb4WasOpen=false;
 new MutationObserver(function(){
   refreshChokoVis();
-  if(ov.classList.contains("open")) greet();
-  else { hideArrow(); setBtns([]); closeEditor(); }
+  if(ov.classList.contains("open")){ greet(); nb4WasOpen=true; }
+  else if(nb4WasOpen){ hideArrow(); setBtns([]); closeEditor(); nb4WasOpen=false; }
 }).observe(ov,{attributes:true,attributeFilter:["class"]});
 E("nbCoverBook").addEventListener("click",function(){
   setTimeout(function(){
@@ -1766,7 +1790,7 @@ function startSelected(){
   stopAll();
   if(!sndOn()) return;
   saveState(true);
-  songSince=Date.now();
+  songSince=Date.now(); window.__zkeBgmStopped=false;
   if(selVal==='none'){ mode=null; return; }
   if(selVal.indexOf('midi:')===0){ startMidi(selVal.slice(5)); return; }
   var src=null;
@@ -1787,6 +1811,7 @@ window.ZKE_BGM_HOOK=function(on){ if(on){ ctx(); if(AC.state==='suspended') AC.r
 setInterval(function(){ if(mode==='audio'&&sndOn()) saveState(true); },3000);
 var songSince=Date.now(), autoAlt=0;
 setInterval(function(){
+  if(window.__zkeBgmStopped) return;
   if(!sndOn()||Date.now()-songSince<600000) return;
   if(window.ZKE_NB_BGM&&window.ZKE_NB_BGM.active()) return;
   if(document.querySelector('.zg-overlay.open')) return;
@@ -2034,6 +2059,7 @@ function startMidiFile(path){
   }).catch(function(){ selVal="none"; });
 }
 
+window.ZKE_BGM_STOP=function(){ try{ stopAll(); }catch(e){} window.__zkeBgmStopped=true; try{ sessionStorage.removeItem("zkeMusicState"); }catch(e){} };
 window.ZKE_BGM_RESTORE=function(){
   if(bgmSavedGenre===null) return;
   selVal=bgmSavedGenre; bgmSavedGenre=null; window.__gatyaCur=null;
@@ -2601,7 +2627,7 @@ function openEditor(opts){
     style:opts.style?JSON.parse(JSON.stringify(opts.style)):{font:"klee",s:"m"},atts:opts.atts||[]};
   var pg=E("nbPage"); var r=pg.getBoundingClientRect();
   ed.style.left=(edState.x)+"%"; ed.style.top=(edState.y)+"%";
-  if(opts.w){ ed.style.width=opts.w+"%"; } else ed.style.width="36%";
+  if(opts.w){ ed.style.width=opts.w+"%"; } else ed.style.width="18%";
   if(opts.h){ ed.style.height=opts.h+"%"; } else ed.style.height="";
   E("nb6Mode").textContent=edState.mode==="edit"?"書き込みを直す":"新しい付箋";
   E("nb6Name").value=myName();
@@ -3866,6 +3892,7 @@ function attachBubbleObs(){
 }
 function fireTip(){
   var t=E("chokoText2"); if(!t) return false;
+  var bm=E("chokoBtns2"); if(bm&&bm.children.length) return false;
   t.textContent="💡 小ネタ：" + TIPS13[Math.floor(Math.random()*TIPS13.length)];
   var b=E("chokoBtns2"); if(b) b.innerHTML="";
   lastBubble=Date.now();
@@ -3882,6 +3909,7 @@ setInterval(function(){
   var ov=E("nbOverlay"); if(ov&&ov.classList.contains("open")) return;
   if(Date.now()-lastInteract<40000) return;
   if(Date.now()-lastBubble<25000) return;
+  var bb=E("chokoBtns2"); if(bb&&bb.children.length) return;
   if(Math.random()<0.5) fireTip();
 },20000);
 })();
@@ -3950,6 +3978,194 @@ window.addEventListener("resize",clampChoko);
 })();
 </script>
 
+
+<script>
+// 限定公開作品（認証ゲート）: ページ内ダイアログでコードを確認し、合えば動画を自動で開く。
+// スマホのブラウザ／アプリ内ブラウザでは window.prompt が表示されないことがあるため、
+// コード入力は自前のダイアログで行う。確認はGASへ裏側で問い合わせ（JSONP）、
+// 動画はこのページから直接開く（GAS画面の中からの自動遷移は仕様上ブロックされるため）。
+(function () {
+  var GATE_RE = /script\.google\.com\/macros/;
+  var _origOpenFn = window.open;
+  var origOpen = function (u, t, f) { try { return _origOpenFn.call(window, u, t, f); } catch (e) { return null; } };
+  var modal = null, inputEl = null, errEl = null, pendingId = null, pendingBase = null;
+  function buildModal() {
+    modal = document.createElement('div');
+    modal.id='zkeGateModal'; modal.style.cssText = 'display:none;position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:999990;background:rgba(10,15,25,.62);align-items:center;justify-content:center;padding:18px';
+    modal.innerHTML =
+      '<div style="background:#fff;border-radius:14px;max-width:340px;width:100%;padding:22px 20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);position:relative">' + '<button class="zke-x" type="button" aria-label="閉じる" style="position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:none;background:#eef1f5;color:#22354f;font-size:15px;cursor:pointer;z-index:2">✕</button>' +
+      '<div style="font-size:17px;font-weight:800;color:#22354f;margin-bottom:8px"><span class="lk ic-lock" role="img" aria-label="限定公開"></span> 限定公開作品</div>' +
+      '<p style="font-size:14px;line-height:1.7;margin:0 0 12px">同窓生向けの限定公開です。お知らせした認証コードを入力してください。</p>' +
+      '<div class="zke-err" style="display:none;color:#c00;font-size:13.5px;font-weight:700;margin-bottom:10px"></div>' +
+      '<input class="zke-code" type="text" placeholder="認証コード" autocomplete="off" autocapitalize="none" style="width:100%;box-sizing:border-box;font-size:16px;padding:11px;border:1.5px solid #b9cbe2;border-radius:8px;margin-bottom:14px">' +
+      '<div style="display:flex;gap:10px">' +
+      '<button class="zke-ok" style="flex:1;background:#c00;color:#fff;border:none;font-size:15.5px;font-weight:700;padding:12px 0;border-radius:8px;cursor:pointer">▶ 視聴する</button>' +
+      '<button class="zke-cancel" style="flex:0 0 96px;background:#eef1f5;color:#22354f;border:none;font-size:15px;padding:12px 0;border-radius:8px;cursor:pointer">キャンセル</button>' +
+      '</div></div>';
+    document.body.appendChild(modal); modal.querySelector('.zke-x').addEventListener('click', function () { modal.querySelector('.zke-cancel').click(); });
+    inputEl = modal.querySelector('.zke-code');
+    errEl = modal.querySelector('.zke-err');
+    modal.querySelector('.zke-ok').addEventListener('click', function () {
+      var code = (inputEl.value || '').trim();
+      if (!code) { errEl.textContent = '認証コードを入力してください。'; errEl.style.display = 'block'; return; }
+      var win = null;
+      try { win = origOpen('', '_blank'); } catch (e) {}
+      verify(pendingId, pendingBase, code, win);
+    });
+    modal.querySelector('.zke-cancel').addEventListener('click', hideModal);
+    inputEl.addEventListener('keydown', function (ev) { if (ev.key === 'Enter') { ev.preventDefault(); modal.querySelector('.zke-ok').click(); } });
+    modal.addEventListener('click', function (ev) { if (ev.target === modal) hideModal(); });
+  }
+  function showModal(id, base, msg) {
+    if (!modal) buildModal();
+    pendingId = id; pendingBase = base;
+    if (msg) { errEl.textContent = msg; errEl.style.display = 'block'; } else { errEl.style.display = 'none'; }
+    modal.style.display = 'flex';
+    try { inputEl.focus(); } catch (e) {}
+  }
+  function hideModal() { if (modal) modal.style.display = 'none'; if (inputEl) inputEl.value = ''; }
+  function storedCode() { try { return sessionStorage.getItem('zkeGateCode') || ''; } catch (e) { return ''; } }
+  function saveCode(c) { try { sessionStorage.setItem('zkeGateCode', c); } catch (e) {} }
+  function clearCode() { try { sessionStorage.removeItem('zkeGateCode'); } catch (e) {} }
+  function fallbackLink(url) {
+    var d = document.createElement('div');
+    d.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;width:100%;height:100%;z-index:1001;background:rgba(10,15,25,.55);display:flex;align-items:center;justify-content:center;padding:18px';
+    var card = document.createElement('div');
+    card.style.cssText = 'background:#fff;border-radius:14px;max-width:340px;width:100%;padding:22px 20px 18px;box-shadow:0 12px 40px rgba(0,0,0,.35);text-align:center';
+    var hd = document.createElement('div');
+    hd.style.cssText = 'font-size:17px;font-weight:800;color:#22354f;margin-bottom:8px';
+    hd.textContent = '⚠ ポップアップがブロックされました';
+    var tx = document.createElement('p');
+    tx.style.cssText = 'font-size:14px;line-height:1.7;margin:0 0 16px';
+    tx.textContent = 'ブラウザの設定で動画を自動で開けませんでした。下のボタンを押してください。';
+    var a = document.createElement('a');
+    a.href = url; a.target = '_blank'; a.rel = 'noopener';
+    a.textContent = '▶ 動画を開く';
+    a.style.cssText = 'display:block;background:#c00;color:#fff;font-size:16px;font-weight:700;padding:13px 0;border-radius:8px;text-decoration:none;margin-bottom:10px';
+    var x = document.createElement('button');
+    x.textContent = '閉じる';
+    x.style.cssText = 'width:100%;background:#eef1f5;color:#22354f;border:none;font-size:15px;padding:11px 0;border-radius:8px;cursor:pointer';
+    x.onclick = function () { d.remove(); };
+    d.addEventListener('click', function (ev) { if (ev.target === d) d.remove(); });
+    card.appendChild(hd); card.appendChild(tx); card.appendChild(a); card.appendChild(x);
+    d.appendChild(card);
+    document.body.appendChild(d);
+  }
+  function verify(id, base, code, win) {
+    var cb = 'zkeCb' + Date.now();
+    var sc = document.createElement('script');
+    var done = false;
+    function cleanup() { if (done) return; done = true; try { delete window[cb]; } catch (e) { window[cb] = undefined; } if (sc.parentNode) sc.parentNode.removeChild(sc); }
+    window[cb] = function (res) {
+      cleanup();
+      if (res && res.ok && res.url) {
+        saveCode(code);
+        hideModal();
+        if (win && !win.closed) {
+          try { win.location.href = res.url; } catch (e) { fallbackLink(res.url); }
+        } else {
+          var w = origOpen(res.url, '_blank', 'noopener');
+          if (!w) fallbackLink(res.url);
+        }
+      } else {
+        if (win && !win.closed) { try { win.close(); } catch (e) {} }
+        clearCode();
+        if (modal && modal.style.display !== 'none') {
+          errEl.textContent = '認証コードが違います。もう一度お試しください。';
+          errEl.style.display = 'block';
+          inputEl.select();
+        } else {
+          showModal(id, base, '認証コードが違います。もう一度お試しください。');
+        }
+      }
+    };
+    function toGatePage() {
+      hideModal();
+      if (win && !win.closed) { try { win.location.href = base + '?id=' + id; return; } catch (e) {} }
+      origOpen(base + '?id=' + id, '_blank', 'noopener');
+    }
+    sc.onerror = function () { cleanup(); toGatePage(); };
+    sc.src = base + '?id=' + id + '&code=' + encodeURIComponent(code) + '&callback=' + cb;
+    document.body.appendChild(sc);
+    setTimeout(function () { if (!done) { cleanup(); toGatePage(); } }, 9000);
+  }
+  function gateOpen(gasUrl) {
+    try {
+      var m = /[?&]id=([\w-]+)/.exec(gasUrl);
+      if (!m) { origOpen(gasUrl, '_blank', 'noopener'); return; }
+      var code = storedCode();
+      if (code) {
+        var win = null;
+        try { win = origOpen('', '_blank'); } catch (e) {}
+        verify(m[1], gasUrl.split('?')[0], code, win);
+      }
+      else showModal(m[1], gasUrl.split('?')[0], '');
+    } catch (e) {
+      origOpen(gasUrl, '_blank', 'noopener');
+    }
+  }
+  // キャプチャ段階で最優先に受け取る：カルーセルの「視聴する」等は独自ハンドラで
+  // stopPropagation するため、通常の（バブル段階の）受け取りでは認証処理まで届かない。
+  document.addEventListener('click', function (ev) {
+    var a = ev.target && ev.target.closest ? ev.target.closest('a[href*="script.google.com/macros"]') : null;
+    if (!a) return;
+    ev.preventDefault();
+    ev.stopPropagation();
+    gateOpen(a.href);
+  }, true);
+  window.open = function (url, target, features) {
+    if (typeof url === 'string' && GATE_RE.test(url) && url.indexOf('callback=') < 0) {
+      gateOpen(url);
+      return null;
+    }
+    return origOpen(url, target, features);
+  };
+  try { buildModal(); } catch (e) {}
+})();
+</script>
+<style id="nb17style">
+/* ===== v80 NB17: smaller choko, always reachable; attachment images fit whole inside the card ===== */
+#chokoRoot{width:118px!important;z-index:999989!important}
+#chokoImg2{width:118px!important;height:auto!important}
+.nb6-atts2 img{object-fit:contain;max-height:none!important}
+.nb6-atts2{min-width:0}
+.nb-card.nb15-imgonly{width:34%!important}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb17) return; window.__nb17=1;
+function nudge(){
+  var root=document.getElementById("chokoRoot");
+  if(!root) return;
+  var r=root.getBoundingClientRect();
+  if(!r.width||!r.height) return;
+  var iw=window.innerWidth, ih=window.innerHeight, m=4, dx=0, dy=0;
+  if(r.left<m) dx=r.left-m; else if(r.right>iw-m) dx=r.right-(iw-m);
+  if(r.top<m) dy=r.top-m; else if(r.bottom>ih-m) dy=r.bottom-(ih-m);
+  if(dx||dy){
+    root.style.left=Math.round(r.left-dx)+"px";
+    root.style.top=Math.round(r.top-dy)+"px";
+    root.style.right="auto"; root.style.bottom="auto";
+  }
+}
+setInterval(nudge,700);
+window.addEventListener("resize",nudge);
+document.addEventListener("pointerdown",function(ev){
+  var nm=ev.target&&ev.target.closest?ev.target.closest(".choko-name2"):null;
+  if(!nm) return;
+  var root=document.getElementById("chokoRoot"); if(!root) return;
+  var r=root.getBoundingClientRect();
+  var ox=ev.clientX-r.left, oy=ev.clientY-r.top;
+  root.style.left=r.left+"px"; root.style.top=r.top+"px"; root.style.right="auto"; root.style.bottom="auto";
+  function mv(e){ root.style.left=Math.round(e.clientX-ox)+"px"; root.style.top=Math.round(e.clientY-oy)+"px"; }
+  function up(){ document.removeEventListener("pointermove",mv); document.removeEventListener("pointerup",up);
+    try{ localStorage.setItem("zkeChokoPos",JSON.stringify({l:parseInt(root.style.left,10)||0,t:parseInt(root.style.top,10)||0})); }catch(e){} nudge(); }
+  document.addEventListener("pointermove",mv);
+  document.addEventListener("pointerup",up);
+},true);
+})();
+</script>
 
 </body>
 </html>
