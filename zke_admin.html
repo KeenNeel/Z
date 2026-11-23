@@ -203,6 +203,40 @@ secMidi.innerHTML='<h2>🎵 オリジナルMIDIの登録（カルーセルの音
 +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="text" id="mdName" placeholder="曲名" style="min-width:180px"><input type="file" id="mdFile" accept=".mid,.midi,audio/midi"><button type="button" id="mdSave" class="primary">登録する</button><span id="mdStatus"></span></div>'
 +'<div id="mdList" style="margin-top:10px"></div>';
 main.appendChild(secMidi);
+var secMusic=document.createElement("section");
+secMusic.innerHTML='<h2>🎶 音楽MP3の登録と、リスト表示の設定</h2>'
++'<p class="small">MP3のURLを登録すると、カルーセルの「🎵 音楽」リストに出ます（httpsのURLのみ）。デフォルト曲はチェックを外すとリストに出なくなります（管理者が決められます）。</p>'
++'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="text" id="muName" placeholder="曲名" style="min-width:150px"><input type="text" id="muUrl" placeholder="https://… .mp3" style="min-width:320px;flex:1"><button type="button" id="muSave" class="primary">MP3を登録する</button><span id="muStatus"></span></div>'
++'<div id="muList" style="margin-top:10px"></div>'
++'<h3 style="font-size:14.5px;margin:16px 0 6px">デフォルト曲の表示/非表示</h3><div id="muDefaults"></div>'
++'<div style="margin-top:8px"><button type="button" id="muHiddenSave" class="primary">表示設定を保存する</button><span id="muHiddenStatus"></span></div>';
+main.appendChild(secMusic);
+var MU_DEFS=[["orgel","ファンタジーオルゴール"],["orgelSynth","オルゴール"],["piano","ピアノソロ"],["jazz","ジャズ"],["rock","ロック"],["country","カントリー"],["techno","テクノ"],["okinawa","沖縄"],["bossa","ボサノバ"],["guitar","ギター"],["pad","パッド"]];
+function renderMusic(){
+  jsonp({action:"music_config",code:code()},function(err,d){
+    var list=document.getElementById("muList"), defs=document.getElementById("muDefaults");
+    if(err||!d||!d.ok){ list.innerHTML='<p class="small">音楽設定を取得できませんでした（GASの再デプロイが必要です）。</p>'; defs.innerHTML=""; return; }
+    if(!d.mp3s.length) list.innerHTML='<p class="small">登録済みMP3はまだありません。</p>';
+    else list.innerHTML=d.mp3s.map(function(m){ return '<div style="display:flex;gap:8px;align-items:center;margin:3px 0"><span>🎵 '+m.name.replace(/</g,"&lt;")+'</span><span class="small" style="word-break:break-all">'+m.url.replace(/</g,"&lt;")+'</span><button type="button" data-mudel="'+m.name.replace(/"/g,"&quot;")+'">削除</button></div>'; }).join("");
+    list.querySelectorAll("[data-mudel]").forEach(function(b){ b.addEventListener("click",function(){
+      post({action:"admin_music",code:code(),op:"del",name:b.getAttribute("data-mudel")}).then(function(){ setTimeout(renderMusic,1500); });
+    }); });
+    var hidden=d.hidden||[];
+    defs.innerHTML=MU_DEFS.map(function(g){ return '<label style="display:inline-block;margin:2px 10px 2px 0"><input type="checkbox" class="mu-def" value="'+g[0]+'"'+(hidden.indexOf(g[0])>-1?"":" checked")+'> '+g[1]+'</label>'; }).join("");
+  });
+}
+document.getElementById("muSave").addEventListener("click",function(){
+  var nm=document.getElementById("muName").value.trim(), url=document.getElementById("muUrl").value.trim(), st=document.getElementById("muStatus");
+  if(!nm||!/^https:\/\//.test(url)){ st.textContent="曲名とhttpsのURLを入れてください。"; return; }
+  st.textContent="登録中…";
+  post({action:"admin_music",code:code(),op:"add",name:nm,url:url}).then(function(){ st.textContent="登録しました。"; document.getElementById("muName").value=""; document.getElementById("muUrl").value=""; setTimeout(renderMusic,1500); }).catch(function(){ st.textContent="登録できませんでした。"; });
+});
+document.getElementById("muHiddenSave").addEventListener("click",function(){
+  var hidden=[]; document.querySelectorAll(".mu-def").forEach(function(c){ if(!c.checked) hidden.push(c.value); });
+  var st=document.getElementById("muHiddenStatus"); st.textContent="保存中…";
+  post({action:"admin_music",code:code(),op:"hidden",hidden:hidden}).then(function(){ st.textContent="保存しました。"; }).catch(function(){ st.textContent="保存できませんでした。"; });
+});
+
 var secUse=document.createElement("section");
 secUse.innerHTML='<h2>📊 使用量と料金の概算</h2><div id="usageBox"><p class="small">読み込み中…</p></div>';
 main.appendChild(secUse);
@@ -304,7 +338,7 @@ var started=false;
 var iv=setInterval(function(){
   var m=document.getElementById("main");
   if(m&&m.style.display!=="none"&&code()){
-    if(!started){ started=true; renderMidiList(); renderUsage(); }
+    if(!started){ started=true; renderMidiList(); renderUsage(); renderMusic(); }
   }
 }, 700);
 })();
