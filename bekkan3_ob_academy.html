@@ -955,7 +955,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v65）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v66）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -1132,7 +1132,7 @@ tr.pink td{background:#ffe3ee!important}
 #nbPgInfo{font-weight:800;font-size:14.5px;color:#26324a}
 .nb-page{position:relative;height:min(54vh,540px);min-height:330px;background:repeating-linear-gradient(#fffdf4,#fffdf4 27px,#d8e2f0 28px);border:1.5px solid #b9c6da;border-radius:10px;overflow:hidden;box-shadow:inset 0 0 24px rgba(38,50,74,.07)}
 .nb-page.picking{cursor:crosshair;box-shadow:inset 0 0 0 2px #c0392b,inset 0 0 24px rgba(192,57,43,.10)}
-.nb-card{position:absolute;width:46.5%;max-height:47%;overflow:auto;background:#fffef9;border:1px solid #d9d2b8;border-radius:8px;box-shadow:2px 3px 8px rgba(38,50,74,.18);padding:7px 9px;font-size:13px;line-height:1.55;z-index:2}
+.nb-card{position:absolute;width:32%;max-height:47%;overflow:auto;background:#fffef9;border:1px solid #d9d2b8;border-radius:8px;box-shadow:2px 3px 8px rgba(38,50,74,.18);padding:7px 9px;font-size:13px;line-height:1.55;z-index:2}
 .nb-card .nb-meta{font-size:11px;color:#7a7466;margin-bottom:3px}
 .nb-card .nb-text{word-break:break-word}
 .nb-card .nb-img{max-width:100%;border-radius:6px;margin-top:4px}
@@ -2361,6 +2361,7 @@ document.addEventListener("input",function(e){
   if(e.target&&e.target.closest&&e.target.closest(".nb-overlay")) lastInputAt=Date.now();
 },true);
 setInterval(function(){
+  if(true) return; /* v66: automatic refresh removed */
   if(!overlayOpen()) return;
   if(document.visibilityState!=="visible") return;
   if(E("nbFormWin")&&E("nbFormWin").classList.contains("open")) return;
@@ -2402,7 +2403,7 @@ new MutationObserver(function(){
 .nb6-jump input{width:52px;padding:3px 5px;border:1px solid #c9b98a;border-radius:6px;font-size:12px}
 .nb6-jump button{padding:3px 9px;border:1px solid #c9b98a;background:#fff8e1;border-radius:6px;cursor:pointer;font-size:12px}
 #nbOverlay.nb6-placing #nbPage{cursor:crosshair;outline:3px dashed #fb8500;outline-offset:-3px}
-#nb6Ed{position:absolute;z-index:80;width:46%;min-width:250px;background:linear-gradient(175deg,#fff6a8,#ffef8a);border-radius:4px 4px 14px 4px;box-shadow:0 12px 30px rgba(0,0,0,.35);transform:none;display:none;resize:both;overflow:hidden;min-height:230px}
+#nb6Ed{position:absolute;z-index:80;width:36%;min-width:250px;background:linear-gradient(175deg,#fff6a8,#ffef8a);border-radius:4px 4px 14px 4px;box-shadow:0 12px 30px rgba(0,0,0,.35);transform:none;display:none;resize:both;overflow:hidden;min-height:230px}
 #nb6Ed.open{display:block}
 #nb6Ed .nb6-tape{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:96px;height:20px;background:rgba(255,255,255,.55);border-left:1px dashed rgba(0,0,0,.12);border-right:1px dashed rgba(0,0,0,.12)}
 .nb6-head{display:flex;align-items:center;gap:6px;padding:16px 10px 4px;cursor:grab;font-weight:900;font-size:13px;color:#6b5200;touch-action:none}
@@ -2684,7 +2685,7 @@ function openEditor(opts){
     style:opts.style?JSON.parse(JSON.stringify(opts.style)):{font:"klee",s:"m"},atts:opts.atts||[]};
   var pg=E("nbPage"); var r=pg.getBoundingClientRect();
   ed.style.left=(edState.x)+"%"; ed.style.top=(edState.y)+"%";
-  if(opts.w){ ed.style.width=opts.w+"%"; } else ed.style.width="46%";
+  if(opts.w){ ed.style.width=opts.w+"%"; } else ed.style.width="36%";
   if(opts.h){ ed.style.height=opts.h+"%"; } else ed.style.height="";
   E("nb6Mode").textContent=edState.mode==="edit"?"書き込みを直す":"新しい付箋";
   E("nb6Name").value=myName();
@@ -3583,6 +3584,7 @@ function snapStyle(){
   return o;
 }
 function snapDraft(){
+  return; /* v66: auto-save removed */
   var ed=E("nb6Ed"); if(!ed) return;
   draft={
     page:openPage||curPage8(),
@@ -3643,7 +3645,7 @@ setInterval(function(){
   var cp=curPage8();
   if(editorOpen()){
     if(openPage===null) openPage=cp;
-    if(cp!==openPage){
+    if(false){ /* v66: no auto-close on page turn */
       /* page turned mid-writing: record the draft and close the editor */
       if(editorMode()==="書き込みを直す"){
         editDraft={postId:lastEditId,text:E("nb6Text")?E("nb6Text").value:""};
@@ -3672,7 +3674,7 @@ setInterval(function(){
 },650);
 /* refill an interrupted edit when the same note is edited again */
 var editWatch=setInterval(function(){
-  if(editorOpen()&&editorMode()==="書き込みを直す"&&editDraft&&lastEditId===editDraft.postId){
+  if(false){ /* v66: no auto refill */
     var ta=E("nb6Text");
     if(ta&&editDraft.text&&ta.value!==editDraft.text){
       ta.value=editDraft.text; ta.dispatchEvent(new Event("input",{bubbles:true}));
@@ -3925,6 +3927,56 @@ document.addEventListener("pointerdown",function(e){
   if(ov.classList.contains("nb6-placing")) return;
   var p=E("nb6Pencil"); if(p) p.click();
 },true);
+})();
+</script>
+
+<style id="nb13style">
+/* ===== v66 NB13: no leftover write button, big confirm bar, no reload flash ===== */
+#nbWriteBtn{display:none!important}
+#nbOverlay.nb6-reloading #nbMain{display:block!important;visibility:visible!important}
+#nbOverlay .nb6-confirm{position:fixed!important;left:50%!important;top:auto!important;bottom:calc(16px + env(safe-area-inset-bottom))!important;transform:translateX(-50%)!important;z-index:99999!important;background:#263238!important;padding:10px 12px!important;border-radius:999px!important;box-shadow:0 12px 34px rgba(0,0,0,.5)!important;display:flex!important;gap:10px!important;align-items:center!important}
+#nbOverlay .nb6-confirm::before{content:"この編集を保存しますか？";color:#fff;font-weight:700;font-size:13px;margin-left:6px;white-space:nowrap}
+#nbOverlay .nb6-confirm button{font-size:16px!important;padding:11px 20px!important;border-radius:999px!important;cursor:pointer}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb13) return; window.__nb13=1;
+function E(id){ return document.getElementById(id); }
+/* remove the leftover bottom write button whenever it appears */
+setInterval(function(){ var b=E("nbWriteBtn"); if(b) b.remove(); },800);
+/* ===== choko tells tips on her own, now and then ===== */
+var TIPS13=["全関映の創立は1969年ごろと伝わっています（諸説あり）。", "三島有紀子監督は全関映の出身です。", "全関映は2020年、120団体オムニバス『突然失礼致します！』に『G』（山本総一郎）で参加しました。", "おとな全関映・大同窓会2026は11月28日、西宮北口で開催です。", "『猿人現わる』と『レンジマンのスーパー視力検査』は読売テレビの8mm映画祭の番組内で見られます。", "8ミリフィルムは上映時間1分で約4.6メートル。長編はリール交換が大変でした。", "8ミリの音声はフィルム端の磁気帯に記録するタイプが主流でした。", "フィルムのつなぎ目が引っかかると、画面が上下に揺れます。", "映写スクリーンの代わりに白い壁やシーツを使うこともありました。", "映画の標準フレームレートは1秒24コマです。", "ロケハンは撮影場所の下見。光の向きまで確認します。", "映画音楽は映像の後に作ることが一般的です。", "カルーセルの音楽はジャンルが選べます。管理画面からはオリジナルMIDIも登録できます。", "書いて帳は付箋スタイル。大きな鉛筆ボタンから書く場所を選べます。", "音楽はページを移動しても続きます（同じタブの中で）。", "作品の行の書いて帳アイコンから、その作品専用のメモが開けます。", "書いて帳の表紙ロゴは開くたびに変わります。ギャグ版が出たらラッキー。", "別巻1にはAR記念撮影の写真も増えています。", "関西学院大学の略称は「関学」。英語では KWANSEI GAKUIN。", "上映会のパンフレット作りもサークルの大事な仕事でした。"];
+var started=Date.now(), lastInteract=0, lastBubble=Date.now();
+document.addEventListener("pointerdown",function(e){
+  if(e.target&&e.target.closest&&e.target.closest("#chokoRoot")) lastInteract=Date.now();
+},true);
+var bubbleObsAttached=false;
+function attachBubbleObs(){
+  var t=E("chokoText2"); if(!t||bubbleObsAttached) return;
+  bubbleObsAttached=true;
+  new MutationObserver(function(){ lastBubble=Date.now(); }).observe(t,{childList:true,characterData:true,subtree:true});
+}
+function fireTip(){
+  var t=E("chokoText2"); if(!t) return false;
+  t.textContent="💡 小ネタ：" + TIPS13[Math.floor(Math.random()*TIPS13.length)];
+  var b=E("chokoBtns2"); if(b) b.innerHTML="";
+  lastBubble=Date.now();
+  return true;
+}
+window.__nb13TipNow=fireTip;
+setInterval(function(){
+  attachBubbleObs();
+  if(Date.now()-started<45000) return;
+  var r=E("chokoRoot");
+  if(!r||!r.classList.contains("on")||!r.offsetHeight) return;
+  if(document.visibilityState!=="visible") return;
+  if(document.querySelector(".zg-overlay.open")) return;
+  var ov=E("nbOverlay"); if(ov&&ov.classList.contains("open")) return;
+  if(Date.now()-lastInteract<40000) return;
+  if(Date.now()-lastBubble<25000) return;
+  if(Math.random()<0.5) fireTip();
+},20000);
 })();
 </script>
 
