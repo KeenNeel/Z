@@ -955,7 +955,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v76）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v78）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -1044,7 +1044,7 @@ tr.pink td{background:#ffe3ee!important}
   function saveCode(c){ try{ sessionStorage.setItem("zkeGateCode",c); }catch(e){} }
   var ov=document.createElement("div");
   ov.className="nb-overlay"; ov.id="ctOverlay";
-  ov.innerHTML='<div class="nb-panel"><div class="nb-head"><span>\u2709 運営者に連絡</span><button type="button" id="ctClose">\u2715 閉じる</button></div>'
+  ov.innerHTML='<div class="nb-panel"><div class="nb-head"><span>\u2709 運営（NITTA）に連絡</span><button type="button" id="ctClose">\u2715 閉じる</button></div>'
     +'<div id="ctAuth"><p style="font-size:14px">同窓生向けの機能です。はじめに認証コードを入力してください。</p>'
     +'<input id="ctCode" type="text" placeholder="認証コード" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:14.5px;padding:9px;border:1px solid #c9cfd6;border-radius:8px;font-family:inherit">'
     +'<button type="button" id="ctAuthBtn">認証する</button><p id="ctAuthMsg"></p></div>'
@@ -1060,7 +1060,7 @@ tr.pink td{background:#ffe3ee!important}
   function openCt(){ ov.classList.add("open"); if(code()) showForm(); }
   document.querySelectorAll(".nb-all-btn").forEach(function(b){
     var btn=document.createElement("button");
-    btn.type="button"; btn.className="ct-btn"; btn.textContent="\u2709 運営者に連絡";
+    btn.type="button"; btn.className="ct-btn"; btn.textContent="\u2709 運営（NITTA）に連絡";
     btn.addEventListener("click",openCt);
     b.parentNode.insertBefore(btn,b.nextSibling);
   });
@@ -2785,7 +2785,7 @@ function decorate(){
       n.atts.forEach(function(at){
         var a=document.createElement("a"); a.href=at.url; a.target="_blank"; a.rel="noopener"; a.title=at.name||"";
         if(at.mime&&at.mime.indexOf("image/")===0){
-          var im=document.createElement("img"); im.onerror=function(){ if(at.id&&!im.dataset.fb){ im.dataset.fb="1"; im.src="https://lh3.googleusercontent.com/d/"+at.id+"=w240"; } }; im.src="https://drive.google.com/thumbnail?id="+at.id+"&sz=w240"; im.alt=at.name||"";
+          var im=document.createElement("img"); im.onerror=function(){ if(at.id&&!im.dataset.fb){ im.dataset.fb="1"; im.src="https://lh3.googleusercontent.com/d/"+at.id+"=w640"; } }; im.src="https://drive.google.com/thumbnail?id="+at.id+"&sz=w640"; im.alt=at.name||"";
           a.appendChild(im);
         } else {
           a.textContent=(at.mime&&at.mime.indexOf("audio/")===0?"🎵 ":"📎 ")+(at.name||"ファイル");
@@ -3386,7 +3386,7 @@ var FAQ=[
  {k:"管理者画面 admin 管理",q:"管理者画面はどこ？",a:"ページ一番下の右端にある「admin」のリンクから開きます（zke_admin.html）。管理者コードが必要です。"},
  {k:"全関映 創立 1969 歴史",q:"全関映はいつできた？",a:"創立は1969年ごろと伝わっています（諸説あり）。正式名称は「全関学自主映画製作上映委員会」です。第8節にまとめがあります。"},
  {k:"部室 学生会館 現役生",q:"現役生の部室は？",a:"学生会館新館4Fです（公式InstagramのQ&Aより）。現役生の新作は第4分野に収録されています。"},
- {k:"連絡 運営者 問い合わせ メール",a:"運営者への連絡は、各ページの「✉ 運営者に連絡」ボタンから送れます（認証コードが必要です）。",q:"運営者に連絡したい"},
+ {k:"連絡 運営者 問い合わせ メール",a:"運営者への連絡は、各ページの「✉ 運営（NITTA）に連絡」ボタンから送れます（認証コードが必要です）。",q:"運営（NITTA）に連絡したい"},
  {k:"高久保浩 ワンダバ駄馬",q:"高久保浩さんの作品は？",a:"第6分野「高久保浩ムービー集」に全21作品（限定公開）。チャンネル名は「ワンダバ駄馬」です。"},
  {k:"関西学生映画祭 2012",q:"関西学生映画祭との関係は？",a:"関西学生映画祭は2012年に始まり、全関映も参加してきました（共同設立かどうかは見解が分かれています）。第5分野にノミネート記録があります。"},
  {k:"別巻 違い 本編",q:"別巻はどんな内容？",a:"別巻1は同窓会2026の記録集（191件）、別巻2は『男ともだち』特集、別巻3はOB会とアカデミー賞（2012〜2019、管理者のみ）です。"},
@@ -3422,23 +3422,13 @@ function buildPanel(){
   +'<button type="button" data-chip="小ネタ">🎓 小ネタ</button>'
   +'<button type="button" data-chip="男ともだち">🎥 男ともだち</button>'
   +'</div>'
-  +'<div class="nb7-srow"><input id="nb7Q" maxlength="40" placeholder="作品名・人名・キーワードで検索"><button type="button" class="nb7-go" id="nb7Go">検索</button><button type="button" class="nb7-ai" id="nb7Ai">🌐 AIに聞く</button></div>'
-  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。「🌐 AIに聞く」は短い単語だけ、ChatGPTを新しいタブで開きます（文章の生成・分析はできません）。</div></div>';
+  +'<div class="nb7-srow"><input id="nb7Q" maxlength="40" placeholder="作品名・人名・キーワードで検索"><button type="button" class="nb7-go" id="nb7Go">検索</button></div>'
+  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。</div></div>';
   document.body.appendChild(panel);
   E("nb7Close").addEventListener("click",function(){ panel.classList.remove("open"); });
   E("nb7Go").addEventListener("click",function(){ doSearch(E("nb7Q").value); });
   E("nb7Q").addEventListener("keydown",function(e){ if(e.key==="Enter") doSearch(this.value); });
-  E("nb7Ai").addEventListener("click",function(){
-    var q=E("nb7Q").value.trim();
-    var res=E("nb7Res");
-    if(!q){ if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語だけだよ。まず単語を入れてね。</div>'; return; }
-    if(q.length>20||/\s/.test(q)||/(生成|分析|書いて|作って|作成|要約|翻訳|説明|教えて|プログラム|コード|作文|長文|歌詞|作曲)/.test(q)){
-      if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語（20文字まで・スペースなし）だけだよ🙏\n文章の生成や分析みたいな重いお願いはできないの。単語で聞いてね。</div>';
-      say("AIに聞けるのは短い単語だけだよ🙏");
-      return;
-    }
-    window.open("https://chatgpt.com/?q="+encodeURIComponent(q+" とは？"),"_blank","noopener");
-  });
+  
   panel.querySelectorAll("[data-chip]").forEach(function(b){
     b.addEventListener("click",function(){ E("nb7Q").value=b.dataset.chip.split(" ")[0]; doSearch(b.dataset.chip); });
   });
@@ -3468,7 +3458,7 @@ function doSearch(qraw){
   hits.sort(function(a,b){ return b.score-a.score; });
   hits=hits.slice(0,7);
   if(!hits.length){
-    res.innerHTML='<div class="nb7-ans">ごめんね、アーカイブの中には見つからなかったよ💦\n別の言葉で試すか、「🌐 AIに聞く」でChatGPTに聞いてみてね。</div>';
+    res.innerHTML='<div class="nb7-ans">ごめんね、アーカイブの中には見つからなかったよ💦\n別の言葉で試してみてね。</div>';
     return;
   }
   res.innerHTML="";
@@ -4021,6 +4011,49 @@ setInterval(function(){
   var root=document.getElementById("chokoRoot");
   if(root) root.classList.toggle("nb14-dodge",!!editing);
 },800);
+})();
+</script>
+
+
+<style id="nb15style">
+/* ===== v77 NB15: no cover flash while inside the notebook; big attachment images ===== */
+#nbOverlay.nb15-inside #nbCover{visibility:hidden!important;pointer-events:none!important}
+.nb6-atts2{flex-direction:column;align-items:stretch}
+.nb6-atts2 a{display:block}
+.nb6-atts2 img{width:100%!important;height:auto!important;max-height:240px;object-fit:cover}
+.nb-card.nb15-imgonly{width:46%!important;max-width:300px}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb15) return; window.__nb15=1;
+function clampChoko(){
+  var root=document.getElementById("chokoRoot");
+  if(!root) return;
+  var r=root.getBoundingClientRect();
+  if(!r.width||!r.height) return;
+  var iw=window.innerWidth, ih=window.innerHeight;
+  var vx=Math.max(0,Math.min(r.right,iw)-Math.max(r.left,0));
+  var vy=Math.max(0,Math.min(r.bottom,ih)-Math.max(r.top,0));
+  if(vx<r.width*0.35||vy<r.height*0.35){
+    root.style.left="auto"; root.style.top="auto"; root.style.right="16px"; root.style.bottom="84px";
+    try{ localStorage.removeItem("zkeChokoPos"); }catch(e){}
+  }
+}
+setInterval(function(){
+  document.querySelectorAll("#nbPage .nb-card").forEach(function(c){
+    var tx=c.querySelector(".nb-text");
+    var hasImg=!!c.querySelector(".nb6-atts2 img");
+    c.classList.toggle("nb15-imgonly",!!(hasImg&&tx&&!tx.textContent.trim()));
+  });
+  var ov=document.getElementById("nbOverlay"), main=document.getElementById("nbMain");
+  if(ov){
+    if(!ov.classList.contains("open")) ov.classList.remove("nb15-inside");
+    else if(main&&main.style.display!=="none"&&main.offsetHeight>0) ov.classList.add("nb15-inside");
+  }
+  clampChoko();
+},900);
+window.addEventListener("resize",clampChoko);
 })();
 </script>
 

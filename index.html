@@ -838,7 +838,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 </div>
 <div class="bl-src"><div class="bl-src-t">出典（クリックで直接開けます）</div><ul><li><a href="https://www.kwansei.ac.jp/campuslife/club/tourokudantai.html" target="_blank" rel="noopener">関西学院大学 公式「大学登録団体」</a></li><li><a href="https://note.com/hisak0415/n/n527f3f24d097" target="_blank" rel="noopener">OBの回想エッセイ（note）</a></li><li><a href="https://bunshun.jp/articles/-/68900?page=3" target="_blank" rel="noopener">文春オンライン（三島有紀子さんインタビュー）</a></li><li><a href="https://www.kansai-u.ac.jp/headlines/entry/post_71716.php" target="_blank" rel="noopener">関西大学 公式（関西学生映画祭の紹介）</a></li><li><a href="https://www.weblio.jp/content/%E9%96%A2%E8%A5%BF%E5%AD%A6%E7%94%9F%E6%98%A0%E7%94%9F%E7%A5%AD" target="_blank" rel="noopener">関西学生映画祭（Weblio）</a></li><li><a href="https://www.kobe-np.co.jp/rentoku/campus-repo/202010/0013781199.shtml" target="_blank" rel="noopener">神戸新聞（2020年 全国学生オムニバス）</a></li><li><a href="https://kobe-eiga.net/programs/1051/" target="_blank" rel="noopener">神戸映画資料館（『CINEMAだいすき！』）</a></li><li><a href="https://www.instagram.com/p/DVvoozvkm5M/" target="_blank" rel="noopener">全関映 公式Instagram Q&A投稿</a></li><li><a href="https://www.instagram.com/kg_zke_1969/" target="_blank" rel="noopener">全関映 公式Instagram（@kg_zke_1969）</a></li></ul></div>
 
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v76）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v78）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -5422,7 +5422,7 @@ tr.pink td{background:#ffe3ee!important}
   function saveCode(c){ try{ sessionStorage.setItem("zkeGateCode",c); }catch(e){} }
   var ov=document.createElement("div");
   ov.className="nb-overlay"; ov.id="ctOverlay";
-  ov.innerHTML='<div class="nb-panel"><div class="nb-head"><span>\u2709 運営者に連絡</span><button type="button" id="ctClose">\u2715 閉じる</button></div>'
+  ov.innerHTML='<div class="nb-panel"><div class="nb-head"><span>\u2709 運営（NITTA）に連絡</span><button type="button" id="ctClose">\u2715 閉じる</button></div>'
     +'<div id="ctAuth"><p style="font-size:14px">同窓生向けの機能です。はじめに認証コードを入力してください。</p>'
     +'<input id="ctCode" type="text" placeholder="認証コード" autocomplete="off" style="width:100%;box-sizing:border-box;font-size:14.5px;padding:9px;border:1px solid #c9cfd6;border-radius:8px;font-family:inherit">'
     +'<button type="button" id="ctAuthBtn">認証する</button><p id="ctAuthMsg"></p></div>'
@@ -5438,7 +5438,7 @@ tr.pink td{background:#ffe3ee!important}
   function openCt(){ ov.classList.add("open"); if(code()) showForm(); }
   document.querySelectorAll(".nb-all-btn").forEach(function(b){
     var btn=document.createElement("button");
-    btn.type="button"; btn.className="ct-btn"; btn.textContent="\u2709 運営者に連絡";
+    btn.type="button"; btn.className="ct-btn"; btn.textContent="\u2709 運営（NITTA）に連絡";
     btn.addEventListener("click",openCt);
     b.parentNode.insertBefore(btn,b.nextSibling);
   });
@@ -7456,7 +7456,7 @@ function decorate(){
       n.atts.forEach(function(at){
         var a=document.createElement("a"); a.href=at.url; a.target="_blank"; a.rel="noopener"; a.title=at.name||"";
         if(at.mime&&at.mime.indexOf("image/")===0){
-          var im=document.createElement("img"); im.onerror=function(){ if(at.id&&!im.dataset.fb){ im.dataset.fb="1"; im.src="https://lh3.googleusercontent.com/d/"+at.id+"=w240"; } }; im.src="https://drive.google.com/thumbnail?id="+at.id+"&sz=w240"; im.alt=at.name||"";
+          var im=document.createElement("img"); im.onerror=function(){ if(at.id&&!im.dataset.fb){ im.dataset.fb="1"; im.src="https://lh3.googleusercontent.com/d/"+at.id+"=w640"; } }; im.src="https://drive.google.com/thumbnail?id="+at.id+"&sz=w640"; im.alt=at.name||"";
           a.appendChild(im);
         } else {
           a.textContent=(at.mime&&at.mime.indexOf("audio/")===0?"🎵 ":"📎 ")+(at.name||"ファイル");
@@ -8233,7 +8233,7 @@ var FAQ=[
  {k:"管理者画面 admin 管理",q:"管理者画面はどこ？",a:"ページ一番下の右端にある「admin」のリンクから開きます（zke_admin.html）。管理者コードが必要です。"},
  {k:"全関映 創立 1969 歴史",q:"全関映はいつできた？",a:"創立は1969年ごろと伝わっています（諸説あり）。正式名称は「全関学自主映画製作上映委員会」です。第8節にまとめがあります。"},
  {k:"部室 学生会館 現役生",q:"現役生の部室は？",a:"学生会館新館4Fです（公式InstagramのQ&Aより）。現役生の新作は第4分野に収録されています。"},
- {k:"連絡 運営者 問い合わせ メール",a:"運営者への連絡は、各ページの「✉ 運営者に連絡」ボタンから送れます（認証コードが必要です）。",q:"運営者に連絡したい"},
+ {k:"連絡 運営者 問い合わせ メール",a:"運営者への連絡は、各ページの「✉ 運営（NITTA）に連絡」ボタンから送れます（認証コードが必要です）。",q:"運営（NITTA）に連絡したい"},
  {k:"高久保浩 ワンダバ駄馬",q:"高久保浩さんの作品は？",a:"第6分野「高久保浩ムービー集」に全21作品（限定公開）。チャンネル名は「ワンダバ駄馬」です。"},
  {k:"関西学生映画祭 2012",q:"関西学生映画祭との関係は？",a:"関西学生映画祭は2012年に始まり、全関映も参加してきました（共同設立かどうかは見解が分かれています）。第5分野にノミネート記録があります。"},
  {k:"別巻 違い 本編",q:"別巻はどんな内容？",a:"別巻1は同窓会2026の記録集（191件）、別巻2は『男ともだち』特集、別巻3はOB会とアカデミー賞（2012〜2019、管理者のみ）です。"},
@@ -8269,23 +8269,13 @@ function buildPanel(){
   +'<button type="button" data-chip="小ネタ">🎓 小ネタ</button>'
   +'<button type="button" data-chip="男ともだち">🎥 男ともだち</button>'
   +'</div>'
-  +'<div class="nb7-srow"><input id="nb7Q" maxlength="40" placeholder="作品名・人名・キーワードで検索"><button type="button" class="nb7-go" id="nb7Go">検索</button><button type="button" class="nb7-ai" id="nb7Ai">🌐 AIに聞く</button></div>'
-  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。「🌐 AIに聞く」は短い単語だけ、ChatGPTを新しいタブで開きます（文章の生成・分析はできません）。</div></div>';
+  +'<div class="nb7-srow"><input id="nb7Q" maxlength="40" placeholder="作品名・人名・キーワードで検索"><button type="button" class="nb7-go" id="nb7Go">検索</button></div>'
+  +'<div class="nb7-results" id="nb7Res"><div style="color:#888;font-size:12.5px">アーカイブの作品検索、使い方、同窓会の案内ができます。</div></div>';
   document.body.appendChild(panel);
   E("nb7Close").addEventListener("click",function(){ panel.classList.remove("open"); });
   E("nb7Go").addEventListener("click",function(){ doSearch(E("nb7Q").value); });
   E("nb7Q").addEventListener("keydown",function(e){ if(e.key==="Enter") doSearch(this.value); });
-  E("nb7Ai").addEventListener("click",function(){
-    var q=E("nb7Q").value.trim();
-    var res=E("nb7Res");
-    if(!q){ if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語だけだよ。まず単語を入れてね。</div>'; return; }
-    if(q.length>20||/\s/.test(q)||/(生成|分析|書いて|作って|作成|要約|翻訳|説明|教えて|プログラム|コード|作文|長文|歌詞|作曲)/.test(q)){
-      if(res) res.innerHTML='<div class="nb7-ans">AIに聞けるのは短い単語（20文字まで・スペースなし）だけだよ🙏\n文章の生成や分析みたいな重いお願いはできないの。単語で聞いてね。</div>';
-      say("AIに聞けるのは短い単語だけだよ🙏");
-      return;
-    }
-    window.open("https://chatgpt.com/?q="+encodeURIComponent(q+" とは？"),"_blank","noopener");
-  });
+  
   panel.querySelectorAll("[data-chip]").forEach(function(b){
     b.addEventListener("click",function(){ E("nb7Q").value=b.dataset.chip.split(" ")[0]; doSearch(b.dataset.chip); });
   });
@@ -8315,7 +8305,7 @@ function doSearch(qraw){
   hits.sort(function(a,b){ return b.score-a.score; });
   hits=hits.slice(0,7);
   if(!hits.length){
-    res.innerHTML='<div class="nb7-ans">ごめんね、アーカイブの中には見つからなかったよ💦\n別の言葉で試すか、「🌐 AIに聞く」でChatGPTに聞いてみてね。</div>';
+    res.innerHTML='<div class="nb7-ans">ごめんね、アーカイブの中には見つからなかったよ💦\n別の言葉で試してみてね。</div>';
     return;
   }
   res.innerHTML="";
@@ -9352,20 +9342,21 @@ setInterval(function(){
 
 
 <style id="zg7style">
-/* ===== v76 ZG7: the picked work is revealed in front of the machine's chamber ===== */
-#zgReveal.zg7-instage{position:absolute;left:5%;right:5%;top:11%;z-index:40;margin-top:0;max-height:47%;overflow-y:auto;padding:10px 10px 8px}
-#zgReveal.zg7-instage .t{font-size:15px;margin:6px 0 2px}
-#zgReveal.zg7-instage .m{font-size:12px}
-#zgReveal.zg7-instage .zg-btns{margin-top:6px}
-#zgReveal.zg7-instage .zg-btn{padding:6px 10px;font-size:13px}
+/* ===== v77 ZG7: the picked work is revealed full-width in front of the chamber ===== */
+#zgReveal.zg7-wide{position:absolute;left:10px;right:10px;z-index:40;margin-top:0;overflow-y:auto;padding:12px}
 </style>
 <script>
 (function(){
 "use strict";
 if(window.__zg7) return; window.__zg7=1;
 function place(){
-  var st=document.getElementById("zgStage"), rv=document.getElementById("zgReveal");
-  if(st&&rv&&rv.parentNode!==st){ st.appendChild(rv); rv.classList.add("zg7-instage"); }
+  var card=document.getElementById("zgCard"), st=document.getElementById("zgStage"), rv=document.getElementById("zgReveal");
+  if(!card||!st||!rv) return;
+  if(rv.parentNode!==card) card.appendChild(rv);
+  rv.classList.add("zg7-wide");
+  var top=st.offsetTop+Math.round(st.offsetHeight*0.10);
+  rv.style.top=top+"px";
+  rv.style.maxHeight=Math.round(st.offsetHeight*0.62)+"px";
 }
 place();
 setInterval(place,900);
@@ -9378,6 +9369,50 @@ setInterval(function(){
 },600);
 })();
 </script>
+
+
+<style id="nb15style">
+/* ===== v77 NB15: no cover flash while inside the notebook; big attachment images ===== */
+#nbOverlay.nb15-inside #nbCover{visibility:hidden!important;pointer-events:none!important}
+.nb6-atts2{flex-direction:column;align-items:stretch}
+.nb6-atts2 a{display:block}
+.nb6-atts2 img{width:100%!important;height:auto!important;max-height:240px;object-fit:cover}
+.nb-card.nb15-imgonly{width:46%!important;max-width:300px}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb15) return; window.__nb15=1;
+function clampChoko(){
+  var root=document.getElementById("chokoRoot");
+  if(!root) return;
+  var r=root.getBoundingClientRect();
+  if(!r.width||!r.height) return;
+  var iw=window.innerWidth, ih=window.innerHeight;
+  var vx=Math.max(0,Math.min(r.right,iw)-Math.max(r.left,0));
+  var vy=Math.max(0,Math.min(r.bottom,ih)-Math.max(r.top,0));
+  if(vx<r.width*0.35||vy<r.height*0.35){
+    root.style.left="auto"; root.style.top="auto"; root.style.right="16px"; root.style.bottom="84px";
+    try{ localStorage.removeItem("zkeChokoPos"); }catch(e){}
+  }
+}
+setInterval(function(){
+  document.querySelectorAll("#nbPage .nb-card").forEach(function(c){
+    var tx=c.querySelector(".nb-text");
+    var hasImg=!!c.querySelector(".nb6-atts2 img");
+    c.classList.toggle("nb15-imgonly",!!(hasImg&&tx&&!tx.textContent.trim()));
+  });
+  var ov=document.getElementById("nbOverlay"), main=document.getElementById("nbMain");
+  if(ov){
+    if(!ov.classList.contains("open")) ov.classList.remove("nb15-inside");
+    else if(main&&main.style.display!=="none"&&main.offsetHeight>0) ov.classList.add("nb15-inside");
+  }
+  clampChoko();
+},900);
+window.addEventListener("resize",clampChoko);
+})();
+</script>
+
 
 </body>
 </html>
