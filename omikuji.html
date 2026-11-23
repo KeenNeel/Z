@@ -188,12 +188,13 @@
 
   
 <section id="omkReco" style="margin:20px 0 6px;background:#fffdf4;border:2px solid #c9a227;border-radius:12px;padding:14px 16px;text-align:left">
-  <h2 style="margin:0 0 6px;font-size:17px;color:#7a0f14">🎠 カルーセルからのおすすめ作品</h2>
+  <h2 style="margin:0 0 6px;font-size:17px;color:#7a0f14">⛩ おみくじのおすすめ作品</h2>
   <p id="omkRecoTitle" style="margin:4px 0;font-weight:800;font-size:16.5px"></p>
   <p id="omkRecoMeta" style="margin:2px 0;font-size:13px;color:#5a6a7a"></p>
   <p id="omkRecoReason" style="margin:6px 0;font-size:14px;line-height:1.85"></p>
   <p style="margin:10px 0 2px">
-    <a id="omkRecoLink" href="index.html" style="display:inline-block;background:#d9a441;color:#171717;font-weight:800;text-decoration:none;padding:9px 20px;border-radius:999px;font-size:14.5px">▶ アーカイブでこの作品へ</a>
+    <a id="omkRecoWatch" href="index.html" style="display:inline-block;background:#c0392b;color:#fff;font-weight:800;text-decoration:none;padding:9px 20px;border-radius:999px;font-size:14.5px">▶ 視聴する</a>
+    <a id="omkRecoLink" href="index.html" style="display:inline-block;background:#d9a441;color:#171717;font-weight:800;text-decoration:none;padding:9px 20px;border-radius:999px;font-size:14.5px;margin-left:8px">作品詳細を見る</a>
     <button type="button" id="omkRecoAgain" style="background:#fff;border:1.5px solid #c9a227;color:#7a0f14;font-weight:700;padding:8px 16px;border-radius:999px;font-size:13.5px;cursor:pointer;margin-left:8px">別の作品</button>
   </p>
 </section>
@@ -970,6 +971,7 @@ againBtn.addEventListener("click", function () {
     document.getElementById("omkRecoMeta").textContent=w.meta;
     document.getElementById("omkRecoReason").textContent=w.reason;
     document.getElementById("omkRecoLink").setAttribute("href","index.html#work-"+w.no);
+    document.getElementById("omkRecoWatch").setAttribute("href","index.html#work-"+w.no+"-watch");
   }
   document.getElementById("omkRecoAgain").addEventListener("click", pick);
   pick();
