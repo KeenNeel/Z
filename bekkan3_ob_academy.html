@@ -955,7 +955,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v58）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v59）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -3664,7 +3664,7 @@ function openNotebookAndWrite(){
 var nb8Obs=new MutationObserver(function(){
   var b=E("chokoBtns2"); if(!b) return;
   if(b.children.length&&!b.querySelector(".nb8-menu-write")){
-    var btn=document.createElement("button"); btn.type="button"; btn.className="nb8-menu-write"; btn.textContent="✏ ここに書く";
+    var btn=document.createElement("button"); btn.type="button"; btn.className="nb8-menu-write"; btn.textContent="✏ 書いて帳に書く";
     btn.addEventListener("click",function(){ openNotebookAndWrite(); });
     b.appendChild(btn);
   }
@@ -3782,6 +3782,67 @@ function augment(){
 setTimeout(function(){
   var res=E("nb7Res"); if(res) new MutationObserver(augment).observe(res,{childList:true,subtree:true});
 },2000);
+})();
+</script>
+
+<style id="v59style">
+/* ===== v59: per-work notebook icons removed; daily-use mode ===== */
+.nb-ic{display:none!important}
+body.zke-daily #carouselSec{display:none!important}
+body.zke-daily #tbGacha{display:none!important}
+body.zke-daily #chokoRoot{display:none!important}
+body.zke-daily .choko-toggle{display:none!important}
+body.zke-daily #nb7AskBtn{display:none!important}
+body.zke-daily #recoBtn,body.zke-daily #recoPanel{display:none!important}
+body.zke-daily table img{display:none!important}
+body.zke-daily .car-bubble,body.zke-daily #carBubble{display:none!important}
+#dailyBtn{background:#fff;border:2px solid #2e7d32;color:#2e7d32;font-size:13.5px;font-weight:800;padding:6px 13px;border-radius:999px;cursor:pointer;line-height:1.2}
+#dailyBtn.on{background:#2e7d32;color:#fff}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__v59) return; window.__v59=1;
+/* ---- cut per-work notebook icons (input is topbar-button only) ---- */
+function sweepIcons(){
+  document.querySelectorAll(".nb-ic").forEach(function(b){
+    var w=b.closest(".nb-wrap");
+    if(w) w.remove(); else b.remove();
+  });
+}
+var sw=0;
+var swIv=setInterval(function(){ sw++; sweepIcons(); if(sw>14) clearInterval(swIv); },900);
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",sweepIcons); else sweepIcons();
+/* ---- daily-use mode: plain text archive, remembered per device ---- */
+function applyDaily(on){
+  document.body.classList.toggle("zke-daily",!!on);
+  var b=document.getElementById("dailyBtn");
+  if(b){ b.classList.toggle("on",!!on); b.setAttribute("aria-pressed",on?"true":"false"); b.textContent=on?"🏠 日常使いモード：ON":"🏠 日常使いモード"; }
+}
+var dailyOn=false;
+try{ dailyOn=localStorage.getItem("zkeDailyMode")==="1"; }catch(e){}
+function addDailyBtn(){
+  if(document.getElementById("dailyBtn")) return true;
+  var anchor=document.getElementById("a11yBtn");
+  var bar=document.querySelector(".topbar,.volbar");
+  if(!anchor&&!bar) return false;
+  var b=document.createElement("button");
+  b.type="button"; b.id="dailyBtn";
+  b.title="あっさりしたテキスト表示に切り替えます（この端末に記憶されます）";
+  b.addEventListener("click",function(){
+    dailyOn=!dailyOn;
+    try{ localStorage.setItem("zkeDailyMode",dailyOn?"1":"0"); }catch(e){}
+    applyDaily(dailyOn);
+  });
+  if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(b,anchor.nextSibling);
+  else bar.appendChild(b);
+  applyDaily(dailyOn);
+  return true;
+}
+var dt=0;
+var dIv=setInterval(function(){ dt++; if(addDailyBtn()||dt>14) clearInterval(dIv); },700);
+addDailyBtn();
+applyDaily(dailyOn);
 })();
 </script>
 

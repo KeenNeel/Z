@@ -838,7 +838,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 </div>
 <div class="bl-src"><div class="bl-src-t">出典（クリックで直接開けます）</div><ul><li><a href="https://www.kwansei.ac.jp/campuslife/club/tourokudantai.html" target="_blank" rel="noopener">関西学院大学 公式「大学登録団体」</a></li><li><a href="https://note.com/hisak0415/n/n527f3f24d097" target="_blank" rel="noopener">OBの回想エッセイ（note）</a></li><li><a href="https://bunshun.jp/articles/-/68900?page=3" target="_blank" rel="noopener">文春オンライン（三島有紀子さんインタビュー）</a></li><li><a href="https://www.kansai-u.ac.jp/headlines/entry/post_71716.php" target="_blank" rel="noopener">関西大学 公式（関西学生映画祭の紹介）</a></li><li><a href="https://www.weblio.jp/content/%E9%96%A2%E8%A5%BF%E5%AD%A6%E7%94%9F%E6%98%A0%E7%94%9F%E7%A5%AD" target="_blank" rel="noopener">関西学生映画祭（Weblio）</a></li><li><a href="https://www.kobe-np.co.jp/rentoku/campus-repo/202010/0013781199.shtml" target="_blank" rel="noopener">神戸新聞（2020年 全国学生オムニバス）</a></li><li><a href="https://kobe-eiga.net/programs/1051/" target="_blank" rel="noopener">神戸映画資料館（『CINEMAだいすき！』）</a></li><li><a href="https://www.instagram.com/p/DVvoozvkm5M/" target="_blank" rel="noopener">全関映 公式Instagram Q&A投稿</a></li><li><a href="https://www.instagram.com/kg_zke_1969/" target="_blank" rel="noopener">全関映 公式Instagram（@kg_zke_1969）</a></li></ul></div>
 
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v58）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v59）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -8511,7 +8511,7 @@ function openNotebookAndWrite(){
 var nb8Obs=new MutationObserver(function(){
   var b=E("chokoBtns2"); if(!b) return;
   if(b.children.length&&!b.querySelector(".nb8-menu-write")){
-    var btn=document.createElement("button"); btn.type="button"; btn.className="nb8-menu-write"; btn.textContent="✏ ここに書く";
+    var btn=document.createElement("button"); btn.type="button"; btn.className="nb8-menu-write"; btn.textContent="✏ 書いて帳に書く";
     btn.addEventListener("click",function(){ openNotebookAndWrite(); });
     b.appendChild(btn);
   }
@@ -9003,6 +9003,67 @@ var rev=E("zgReveal");
 if(rev) new MutationObserver(function(){
   if(rev.classList.contains("open")) burstAt(W/2,H*0.5,90,4.4);
 }).observe(rev,{attributes:true,attributeFilter:["class"]});
+})();
+</script>
+
+<style id="v59style">
+/* ===== v59: per-work notebook icons removed; daily-use mode ===== */
+.nb-ic{display:none!important}
+body.zke-daily #carouselSec{display:none!important}
+body.zke-daily #tbGacha{display:none!important}
+body.zke-daily #chokoRoot{display:none!important}
+body.zke-daily .choko-toggle{display:none!important}
+body.zke-daily #nb7AskBtn{display:none!important}
+body.zke-daily #recoBtn,body.zke-daily #recoPanel{display:none!important}
+body.zke-daily table img{display:none!important}
+body.zke-daily .car-bubble,body.zke-daily #carBubble{display:none!important}
+#dailyBtn{background:#fff;border:2px solid #2e7d32;color:#2e7d32;font-size:13.5px;font-weight:800;padding:6px 13px;border-radius:999px;cursor:pointer;line-height:1.2}
+#dailyBtn.on{background:#2e7d32;color:#fff}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__v59) return; window.__v59=1;
+/* ---- cut per-work notebook icons (input is topbar-button only) ---- */
+function sweepIcons(){
+  document.querySelectorAll(".nb-ic").forEach(function(b){
+    var w=b.closest(".nb-wrap");
+    if(w) w.remove(); else b.remove();
+  });
+}
+var sw=0;
+var swIv=setInterval(function(){ sw++; sweepIcons(); if(sw>14) clearInterval(swIv); },900);
+if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",sweepIcons); else sweepIcons();
+/* ---- daily-use mode: plain text archive, remembered per device ---- */
+function applyDaily(on){
+  document.body.classList.toggle("zke-daily",!!on);
+  var b=document.getElementById("dailyBtn");
+  if(b){ b.classList.toggle("on",!!on); b.setAttribute("aria-pressed",on?"true":"false"); b.textContent=on?"🏠 日常使いモード：ON":"🏠 日常使いモード"; }
+}
+var dailyOn=false;
+try{ dailyOn=localStorage.getItem("zkeDailyMode")==="1"; }catch(e){}
+function addDailyBtn(){
+  if(document.getElementById("dailyBtn")) return true;
+  var anchor=document.getElementById("a11yBtn");
+  var bar=document.querySelector(".topbar,.volbar");
+  if(!anchor&&!bar) return false;
+  var b=document.createElement("button");
+  b.type="button"; b.id="dailyBtn";
+  b.title="あっさりしたテキスト表示に切り替えます（この端末に記憶されます）";
+  b.addEventListener("click",function(){
+    dailyOn=!dailyOn;
+    try{ localStorage.setItem("zkeDailyMode",dailyOn?"1":"0"); }catch(e){}
+    applyDaily(dailyOn);
+  });
+  if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(b,anchor.nextSibling);
+  else bar.appendChild(b);
+  applyDaily(dailyOn);
+  return true;
+}
+var dt=0;
+var dIv=setInterval(function(){ dt++; if(addDailyBtn()||dt>14) clearInterval(dIv); },700);
+addDailyBtn();
+applyDaily(dailyOn);
 })();
 </script>
 
