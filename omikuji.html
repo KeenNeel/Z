@@ -30,7 +30,7 @@
   .frame::before { top: 8px; left: 10px; }
   .frame::after { top: 8px; right: 10px; }
   .banner {
-    width: 100%; height: auto; display: block; border-radius: 10px;
+    width: 100%; height: min(26vh, 190px); object-fit: cover; display: block; border-radius: 10px;
     border: 2px solid #c9a227; box-shadow: 0 4px 14px rgba(90, 10, 10, .35);
   }
   h1 {
@@ -186,7 +186,18 @@
     </article>
   </section>
 
-  <footer>全関映 過去映画アーカイブ ／ おみくじは全100種（大吉〜大凶）</footer>
+  
+<section id="omkReco" style="margin:20px 0 6px;background:#fffdf4;border:2px solid #c9a227;border-radius:12px;padding:14px 16px;text-align:left">
+  <h2 style="margin:0 0 6px;font-size:17px;color:#7a0f14">🎠 カルーセルからのおすすめ作品</h2>
+  <p id="omkRecoTitle" style="margin:4px 0;font-weight:800;font-size:16.5px"></p>
+  <p id="omkRecoMeta" style="margin:2px 0;font-size:13px;color:#5a6a7a"></p>
+  <p id="omkRecoReason" style="margin:6px 0;font-size:14px;line-height:1.85"></p>
+  <p style="margin:10px 0 2px">
+    <a id="omkRecoLink" href="index.html" style="display:inline-block;background:#d9a441;color:#171717;font-weight:800;text-decoration:none;padding:9px 20px;border-radius:999px;font-size:14.5px">▶ アーカイブでこの作品へ</a>
+    <button type="button" id="omkRecoAgain" style="background:#fff;border:1.5px solid #c9a227;color:#7a0f14;font-weight:700;padding:8px 16px;border-radius:999px;font-size:13.5px;cursor:pointer;margin-left:8px">別の作品</button>
+  </p>
+</section>
+<footer>全関映 過去映画アーカイブ ／ おみくじは全100種（大吉〜大凶）</footer>
 </main>
 
 <script>
@@ -946,6 +957,23 @@ againBtn.addEventListener("click", function () {
   s.src="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec?action=visit&page=omikuji&name="+encodeURIComponent(nick)+"&dev="+(innerWidth<760?"mobile":"pc")+"&callback="+cb;
   document.body.appendChild(s);
 }catch(e){} })();
+</script>
+
+<script>
+(function(){
+  var W=[{no:'1-1', title:'ハワイに行きたい金はなし', meta:'1986年／4:42／監督：高久保浩', reason:'高久保監督の初期作です。タイトルからして学生映画らしい勢いとユーモアが伝わってきます。4分42秒と短いので、アーカイブ巡りの最初の一本にもおすすめです。'}, {no:'1-16', title:'大アマゾン激流シアター', meta:'1988年／59:16', reason:'1988年10月15日の作品として投稿された、約1時間の大作です。学生映画でこの長さを撮り切る熱量は並ではありません。じっくり当時の空気に浸りたい日にどうぞ。'}, {no:'1-20', title:'空中楼閣', meta:'1989年／9:36', reason:'よみうりテレビ『CINEMAだいすき！』の8mm FILM FESTIVAL放送版（一部楽曲差し替えカット）です。本編はYouTubeのチャンネルheadfishでも視聴できます。テレビで放送されたという事実だけでも、当時の勢いが分かる一本です。'}, {no:'1-23', title:'藤児のミステーク さよならA子', meta:'1991年／7:51／監督：小島一洋', reason:'小島一洋さんの卒業制作です。制作当時はほとんど観られなかった作品を、34年越しにHDデジタルリマスター再編集版として公開。時間が味方した、再会のような一本です。'}, {no:'2-1', title:'猿人現わる', meta:'1987年／映画祭番組内', reason:'『CINEMAだいすき！8mm FILM FESTIVAL』（1987年12月）の番組の中で上映された、岩本淳さんの作品です。番組動画の57分07秒あたりから始まります。「現る」シリーズの原点に触れたい方に。'}, {no:'2-2', title:'レンジマンのスーパー視力検査〜心の目で見ろ！', meta:'1987年／映画祭番組内', reason:'和賀健夫さんの、同じく映画祭番組内の一本です（3時間02分43秒あたりから）。タイトルだけで笑える、発想勝負の学生映画らしさが魅力です。'}, {no:'2-3', title:'ひとこと多いぞ', meta:'39:20／監督：袋布修一', reason:'袋布修一監督の39分超えの中編です。見ごたえのある長さで、物語をしっかり楽しみたい方におすすめします（限定公開）。'}, {no:'2-4', title:'Cotton Time', meta:'11:08／大熊一成', reason:'大熊一成さんの作品です。11分という手頃な長さで、仕事帰りの一本にもどうぞ（限定公開）。'}, {no:'3-1', title:'支那人現る１', meta:'岩本淳／「現る」シリーズ', reason:'「現る」シリーズの第1作です。岩本淳さんのYouTubeチャンネルで公開されているシリーズの出発点。ここから全関映の「現る」伝説が始まりました。'}, {no:'3-3', title:'猿人現る (Remastered)', meta:'岩本淳／「現る」シリーズ', reason:'シリーズ中でも人気の『猿人現る』のリマスター版です。画質が向上した分、当時の撮影の工夫や現場の熱気がより伝わってきます。'}, {no:'4-1', title:'N極関係', meta:'2024年／現役生作品', reason:'2024年の現役生作品です（OB向け限定公開）。30年以上前の先輩たちの作品と見比べると、機材は変われど映画作りの熱は同じだと分かります。'}, {no:'4-5', title:'ヒーロー参上', meta:'2024年／現役生作品', reason:'こちらも2024年の現役生作品です（OB向け限定公開）。タイトル通りの勢いを、今の全関映から感じてください。'}];
+  var cur=-1;
+  function pick(){
+    var i; do { i=Math.floor(Math.random()*W.length); } while(i===cur&&W.length>1); cur=i;
+    var w=W[i];
+    document.getElementById("omkRecoTitle").textContent="No."+w.no+" 『"+w.title+"』";
+    document.getElementById("omkRecoMeta").textContent=w.meta;
+    document.getElementById("omkRecoReason").textContent=w.reason;
+    document.getElementById("omkRecoLink").setAttribute("href","index.html#work-"+w.no);
+  }
+  document.getElementById("omkRecoAgain").addEventListener("click", pick);
+  pick();
+})();
 </script>
 </body>
 </html>

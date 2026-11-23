@@ -728,7 +728,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻1 ― 大同窓会2026（v38）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻1 ― 大同窓会2026（v39）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -864,5 +864,16 @@ tr.pink td{background:#ffe3ee!important}
   });
 })();
 </script>
+
+<style id="nbIconV39">
+/* ===== v39: notebook icons small + translucent + doodle; grow on hover ===== */
+.nb-ic{width:30px!important;height:34px!important;opacity:.8;filter:drop-shadow(2px 3px 3px rgba(0,0,0,.45));transition:transform .18s ease,opacity .18s ease;position:relative}
+.nb-ic img{border-radius:4px}
+.nb-wrap:hover .nb-ic,.nb-wrap.open .nb-ic{transform:scale(1.75) rotate(-3deg);opacity:1;z-index:60}
+.nb-ic::before{content:"書いて帳";position:absolute;left:50%;bottom:-9px;transform:translateX(-50%) rotate(-5deg);font-size:8px;font-weight:800;color:#c0392b;text-shadow:0 1px 0 #fff,0 0 3px #fff;white-space:nowrap;z-index:2;pointer-events:none}
+.nb-ic::after{content:"";position:absolute;left:-3px;right:-3px;top:-6px;height:9px;background:url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 10"><path d="M1 7 Q 8 1, 15 6 T 29 5 T 39 6" fill="none" stroke="%232980b9" stroke-width="1.6" stroke-linecap="round"/><path d="M3 3 Q 12 8, 22 3 T 37 4" fill="none" stroke="%2327ae60" stroke-width="1.3" stroke-linecap="round"/></svg>') center/contain no-repeat;z-index:2;pointer-events:none}
+.nb-all-btn.nb-icon-btn{width:38px!important;height:38px!important;min-width:38px;padding:2px!important;border-radius:9px;overflow:hidden;opacity:.88;vertical-align:middle;flex:0 0 auto}
+.nb-all-btn.nb-icon-btn:hover{opacity:1}
+</style>
 </body>
 </html>
