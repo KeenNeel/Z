@@ -541,19 +541,185 @@ function seedTips(){
     fetch("https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec",{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_tips",code:code(),tips:ADMIN_TIPS})});
   }catch(e){}
 }
-/* 小ネタの更新は、このボタンを押したときだけ実行される */
+/* 小ネタの更新は、このボタンを押したときだけ実行される。進捗ログ付き・未着分は自動で再送する */
 (function(){
   var main=document.getElementById("main"); if(!main) return;
+  var API="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec";
+  function code(){ try{ return sessionStorage.getItem("zkeAdminCode")||""; }catch(e){ return ""; } }
   var sec=document.createElement("section");
-  sec.innerHTML='<h2>🎓 小ネタの更新</h2><p class="small">小ネタは全部で '+ADMIN_TIPS.length+' 件です。更新はこのボタンを押したときだけ実行されます（開いただけでは更新されません）。新しい小ネタが小ネタシートに追加され、チョウ子が話すようになります。</p>';
+  sec.innerHTML='<h2>🎓 小ネタの更新</h2><p class="small">小ネタは全部で '+ADMIN_TIPS.length+' 件です。更新はこのボタンを押したときだけ実行されます。5件ずつ送り、届いていない分は自動で再送します。進捗は下のログに出ます。</p>';
   var btn=document.createElement("button"); btn.type="button"; btn.textContent="小ネタを更新する（全"+ADMIN_TIPS.length+"件）";
-  var st=document.createElement("span"); st.style.marginLeft="10px";
-  btn.addEventListener("click",function(){
-    seedTips();
-    st.textContent="更新を実行しました（反映まで少し時間がかかります）";
-  });
-  sec.appendChild(btn); sec.appendChild(st);
+  var chk=document.createElement("button"); chk.type="button"; chk.textContent="現在の件数を確認"; chk.style.marginLeft="10px";
+  var cp=document.createElement("button"); cp.type="button"; cp.textContent="ログをコピー"; cp.style.marginLeft="10px";
+  var pre=document.createElement("pre"); pre.style.cssText="white-space:pre-wrap;background:#111;color:#d7ffd7;padding:10px;border-radius:8px;max-height:300px;overflow:auto;font-size:12px;line-height:1.6;margin-top:10px";
+  sec.appendChild(btn); sec.appendChild(chk); sec.appendChild(cp); sec.appendChild(pre);
   main.appendChild(sec);
+  function log(s){ var t=new Date(); function p(n){ return (n<10?"0":"")+n; } pre.textContent+="["+p(t.getHours())+":"+p(t.getMinutes())+":"+p(t.getSeconds())+"] "+s+"\n"; pre.scrollTop=pre.scrollHeight; }
+  var seq=0;
+  function readTips(){
+    return new Promise(function(resolve){
+      var name="__tpCb"+(++seq)+"_"+Date.now();
+      var sc=document.createElement("script");
+      var timer=setTimeout(function(){ cleanup(); resolve({ok:false,kind:"timeout"}); },15000);
+      function cleanup(){ clearTimeout(timer); try{ delete window[name]; }catch(e){ window[name]=undefined; } if(sc.parentNode) sc.parentNode.removeChild(sc); }
+      window[name]=function(res){ cleanup(); if(res&&res.ok&&res.tips) resolve({ok:true,tips:res.tips}); else resolve({ok:false,kind:"auth",res:res}); };
+      sc.onerror=function(){ cleanup(); resolve({ok:false,kind:"loaderror"}); };
+      sc.src=API+"?action=tips&code="+encodeURIComponent(code())+"&callback="+name;
+      document.head.appendChild(sc);
+    });
+  }
+  function wait(ms){ return new Promise(function(r){ setTimeout(r,ms); }); }
+  async function postChunk(part){
+    var t0=Date.now();
+    await fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_tips",code:code(),tips:part})});
+    return Date.now()-t0;
+  }
+  var running=false;
+  btn.addEventListener("click",async function(){
+    if(running) return; running=true; btn.disabled=true; chk.disabled=true;
+    log("=== 小ネタ更新を開始（全"+ADMIN_TIPS.length+"件） ===");
+    var cur=await readTips();
+    if(!cur.ok){ log("現在の小ネタを取得できませんでした（"+cur.kind+"）。中断します。"); running=false; btn.disabled=false; chk.disabled=false; return; }
+    log("現在 "+cur.tips.length+" 件");
+    var have={}; cur.tips.forEach(function(t){ have[t]=1; });
+    var missing=ADMIN_TIPS.filter(function(t){ return !have[t]; });
+    log("未登録は "+missing.length+" 件");
+    for(var round=1; round<=3 && missing.length; round++){
+      log("--- ラウンド "+round+"："+missing.length+" 件を送ります ---");
+      var CH=5, total=Math.ceil(missing.length/CH);
+      for(var i=0;i<total;i++){
+        var part=missing.slice(i*CH,(i+1)*CH);
+        try{ var ms=await postChunk(part); log("送信 "+(i+1)+"/"+total+"（"+part.length+"件, "+ms+"ms）"); }
+        catch(e){ log("送信 "+(i+1)+"/"+total+" で例外: "+e); }
+        await wait(2000);
+      }
+      log("3秒待って確認します…");
+      await wait(3000);
+      var chkR=await readTips();
+      if(!chkR.ok){ log("確認の取得に失敗（"+chkR.kind+"）"); break; }
+      var have2={}; chkR.tips.forEach(function(t){ have2[t]=1; });
+      var still=ADMIN_TIPS.filter(function(t){ return !have2[t]; });
+      log("確認：現在 "+chkR.tips.length+" 件。未登録は残り "+still.length+" 件");
+      if(still.length===missing.length){ log("件数が増えていません。送信がGAS側で処理されていない可能性があります。"); missing=still; break; }
+      missing=still;
+    }
+    if(!missing.length) log("=== 完了：150件すべて登録されています ===");
+    else log("=== 終了：まだ "+missing.length+" 件が未登録です。もう一度押すと続きから再送します ===");
+    running=false; btn.disabled=false; chk.disabled=false;
+  });
+  chk.addEventListener("click",async function(){
+    log("件数を確認しています…");
+    var r=await readTips();
+    if(r.ok) log("現在の小ネタは "+r.tips.length+" 件です");
+    else log("確認できませんでした（"+r.kind+"）");
+  });
+  cp.addEventListener("click",function(){
+    var t=pre.textContent||""; if(!t) return;
+    function done(){ cp.textContent="コピーしました"; setTimeout(function(){ cp.textContent="ログをコピー"; },2000); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done,function(){ fallback(); }); } else fallback();
+    function fallback(){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} document.body.removeChild(ta); done(); }
+  });
+})();
+</script>
+
+<script>
+(function(){
+  "use strict";
+  var main=document.getElementById("main"); if(!main) return;
+  var DEF_API="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec";
+  var sec=document.createElement("section");
+  sec.innerHTML='<h2>🔍 通信診断</h2>'
+    +'<p class="small">GASとの通信を段階ごとにテストします。終わったら「結果をコピー」を押して、Claudeに貼ってください。</p>'
+    +'<p class="small">使用中のURL：<span id="dgUrl" style="word-break:break-all"></span></p>'
+    +'<p class="small">別のURLで試す：<input id="dgUrlIn" type="text" style="width:70%" placeholder="GASのデプロイを管理に表示されるURLを貼る"></p>';
+  var btn=document.createElement("button"); btn.type="button"; btn.textContent="診断を開始";
+  var cp=document.createElement("button"); cp.type="button"; cp.textContent="結果をコピー"; cp.style.marginLeft="10px";
+  var pre=document.createElement("pre"); pre.id="dgLog"; pre.style.cssText="white-space:pre-wrap;background:#111;color:#d7ffd7;padding:10px;border-radius:8px;max-height:340px;overflow:auto;font-size:12px;line-height:1.6";
+  sec.appendChild(btn); sec.appendChild(cp); sec.appendChild(pre);
+  main.appendChild(sec);
+  var urlEl=document.getElementById("dgUrl"); urlEl.textContent=DEF_API;
+  function code(){ try{ return sessionStorage.getItem("zkeAdminCode")||""; }catch(e){ return ""; } }
+  function log(s){ pre.textContent+=s+"\n"; pre.scrollTop=pre.scrollHeight; }
+  var seq=0;
+  function jsonp(api,params,timeoutMs){
+    return new Promise(function(resolve){
+      var name="__dgCb"+(++seq)+"_"+Date.now();
+      var sc=document.createElement("script");
+      var t0=Date.now();
+      var timer=setTimeout(function(){ cleanup(); resolve({ok:false,kind:"timeout",ms:Date.now()-t0}); },timeoutMs||15000);
+      function cleanup(){ clearTimeout(timer); try{ delete window[name]; }catch(e){ window[name]=undefined; } if(sc.parentNode) sc.parentNode.removeChild(sc); }
+      window[name]=function(res){ cleanup(); resolve({ok:true,kind:"response",ms:Date.now()-t0,res:res}); };
+      sc.onerror=function(){ cleanup(); resolve({ok:false,kind:"loaderror",ms:Date.now()-t0}); };
+      var qs=Object.keys(params).map(function(k){ return k+"="+encodeURIComponent(params[k]); }).join("&");
+      sc.src=api+"?"+qs+"&callback="+name;
+      document.head.appendChild(sc);
+    });
+  }
+  function summarize(r){
+    if(!r||typeof r!=="object") return String(r);
+    var keys=Object.keys(r).slice(0,8).join(",");
+    var s="{ok:"+r.ok;
+    if(r.error) s+=", error:"+r.error;
+    if(r.tips) s+=", tips:"+r.tips.length+"件";
+    if(r.admin!==undefined) s+=", admin:"+r.admin;
+    s+="} keys:["+keys+"]";
+    return s;
+  }
+  var running=false;
+  btn.addEventListener("click",async function(){
+    if(running) return; running=true;
+    var alt=document.getElementById("dgUrlIn").value.trim();
+    var api=alt||DEF_API;
+    urlEl.textContent=api;
+    pre.textContent="";
+    var cd=code();
+    log("=== 通信診断 "+new Date().toLocaleString("ja-JP")+" ===");
+    log("URL: "+api);
+    log("管理コード: "+(cd?("入力あり（"+cd.length+"文字）"):"未入力（管理画面に入り直してください）"));
+    log("");
+    log("【1】到達テスト（コードなしで check）");
+    var r1=await jsonp(api,{action:"check",code:""},15000);
+    if(r1.ok) log("  → 応答あり（"+r1.ms+"ms） "+summarize(r1.res));
+    else { log("  → 応答なし（"+r1.kind+", "+r1.ms+"ms）"); log("  ※ GASに届いていません。デプロイのURLが変わったか、古いデプロイが削除された可能性があります。上の欄に現在のURLを貼って再診断してください。"); running=false; return; }
+    log("");
+    log("【2】管理者認証テスト（admindata）");
+    var r2=await jsonp(api,{action:"admindata",code:cd},15000);
+    if(r2.ok&&r2.res&&r2.res.ok) log("  → 認証OK（"+r2.ms+"ms）");
+    else if(r2.ok) log("  → 応答はあるが認証NG "+summarize(r2.res)+"（管理コードがGAS側と合っていません）");
+    else log("  → 応答なし（"+r2.kind+"）");
+    log("");
+    log("【3】小ネタ取得テスト（tips）");
+    var r3=await jsonp(api,{action:"tips",code:cd},15000);
+    var before=-1;
+    if(r3.ok&&r3.res&&r3.res.tips){ before=r3.res.tips.length; log("  → 取得OK：現在 "+before+" 件"); }
+    else if(r3.ok) log("  → 応答はあるが取得NG "+summarize(r3.res));
+    else log("  → 応答なし（"+r3.kind+"）");
+    log("");
+    log("【4】書き込みテスト（診断用の小ネタを1件だけ追加）");
+    var probe="【診断用】"+new Date().toISOString()+" これはテストです。シートでこの行を削除してください";
+    try{
+      await fetch(api,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_tips",code:cd,tips:[probe]})});
+      log("  → 送信を実行（結果は次の確認で判定します）");
+    }catch(e){ log("  → 送信自体に失敗: "+e); }
+    log("  4秒待ちます…");
+    await new Promise(function(res){ setTimeout(res,4000); });
+    var r4=await jsonp(api,{action:"tips",code:cd},15000);
+    if(r4.ok&&r4.res&&r4.res.tips){
+      var found=r4.res.tips.indexOf(probe)>=0;
+      log("  → 確認：現在 "+r4.res.tips.length+" 件。診断用の小ネタは "+(found?"見つかりました（書き込みOK）":"見つかりません（書き込みNG：認証かGAS側の問題）"));
+      if(found) log("  ※ スプレッドシートの「小ネタ」シートで【診断用】の行を削除してください。");
+    } else log("  → 確認の取得に失敗 "+(r4.ok?summarize(r4.res):r4.kind));
+    log("");
+    log("=== 診断おわり ===");
+    running=false;
+  });
+  cp.addEventListener("click",function(){
+    var t=pre.textContent||"";
+    if(!t){ return; }
+    function done(){ cp.textContent="コピーしました"; setTimeout(function(){ cp.textContent="結果をコピー"; },2000); }
+    if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(t).then(done,function(){ fallback(); }); } else fallback();
+    function fallback(){ var ta=document.createElement("textarea"); ta.value=t; document.body.appendChild(ta); ta.select(); try{ document.execCommand("copy"); }catch(e){} document.body.removeChild(ta); done(); }
+  });
 })();
 </script>
 </body>
