@@ -938,5 +938,14 @@ againBtn.addEventListener("click", function () {
   drawBtn.focus();
 });
 </script>
+<script>
+(function(){ try{
+  var nick=""; try{ nick=localStorage.getItem("zkeNick")||"ゲスト"; }catch(e){}
+  var cb="omkCb"+Date.now(); window[cb]=function(){};
+  var s=document.createElement("script");
+  s.src="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec?action=visit&page=omikuji&name="+encodeURIComponent(nick)+"&dev="+(innerWidth<760?"mobile":"pc")+"&callback="+cb;
+  document.body.appendChild(s);
+}catch(e){} })();
+</script>
 </body>
 </html>
