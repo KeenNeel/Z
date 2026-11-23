@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>全関映アーカイブ 管理者画面（関係者外秘）</title>
+<style>
+body{font-family:"Hiragino Kaku Gothic ProN","Yu Gothic",sans-serif;margin:0;background:#f2f3f7;color:#222;font-size:15px;line-height:1.7}
+header{background:#26324a;color:#fff;padding:14px 20px;font-size:19px;font-weight:800}
+main{max-width:1080px;margin:0 auto;padding:18px 14px 60px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin:14px 0}
+.card{background:#fff;border-radius:10px;padding:12px 14px;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.card b{font-size:24px;display:block}
+.card span{color:#666;font-size:13px}
+section{background:#fff;border-radius:10px;padding:16px 18px;margin:14px 0;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+h2{font-size:17px;margin:0 0 10px;border-left:5px solid #26324a;padding-left:9px}
+table{border-collapse:collapse;width:100%;font-size:13.5px}
+th,td{border:1px solid #ddd;padding:6px 8px;text-align:left;vertical-align:top}
+th{background:#eef1f6}
+.tblwrap{overflow-x:auto}
+.bar{display:flex;align-items:center;gap:8px;margin:3px 0;font-size:13px}
+.bar i{display:block;height:14px;background:#4a7fc9;border-radius:3px}
+button{cursor:pointer;font-size:13.5px;padding:5px 12px;border-radius:6px;border:1px solid #999;background:#fff}
+button.primary{background:#26324a;color:#fff;border-color:#26324a}
+button.danger{color:#b00020;border-color:#b00020}
+.badge{display:inline-block;padding:0 8px;border-radius:999px;font-size:12px;font-weight:700}
+.badge.joke{background:#e8f3e8;color:#2e7d32}
+.badge.serious{background:#fde8e8;color:#b00020}
+.badge.flag{background:#fff3cd;color:#7a5b00}
+input[type=password],input[type=text]{font-size:15px;padding:8px;width:280px;max-width:80%}
+textarea{width:100%;font-size:14px}
+.err{color:#b00020;font-weight:700}
+.small{color:#666;font-size:13px}
+#lock{max-width:520px;margin:70px auto;background:#fff;border-radius:12px;padding:26px;box-shadow:0 2px 10px rgba(0,0,0,.12);text-align:center}
+</style>
+</head>
+<body>
+<header>全関映アーカイブ 管理者画面（関係者外秘）</header>
+<div id="lock">
+  <h2 style="border:none;padding:0">🔒 管理者パスワードが必要です</h2>
+  <p>この画面は管理者専用です。第7節・別巻3と同じ管理者パスワードを入力してください。</p>
+  <form id="lockForm"><input type="password" id="admCode" placeholder="管理者パスワード" autocomplete="off">
+  <button type="submit" class="primary">開く</button></form>
+  <p class="err" id="lockErr"></p>
+</div>
+<main id="main" style="display:none">
+<p style="margin:2px 0 12px"><button type="button" id="openSheet" style="background:#2e7d4f;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer">📊 Googleスプレッドシートを開く（書いて帳データベース）</button></p>
+  <div class="cards" id="cards"></div>
+  <section><h2>アクセス分析</h2><div id="accPage"></div><h3 style="font-size:14.5px;margin:14px 0 6px">日別（直近14日）</h3><div id="accDay"></div></section>
+  <section><h2>書いて帳データベース（直接編集）</h2>
+    <p class="small">本文・名前の編集と削除ができます。編集は即座にスプレッドシートへ反映されます。「要確認」は自動チェックで不適切な表現の可能性がある投稿です。</p>
+    <div class="tblwrap"><table id="notesTbl"><thead><tr><th>日時</th><th>項目</th><th>名前</th><th>本文</th><th>状態</th><th>操作</th></tr></thead><tbody></tbody></table></div>
+  </section>
+  <section><h2>通報の集計</h2><div class="tblwrap"><table id="repTbl"><thead><tr><th>日時</th><th>種別</th><th>対象</th><th>通報者</th><th>理由</th></tr></thead><tbody></tbody></table></div></section>
+  <section><h2>利用者（ニックネーム登録）</h2><div class="tblwrap"><table id="usrTbl"><thead><tr><th>ニックネーム</th><th>登録日</th><th>最終アクセス</th></tr></thead><tbody></tbody></table></div></section>
+  <section><h2>画面デザインの変更</h2>
+    <p class="small">アクセントカラーは書いて帳の見出し・ボタンなどに、お知らせ文は全ページ上部の帯に反映されます（次回アクセス時）。</p>
+    <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
+      <label>アクセントカラー <input type="color" id="dzAccent" value="#d9a441"> <input type="text" id="dzAccentTx" style="width:90px"></label>
+      <label style="flex:1;min-width:240px">お知らせ文 <input type="text" id="dzNotice" placeholder="（空欄で非表示）" style="width:100%"></label>
+      <button type="button" class="primary" id="dzSave">保存する</button>
+    </div>
+    <p id="dzStatus"></p>
+  </section>
+  <p class="small">※この管理者画面（zke_admin.html）は管理者専用ファイルです。GitHubの公開リポジトリや配布ZIPには入れないでください。</p>
+</main>
+<script>
+(function(){
+"use strict";
+var API="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec";
+var seq=0;
+function jsonp(params, cb){
+  var done=false, name="admCb"+(++seq)+"_"+Date.now(), s=document.createElement("script");
+  function fin(e,d){ if(done) return; done=true; try{ delete window[name]; }catch(x){} if(s.parentNode) s.parentNode.removeChild(s); cb(e,d); }
+  window[name]=function(d){ fin(null,d); };
+  s.onerror=function(){ fin(new Error("network")); };
+  var q=[]; for(var k in params) q.push(encodeURIComponent(k)+"="+encodeURIComponent(params[k]));
+  s.src=API+"?"+q.join("&")+"&callback="+name;
+  document.body.appendChild(s);
+  setTimeout(function(){ fin(new Error("timeout")); }, 20000);
+}
+function esc(t){ return String(t==null?"":t).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;"); }
+function dt(ts){ if(!ts) return ""; try{ return new Date(ts).toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
+function code(){ try{ return sessionStorage.getItem("zkeAdminCode")||""; }catch(e){ return ""; } }
+var DATA=null;
+function load(){
+  jsonp({action:"admindata",code:code()},function(err,d){
+    if(err||!d){ document.getElementById("lockErr").textContent="サーバーに接続できませんでした。GAS（統合版）の再デプロイが必要です。"; return; }
+    if(!d.ok){ document.getElementById("lockErr").textContent="パスワードが違うか、管理者データを取得できません。"; return; }
+    DATA=d;
+    document.getElementById("lock").style.display="none";
+    document.getElementById("main").style.display="";
+    render();
+  });
+}
+function bars(obj, max){
+  var keys=Object.keys(obj); if(!keys.length) return '<p class="small">データがありません。</p>';
+  var m=max||Math.max.apply(null,keys.map(function(k){ return obj[k]; }))||1;
+  return keys.map(function(k){ return '<div class="bar"><span style="width:130px">'+esc(k)+'</span><i style="width:'+Math.round(obj[k]/m*46)+'%"></i><b>'+obj[k]+"</b></div>"; }).join("");
+}
+function render(){
+  var d=DATA;
+  var joke=d.reports.filter(function(r){ return r.kind!=="マジ"; }).length;
+  var serious=d.reports.length-joke;
+  var cards=[
+    [d.access.total,"総アクセス数"],[d.access.today,"今日のアクセス"],[d.users.length,"登録者数"],
+    [d.notes.length,"書いて帳の投稿数"],[d.flagged,"要確認（自動チェック）"],
+    [d.reactions.total,"リアクション合計"],[d.reports.length,"通報（冗談"+joke+"／マジ"+serious+"）"]
+  ];
+  document.getElementById("cards").innerHTML=cards.map(function(c){ return '<div class="card"><b>'+c[0]+"</b><span>"+c[1]+"</span></div>"; }).join("")
+    +'<div class="card"><b style="font-size:16px">👍'+d.reactions.byKind.good+" ❤️"+d.reactions.byKind.heart+" 🤗"+d.reactions.byKind.care+'</b><span>リアクション内訳</span></div>';
+  document.getElementById("accPage").innerHTML=bars(d.access.byPage);
+  var days={}; var now=new Date();
+  for(var i=13;i>=0;i--){ var t=new Date(now.getTime()-i*86400000); var k=t.getFullYear()+"-"+("0"+(t.getMonth()+1)).slice(-2)+"-"+("0"+t.getDate()).slice(-2); days[k]=d.access.byDay[k]||0; }
+  document.getElementById("accDay").innerHTML=bars(days);
+  var tb=document.querySelector("#notesTbl tbody"); tb.innerHTML="";
+  d.notes.slice().reverse().forEach(function(n){
+    var tr=document.createElement("tr");
+    tr.innerHTML="<td>"+dt(n.ts)+"</td><td>"+esc(n.itemName||n.item)+"</td><td>"+esc(n.name)+"</td>"
+      +'<td><div class="ntext">'+esc(n.text)+"</div>"+(n.img?'<div class="small">（画像添付あり）</div>':"")+"</td>"
+      +"<td>"+(n.flag?'<span class="badge flag">要確認</span><div class="small">'+esc(n.flag)+"</div>":"")+"</td>"
+      +'<td><button type="button" class="ed">編集</button> <button type="button" class="del danger">削除</button></td>';
+    tr.querySelector(".ed").addEventListener("click",function(){
+      var cell=tr.querySelector(".ntext");
+      if(tr.dataset.editing){ return; }
+      tr.dataset.editing="1";
+      var cur=n.text;
+      cell.innerHTML='<textarea rows="4">'+esc(cur)+'</textarea><div style="margin-top:6px"><button type="button" class="sv primary">保存</button> <button type="button" class="cn">キャンセル</button></div>';
+      cell.querySelector(".sv").addEventListener("click",function(){
+        var tx=cell.querySelector("textarea").value;
+        fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_edit",code:code(),post:n.id,text:tx,name:n.name})})
+        .then(function(){ setTimeout(load,1800); });
+      });
+      cell.querySelector(".cn").addEventListener("click",function(){ delete tr.dataset.editing; cell.textContent=cur; });
+    });
+    tr.querySelector(".del").addEventListener("click",function(){
+      if(!confirm("この投稿を削除しますか？")) return;
+      jsonp({action:"del",code:code(),post:n.id},function(err,dd){ if(dd&&dd.ok) load(); else alert("削除できませんでした。"); });
+    });
+    tb.appendChild(tr);
+  });
+  var rb=document.querySelector("#repTbl tbody"); rb.innerHTML="";
+  if(!d.reports.length) rb.innerHTML='<tr><td colspan="5" class="small">通報はまだありません。</td></tr>';
+  d.reports.forEach(function(r){
+    var tr=document.createElement("tr");
+    tr.innerHTML="<td>"+dt(r.ts)+"</td><td>"+(r.kind==="マジ"?'<span class="badge serious">マジ</span>':'<span class="badge joke">冗談</span>')+"</td><td>"+esc(r.itemName)+"</td><td>"+esc(r.name)+"</td><td>"+esc(r.reason)+"</td>";
+    rb.appendChild(tr);
+  });
+  var ub=document.querySelector("#usrTbl tbody"); ub.innerHTML="";
+  if(!d.users.length) ub.innerHTML='<tr><td colspan="3" class="small">登録者はまだいません。</td></tr>';
+  d.users.forEach(function(u){
+    var tr=document.createElement("tr");
+    tr.innerHTML="<td>"+esc(u.name)+"</td><td>"+dt(u.since)+"</td><td>"+dt(u.last)+"</td>";
+    ub.appendChild(tr);
+  });
+  if(d.design){
+    if(d.design.accent){ document.getElementById("dzAccent").value=d.design.accent; document.getElementById("dzAccentTx").value=d.design.accent; }
+    document.getElementById("dzNotice").value=d.design.notice||"";
+  }
+}
+document.getElementById("lockForm").addEventListener("submit",function(e){
+  e.preventDefault();
+  var v=document.getElementById("admCode").value;
+  try{ sessionStorage.setItem("zkeAdminCode",v); }catch(x){}
+  load();
+});
+document.getElementById("openSheet").addEventListener("click",function(){ window.open(API+"?action=sheet&code="+encodeURIComponent(code()),"_blank"); });
+document.getElementById("dzAccent").addEventListener("input",function(){ document.getElementById("dzAccentTx").value=this.value; });
+document.getElementById("dzSave").addEventListener("click",function(){
+  var accent=document.getElementById("dzAccentTx").value.trim()||document.getElementById("dzAccent").value;
+  var notice=document.getElementById("dzNotice").value.trim();
+  fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_design",code:code(),accent:accent,notice:notice})})
+  .then(function(){ document.getElementById("dzStatus").textContent="保存しました。各ページの次回アクセスから反映されます。"; setTimeout(load,1500); })
+  .catch(function(){ document.getElementById("dzStatus").textContent="保存できませんでした。"; });
+});
+if(code()) load();
+})();
+</script>
+<script>
+(function(){
+"use strict";
+var API="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec";
+function code(){ try{ return sessionStorage.getItem("zkeAdminCode")||""; }catch(e){ return ""; } }
+var seq=0;
+function jsonp(params,cb){
+  var done=false, name="adCb"+(++seq)+"_"+Date.now(), s=document.createElement("script");
+  function fin(e,d){ if(done) return; done=true; try{ delete window[name]; }catch(x){} if(s.parentNode) s.parentNode.removeChild(s); cb(e,d); }
+  window[name]=function(d){ fin(null,d); };
+  s.onerror=function(){ fin(new Error("net")); };
+  var q=[]; for(var k in params) q.push(encodeURIComponent(k)+"="+encodeURIComponent(params[k]));
+  s.src=API+"?"+q.join("&")+"&callback="+name;
+  document.body.appendChild(s);
+  setTimeout(function(){ fin(new Error("timeout")); }, 12000);
+}
+function post(obj){ return fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify(obj)}); }
+/* ---- sections ---- */
+var main=document.getElementById("main");
+var secMidi=document.createElement("section");
+secMidi.innerHTML='<h2>🎵 オリジナルMIDIの登録（カルーセルの音楽）</h2>'
++'<p class="small">登録したMIDIは、カルーセルの「🎵 音楽」リストで最優先（オリジナルMIDIのグループ）に表示され、誰でも選べるようになります。スタンダードMIDIファイル（.mid）対応。目安：ノート数 約1,600 まで、テンポは最初の設定を使用します。</p>'
++'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="text" id="mdName" placeholder="曲名" style="min-width:180px"><input type="file" id="mdFile" accept=".mid,.midi,audio/midi"><button type="button" id="mdSave" class="primary">登録する</button><span id="mdStatus"></span></div>'
++'<div id="mdList" style="margin-top:10px"></div>';
+main.appendChild(secMidi);
+var secUse=document.createElement("section");
+secUse.innerHTML='<h2>📊 使用量と料金の概算</h2><div id="usageBox"><p class="small">読み込み中…</p></div>';
+main.appendChild(secUse);
+/* ---- MIDI parse ---- */
+function parseMidi(u8){
+  var pos=0;
+  function str(n){ var s=""; for(var i=0;i<n;i++) s+=String.fromCharCode(u8[pos+i]); pos+=n; return s; }
+  function u32(){ var v=(u8[pos]<<24)|(u8[pos+1]<<16)|(u8[pos+2]<<8)|u8[pos+3]; pos+=4; return v>>>0; }
+  function u16(){ var v=(u8[pos]<<8)|u8[pos+1]; pos+=2; return v; }
+  function vlq(){ var v=0; while(true){ var b=u8[pos++]; v=(v<<7)|(b&0x7f); if(!(b&0x80)) break; } return v; }
+  if(str(4)!=="MThd") throw new Error("MIDIファイルではありません");
+  var hlen=u32(); var fmt=u16(); var ntrk=u16(); var div=u16(); pos+=hlen-6;
+  var tpq=(div&0x8000)?120:div;
+  var tempo=500000;
+  var notes=[], open={};
+  for(var t=0;t<ntrk;t++){
+    if(str(4)!=="MTrk") throw new Error("トラックが読めません");
+    var tlen=u32(); var end=pos+tlen; var tick=0; var status=0;
+    while(pos<end){
+      tick+=vlq();
+      var b=u8[pos];
+      if(b&0x80){ status=b; pos++; } 
+      var ev=status;
+      if(ev===0xFF){
+        var type=u8[pos++]; var len=vlq();
+        if(type===0x51&&len===3){ var tv=(u8[pos]<<16)|(u8[pos+1]<<8)|u8[pos+2]; if(tempo===500000) tempo=tv; }
+        pos+=len;
+      } else if(ev===0xF0||ev===0xF7){ var len2=vlq(); pos+=len2; }
+      else {
+        var hi=ev&0xF0, ch=ev&0x0F;
+        var d1=u8[pos++]; var d2=(hi===0xC0||hi===0xD0)?0:u8[pos++];
+        if(hi===0x90&&d2>0){ var k=ch+":"+d1; (open[k]=open[k]||[]).push({tick:tick,vel:d2}); }
+        else if(hi===0x80||(hi===0x90&&d2===0)){ var k2=ch+":"+d1; var arr=open[k2]; if(arr&&arr.length){ var on=arr.shift(); notes.push([on.tick/tpq, d1, Math.max(.08,(tick-on.tick)/tpq), on.vel]); } }
+      }
+    }
+    pos=end;
+  }
+  notes.sort(function(a,b){ return a[0]-b[0]; });
+  var bpm=Math.round(60000000/tempo);
+  var lenB=notes.length?notes[notes.length-1][0]+2:0;
+  var out=notes.slice(0,1600).map(function(n){ return [Math.round(n[0]*100)/100, n[1], Math.round(n[2]*100)/100, n[3]]; });
+  return {bpm:bpm, len:Math.round(lenB*100)/100, notes:out, truncated:notes.length>1600};
+}
+function renderMidiList(){
+  jsonp({action:"midi_list",code:code()},function(err,d){
+    var box=document.getElementById("mdList");
+    if(err||!d||!d.ok){ box.innerHTML='<p class="small">一覧を取得できませんでした（GASの再デプロイが必要です）。</p>'; return; }
+    if(!d.midis||!d.midis.length){ box.innerHTML='<p class="small">登録済みのMIDIはまだありません。</p>'; return; }
+    box.innerHTML="";
+    d.midis.forEach(function(nm){
+      var row=document.createElement("div"); row.style.cssText="display:flex;gap:10px;align-items:center;margin:4px 0";
+      row.innerHTML="<span>🎵 </span>";
+      var sp=document.createElement("span"); sp.textContent=nm; row.appendChild(sp);
+      var del=document.createElement("button"); del.type="button"; del.textContent="削除";
+      del.addEventListener("click",function(){
+        if(!confirm("「"+nm+"」を削除しますか？")) return;
+        post({action:"admin_midi_del",code:code(),name:nm}).then(function(){ setTimeout(renderMidiList,1500); });
+      });
+      row.appendChild(del);
+      box.appendChild(row);
+    });
+  });
+}
+document.getElementById("mdSave").addEventListener("click",function(){
+  var nm=document.getElementById("mdName").value.trim();
+  var f=document.getElementById("mdFile").files[0];
+  var st=document.getElementById("mdStatus");
+  if(!nm){ st.textContent="曲名を入力してください。"; return; }
+  if(!f){ st.textContent="MIDIファイルを選んでください。"; return; }
+  st.textContent="読み込み中…";
+  f.arrayBuffer().then(function(ab){
+    var data;
+    try{ data=parseMidi(new Uint8Array(ab)); }catch(e){ st.textContent="解析できませんでした："+e.message; return; }
+    if(!data.notes.length){ st.textContent="ノートが見つかりませんでした。"; return; }
+    var js=JSON.stringify(data);
+    if(js.length>47000){ st.textContent="データが大きすぎます（"+js.length+"文字）。短いMIDIでお試しください。"; return; }
+    st.textContent="保存中…（ノート "+data.notes.length+" 個 / テンポ "+data.bpm+(data.truncated?" / 多すぎるため先頭1,600個まで":"")+"）";
+    post({action:"admin_midi_save",code:code(),name:nm,data:js}).then(function(){ st.textContent="登録しました。"; setTimeout(renderMidiList,1500); }).catch(function(){ st.textContent="保存できませんでした。"; });
+  });
+});
+/* ---- usage ---- */
+function renderUsage(){
+  jsonp({action:"admindata",code:code()},function(err,d){
+    var box=document.getElementById("usageBox");
+    if(err||!d||!d.ok||!d.usage){ box.innerHTML='<p class="small">使用量を取得できませんでした（GASの再デプロイが必要です）。</p>'; return; }
+    var u=d.usage;
+    box.innerHTML='<table><tbody>'
+    +'<tr><th style="text-align:left;padding:4px 10px">書いて帳の投稿数</th><td>'+u.posts+' 件</td></tr>'
+    +'<tr><th style="text-align:left;padding:4px 10px">登録ユーザー（ニックネーム）</th><td>'+u.users+' 人</td></tr>'
+    +'<tr><th style="text-align:left;padding:4px 10px">アクセス記録</th><td>'+u.accessRows+' 件</td></tr>'
+    +'<tr><th style="text-align:left;padding:4px 10px">通報</th><td>'+u.reports+' 件</td></tr>'
+    +'<tr><th style="text-align:left;padding:4px 10px">登録MIDI</th><td>'+u.midis+' 曲</td></tr>'
+    +'<tr><th style="text-align:left;padding:4px 10px">本日のメール送信残り枠</th><td>約 '+u.mailLeft+' 通（上限 100 通/日）</td></tr>'
+    +'</tbody></table>'
+    +'<p class="small" style="margin-top:8px">このシステムは Google Apps Script の無料枠で動いています。実行時間（6分/回）・メール送信（100通/日）などの上限はありますが、<strong>現在の使い方では追加料金はかかりません（料金概算：¥0／月）</strong>。スプレッドシートの容量上限（セル数 約1,000万）に対しても、投稿が数万件規模までは余裕があります。</p>';
+  });
+}
+var started=false;
+var iv=setInterval(function(){
+  var m=document.getElementById("main");
+  if(m&&m.style.display!=="none"&&code()){
+    if(!started){ started=true; renderMidiList(); renderUsage(); }
+  }
+}, 700);
+})();
+</script>
+
+</body>
+</html>
