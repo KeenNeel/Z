@@ -306,7 +306,7 @@ function nbLinkify(esc){
   return out;
 }
 function nbDate(ts){ if(!ts) return ""; try{ return new Date(ts).toLocaleString("ja-JP",{timeZone:"Asia/Tokyo",year:"numeric",month:"2-digit",day:"2-digit",hour:"2-digit",minute:"2-digit"}); }catch(e){ return ""; } }
-function nbVisit(){ nbJsonp({action:"visit",page:NB_PAGE,name:nbNick()||"ゲスト",dev:(window.innerWidth<760?"mobile":"pc")},function(){}); }
+function nbVisit(){ nbJsonp({action:"visit",page:NB_PAGE,name:nbNick()||"ゲスト",dev:(window.innerWidth<760?"mobile":"pc"),ua:(navigator.userAgent||"").slice(0,180),lang:(navigator.language||""),scr:(window.screen?screen.width+"x"+screen.height:"")},function(){}); }
 function nbApplyDesign(){ nbJsonp({action:"design"},function(err,d){ if(err||!d||!d.ok||!d.design) return; var dz=d.design;
   if(dz.notice){ if(!document.getElementById("zkeNotice")){ var b=document.createElement("div"); b.id="zkeNotice"; b.textContent="📢 "+dz.notice; document.body.insertBefore(b,document.body.firstChild); } }
   if(dz.accent){ var st=document.createElement("style"); st.textContent=".nb-head{background:"+dz.accent+"!important}#nbSend{background:"+dz.accent+"!important}.nb-count{background:"+dz.accent+"!important}#recoBtn{background:"+dz.accent+"!important}.mgr-canopy i.on{background:"+dz.accent+"!important}"; document.head.appendChild(st); }
@@ -978,7 +978,7 @@ if(document.readyState==="loading"){ document.addEventListener("DOMContentLoaded
 .nb-icon-btn{padding:4px 8px!important;display:inline-flex!important;align-items:center;justify-content:center}
 #nbList{background:repeating-linear-gradient(180deg,#fffdf6 0 27px,#eadfc0 27px 28px);border:1px solid #e7d9b4;border-radius:8px;padding:10px 12px;cursor:text;min-height:140px}
 </style>
-<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v80）</div>
+<div style="text-align:center;font-size:11.5px;color:#6e6e6e;padding:20px 8px 30px">全関映アーカイブ 別巻3 ― OB会とアカデミー賞（v82）</div>
 
 <style>
 :focus-visible{outline:3px solid #1a73e8!important;outline-offset:2px}
@@ -1421,7 +1421,7 @@ var img=root.querySelector("#chokoImg2"), txt=root.querySelector("#chokoText2"),
 img.src=POSES.stand;
 try{ var savedPos=JSON.parse(localStorage.getItem("zkeChokoPos")||"null"); if(savedPos){ root.style.left=savedPos.l+"px"; root.style.top=savedPos.t+"px"; root.style.right="auto"; root.style.bottom="auto"; } }catch(e){}
 var chokoOn=true;
-try{ chokoOn=localStorage.getItem("zkeChoko")!=="0"; }catch(e){}
+try{ chokoOn=localStorage.getItem("zkeChoko")==="1"; }catch(e){}
 var toggleBtn=document.createElement("button");
 toggleBtn.type="button"; toggleBtn.className="choko-toggle";
 var head=ov.querySelector(".nb-head"), closeBtn=E("nbClose");
@@ -2051,6 +2051,7 @@ document.addEventListener('pointerup',function(e){ if(pdPos&&Math.abs(e.clientX-
 var rockEl=document.createElement('audio'); rockEl.loop=true; rockEl.preload='auto'; rockEl.src='kaite_rock.mp3';
 var rockOn=false, rockSaved=null;
 function rockRestore(){
+  if(window.__zkeBgmStopped){ rockSaved=null; return; }
   if(rockSaved){
     selVal=rockSaved.genre; seekTo=rockSaved.t||0;
     try{ localStorage.setItem('zkeBgm',selVal); }catch(e){}
@@ -2166,7 +2167,7 @@ function startMidiFile(path){
   }).catch(function(){ selVal="none"; });
 }
 
-window.ZKE_BGM_STOP=function(){ try{ stopAll(); }catch(e){} window.__zkeBgmStopped=true; try{ sessionStorage.removeItem("zkeMusicState"); }catch(e){} };
+window.ZKE_BGM_STOP=function(){ try{ stopAll(); }catch(e){} try{ if(typeof rockEl!=="undefined"&&rockEl) rockEl.pause(); if(typeof rockOn!=="undefined") rockOn=false; }catch(e){} window.__zkeBgmStopped=true; try{ sessionStorage.removeItem("zkeMusicState"); }catch(e){} };
 window.ZKE_BGM_RESTORE=function(){
   if(bgmSavedGenre===null) return;
   selVal=bgmSavedGenre; bgmSavedGenre=null; window.__gatyaCur=null;
@@ -4169,7 +4170,7 @@ window.addEventListener("resize",clampChoko);
         saveCode(code);
         hideModal();
         if (win && !win.closed) {
-          try { win.location.href = res.url; } catch (e) { fallbackLink(res.url); }
+          try { if (window.ZKE_BGM_STOP) window.ZKE_BGM_STOP(); win.location.href = res.url; } catch (e) { fallbackLink(res.url); }
         } else {
           var w = origOpen(res.url, '_blank', 'noopener');
           if (!w) fallbackLink(res.url);
@@ -4273,6 +4274,126 @@ document.addEventListener("pointerdown",function(ev){
 },true);
 })();
 </script>
+
+<style id="nb18style">
+/* ===== v81 NB18: choko touch drag ===== */
+#chokoRoot{touch-action:none}
+#chokoImg2{touch-action:none;-webkit-user-drag:none}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb18) return; window.__nb18=1;
+function stopBgm(){ try{ if(window.ZKE_BGM_STOP) window.ZKE_BGM_STOP(); }catch(e){} }
+/* ---- stop BGM when a separate window/tab opens ---- */
+var origOpen18=window.open;
+window.open=function(u){ if(u) stopBgm(); return origOpen18.apply(this,arguments); };
+document.addEventListener("click",function(ev){
+  var a=ev.target&&ev.target.closest?ev.target.closest("a[href]"):null;
+  if(!a) return;
+  var href=a.getAttribute("href")||"";
+  if(!/^https?:\/\//i.test(href)) return;
+  if(/script\.google\.com/i.test(href)) return;
+  if(a.target==="_blank"){ stopBgm(); return; }
+  try{ if(new URL(href).hostname!==location.hostname) stopBgm(); }catch(e){}
+},true);
+/* ---- choko: pointer drag anywhere on her (touch OK) ---- */
+document.addEventListener("pointerdown",function(ev){
+  var root=document.getElementById("chokoRoot");
+  if(!root||!root.classList.contains("on")) return;
+  if(!ev.target||!(ev.target===root||root.contains(ev.target))) return;
+  if(ev.target.closest&&ev.target.closest("button,a")) return;
+  var sx=ev.clientX, sy=ev.clientY, r0=root.getBoundingClientRect(), moved=false;
+  function mv(e){
+    var dx=e.clientX-sx, dy=e.clientY-sy;
+    if(!moved&&Math.abs(dx)+Math.abs(dy)<7) return;
+    moved=true;
+    root.style.left=Math.round(r0.left+dx)+"px"; root.style.top=Math.round(r0.top+dy)+"px"; root.style.right="auto"; root.style.bottom="auto";
+  }
+  function up(){
+    document.removeEventListener("pointermove",mv); document.removeEventListener("pointerup",up);
+    if(moved){ try{ localStorage.setItem("zkeChokoPos",JSON.stringify({l:parseInt(root.style.left,10)||0,t:parseInt(root.style.top,10)||0})); }catch(e){} }
+  }
+  document.addEventListener("pointermove",mv);
+  document.addEventListener("pointerup",up);
+},true);
+/* ---- notebook: stay on the same page after posting/editing ---- */
+var keepNo=0, keepUntil=0;
+function curPg(){ var t=(document.getElementById("nbPgInfo")||{}).textContent||""; var m=/(\d+)\s*ページ目/.exec(t); return m?+m[1]:0; }
+document.addEventListener("click",function(ev){
+  var id=ev.target&&ev.target.id;
+  if(id==="nb6Ok"){ var p=curPg(); if(p){ keepNo=p; keepUntil=Date.now()+8000; } }
+  if(id==="nbPgPrev"||id==="nbPgNext"||id==="nb6JumpGo"){ keepUntil=0; }
+},true);
+setInterval(function(){
+  if(!keepNo||Date.now()>keepUntil) return;
+  var ov=document.getElementById("nbOverlay");
+  if(!ov||!ov.classList.contains("open")) return;
+  var p=curPg();
+  if(p&&p!==keepNo){ var j=document.getElementById("nb6JumpNo"), g=document.getElementById("nb6JumpGo"); if(j&&g){ j.value=keepNo; g.click(); } }
+},400);
+})();
+</script>
+
+<style id="nb19style">
+/* ===== v82 NB19: open prompt (sound / choko) ===== */
+#nb19Prompt{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--hdrH,64px) + 12px);z-index:999988;background:#fffef9;border:2px solid #b8860b;border-radius:14px;box-shadow:0 8px 28px rgba(38,50,74,.28);padding:10px 14px 11px;max-width:92vw;width:340px;font-size:13.5px;color:#3a2c10;line-height:1.6}
+#nb19Prompt::before{content:"";position:absolute;left:50%;top:-10px;margin-left:-9px;border:9px solid transparent;border-bottom-color:#b8860b;border-top:0}
+#nb19Prompt .nb19-t{font-weight:800;margin-bottom:5px;padding-right:22px}
+#nb19Prompt .nb19-row{display:flex;align-items:center;gap:8px;margin-top:6px}
+#nb19Prompt .nb19-lab{flex:1}
+#nb19Prompt button{border:2px solid #b8860b;background:#ffe082;color:#5a4310;border-radius:999px;padding:4px 13px;font-weight:800;font-size:12.5px;cursor:pointer;white-space:nowrap}
+#nb19Prompt button.nb19-off{background:#fff}
+#nb19Prompt .nb19-x{position:absolute;right:7px;top:5px;border:none;background:none;font-size:16px;color:#8a6d1f;cursor:pointer;padding:2px 5px}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb19) return; window.__nb19=1;
+function sndOn(){ try{ return localStorage.getItem("zkeSndOn")==="1"; }catch(e){ return false; } }
+function chokoOn(){ try{ return localStorage.getItem("zkeChoko")==="1"; }catch(e){ return false; } }
+function build(){
+  if(document.getElementById("nb19Prompt")) return;
+  var d=document.createElement("div"); d.id="nb19Prompt";
+  d.innerHTML='<button class="nb19-x" type="button" aria-label="閉じる">✕</button>'
+    +'<div class="nb19-t">🔊 音とチョウ子の設定</div>'
+    +'<div class="nb19-row"><span class="nb19-lab">音（BGM）：<b id="nb19SndState"></b></span><button type="button" id="nb19SndBtn"></button></div>'
+    +'<div class="nb19-row"><span class="nb19-lab">チョウ子：<b id="nb19ChokoState"></b></span><button type="button" id="nb19ChokoBtn"></button></div>';
+  document.body.appendChild(d);
+  function sync(){
+    var s=sndOn(), c=chokoOn();
+    document.getElementById("nb19SndState").textContent=s?"ON":"OFF";
+    var sb=document.getElementById("nb19SndBtn"); sb.textContent=s?"OFFにする":"ONにする"; sb.className=s?"":"nb19-off";
+    document.getElementById("nb19ChokoState").textContent=c?"表示中":"非表示";
+    var cb=document.getElementById("nb19ChokoBtn"); cb.textContent=c?"隠す":"表示する"; cb.className=c?"":"nb19-off";
+  }
+  sync();
+  d.querySelector(".nb19-x").addEventListener("click",function(){ d.remove(); });
+  document.getElementById("nb19SndBtn").addEventListener("click",function(){ var b=document.querySelector(".snd-btn"); if(b) b.click(); setTimeout(sync,350); });
+  document.getElementById("nb19ChokoBtn").addEventListener("click",function(){ var b=document.querySelector(".choko-toggle"); if(b) b.click(); setTimeout(sync,350); });
+}
+function blockersUp(){
+  var ids=["nickModal","pgModal","zkeGateModal"];
+  for(var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]);
+    if(el&&getComputedStyle(el).display!=="none"&&el.getBoundingClientRect().height>0) return true;
+  }
+  return false;
+}
+window.addEventListener("load",function(){
+  var seen=false;
+  try{ seen=!!sessionStorage.getItem("zkeOpenPrompt"); if(!seen) sessionStorage.setItem("zkeOpenPrompt","1"); }catch(e){}
+  if(seen) return;
+  var tries=0;
+  var iv=setInterval(function(){
+    tries++;
+    if(!blockersUp()){ clearInterval(iv); build(); }
+    else if(tries>40) clearInterval(iv);
+  },700);
+});
+})();
+</script>
+
 
 </body>
 </html>
