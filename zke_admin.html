@@ -92,6 +92,7 @@ function load(){
     document.getElementById("lock").style.display="none";
     document.getElementById("main").style.display="";
     render();
+    seedTips();
   });
 }
 function bars(obj, max){
@@ -309,5 +310,31 @@ var iv=setInterval(function(){
 })();
 </script>
 
+
+<script>
+"use strict";
+/* 小ネタ: 管理者が投稿データを取得したタイミングで、DB（小ネタシート）へ書き込む */
+var ADMIN_TIPS=[
+"全関映の創立は1969年ごろと伝わっています（諸説あり）。",
+"8ミリフィルムは上映時間1分で約4.6メートル。長編はリール交換が大変でした。",
+"『ハワイに行きたし金はなし』はアーカイブの1-1。タイトルは「行きたし」が正解です。",
+"おみくじは全100種。開くとすぐ巻物で結果が出ます。",
+"ガチャは最大500円分まで連続で回せます。当たった作品はトレイに並びます。",
+"書いて帳は @名前 でメンバーにメンションできます。候補も自動で出ます。",
+"三島有紀子監督『男ともだち』は別巻2に特集があります。122館の上映リスト付き。",
+"関西学生映画祭は2012年に始まり、全関映も参加してきました。",
+"映写機のランプが切れると上映は真っ暗に。昔の上映会は予備ランプが必需品でした。",
+"カルーセルの音楽はジャンルが選べます。管理画面からはオリジナルMIDIも登録できます。",
+"現役生の新作は第4分野に収録（OB向け限定公開）。",
+"おとな全関映・大同窓会2026は11月28日、西宮北口で開催です。",
+"高久保浩ムービー集は第6分野。全21作品が限定公開で収録されています。",
+"書いて帳の投稿は、書いた本人がニックネームで本人確認して自由に直せます。"
+];
+function seedTips(){
+  try{
+    fetch("https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec",{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_tips",code:code(),tips:ADMIN_TIPS})});
+  }catch(e){}
+}
+</script>
 </body>
 </html>

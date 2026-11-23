@@ -977,152 +977,66 @@ againBtn.addEventListener("click", function () {
   pick();
 })();
 </script>
-<style id="dkStyle">
-#cylWrap,#drawBtn{display:none!important}
-#omkReco{display:none}
-#omkReco.dk-show{display:block}
+<style id="scrStyle">
+#cylWrap,#drawBtn,.controls,#card,#hint,#againBtn{display:none!important}
+#omkReco{display:block!important}
 .frame{max-width:680px!important}
 h1{font-size:31px!important}
 .intro{font-size:15.5px!important;line-height:1.95!important}
-.hint{font-size:15.5px!important;line-height:1.8!important}
-.card .grade{font-size:48px!important}
-.card .text{font-size:16.5px!important;line-height:2.05!important}
-.card .no{font-size:15px!important}
-.dk-wrap{position:relative;margin:8px auto 2px;max-width:340px}
-.dk-pointer{position:absolute;top:-8px;left:50%;transform:translateX(-50%);font-size:27px;color:#c0392b;z-index:5;text-shadow:0 2px 3px rgba(0,0,0,.3)}
-.dk-disc{position:relative;width:min(320px,84vw);height:min(320px,84vw);margin:14px auto 4px;border-radius:50%;border:5px solid #7a0f14;box-shadow:0 10px 28px rgba(0,0,0,.35),inset 0 0 0 3px #c9a227;animation:dkSpin 16s linear infinite}
-.dk-disc.fast{animation-duration:.85s}
-.dk-disc.stop{animation-play-state:paused}
-@keyframes dkSpin{to{transform:rotate(360deg)}}
-.dk-seg{position:absolute;left:50%;top:50%;font-weight:800;font-size:15.5px;color:#7a0f14;text-shadow:0 1px 0 rgba(255,255,255,.8);transform-origin:0 0;white-space:nowrap}
-.dk-hub{position:absolute;left:50%;top:50%;width:56px;height:56px;transform:translate(-50%,-50%);background:radial-gradient(circle at 35% 35%,#ffe082,#b8860b);border-radius:50%;border:3px solid #7a0f14;display:flex;align-items:center;justify-content:center;font-size:23px;z-index:3}
-.dk-dart{position:absolute;left:50%;bottom:2%;width:7px;height:52px;margin-left:-3.5px;background:linear-gradient(180deg,#8d9db6,#42506b);border-radius:3px;z-index:6;opacity:0}
-.dk-dart::before{content:"";position:absolute;top:-13px;left:50%;transform:translateX(-50%);border:6px solid transparent;border-bottom:12px solid #2c3a52}
-.dk-dart::after{content:"";position:absolute;bottom:-2px;left:50%;transform:translateX(-50%);width:20px;height:15px;background:#c0392b;clip-path:polygon(50% 0,100% 100%,50% 78%,0 100%)}
-.dk-powrap{max-width:340px;margin:10px auto 2px}
-.dk-pow{height:20px;background:#efe6cf;border:2px solid #b8860b;border-radius:999px;overflow:hidden}
-.dk-powfill{height:100%;width:0%;background:linear-gradient(90deg,#6bf178,#ffe74c,#ff5964);transition:none}
-.dk-powlab{font-size:14px;font-weight:700;color:#7a0f14;margin-top:4px}
-#dkBtn{background:#c0392b;color:#fff;border:0;border-radius:999px;padding:13px 30px;font-size:17px;font-weight:800;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.25);margin-top:10px}
-#dkBtn:disabled{opacity:.45;cursor:default}
-.dk-status{font-size:15px;font-weight:700;color:#5a4310;min-height:1.6em;margin:8px 0 0}
+.scr-wrap{text-align:center;margin:10px auto 4px}
+.scr{display:flex;align-items:stretch;justify-content:center;filter:drop-shadow(0 10px 18px rgba(60,30,0,.28))}
+.scr-bar{flex:0 0 26px;border-radius:13px;background:linear-gradient(90deg,#5a3a17,#8a5a24 30%,#c89b58 50%,#8a5a24 70%,#4a2f10);position:relative;z-index:2}
+.scr-bar::before,.scr-bar::after{content:"";position:absolute;left:50%;transform:translateX(-50%);width:34px;height:16px;border-radius:8px;background:linear-gradient(180deg,#7a5222,#4a2f10)}
+.scr-bar::before{top:-9px}
+.scr-bar::after{bottom:-9px}
+.scr-paper{flex:0 1 560px;background:linear-gradient(180deg,#fdf6dd,#f7ead0 55%,#f3e3c2);border-top:2px solid #d9c28f;border-bottom:2px solid #d9c28f;overflow:hidden;transform:scaleX(.04);opacity:.4}
+.scr.open .scr-paper{animation:scrUnroll 1s cubic-bezier(.25,.8,.3,1) forwards}
+@keyframes scrUnroll{0%{transform:scaleX(.04);opacity:.4}60%{opacity:1}100%{transform:scaleX(1);opacity:1}}
+.scr-inner{writing-mode:vertical-rl;text-orientation:mixed;height:400px;padding:26px 30px;box-sizing:border-box;display:flex;flex-direction:column;align-items:flex-start;gap:18px;margin:0 auto}
+.scr-no{font-size:15px;letter-spacing:.35em;color:#8a6a1f;font-weight:700}
+.scr-grade{font-size:52px;font-weight:900;color:#b3001b;letter-spacing:.12em;line-height:1.1}
+.scr-grade.dark{color:#3a3a3a}
+.scr-text{font-size:16.5px;line-height:2.05;color:#33270f}
+.scr-film{font-size:14.5px;color:#5a4310;border-right:2px solid #c9a227;padding-right:10px;line-height:1.9}
+#scrAgain{margin-top:16px;border:2px solid #7a0f14;background:linear-gradient(180deg,#c8102e,#8f0a20);color:#ffe9a8;font-weight:900;font-size:16px;border-radius:999px;padding:11px 26px;cursor:pointer;box-shadow:0 4px 12px rgba(122,15,20,.35)}
+#scrAgain:active{transform:scale(.97)}
+@media (max-width:640px){ .scr-inner{height:430px;padding:20px 16px} .scr-grade{font-size:42px} }
 </style>
 <script>
 (function(){
 "use strict";
 var stage=document.getElementById("stage");
-var cyl=document.getElementById("cylWrap");
-var wrap=document.createElement("div"); wrap.className="dk-wrap";
-wrap.innerHTML='<div class="dk-pointer">▼</div><div class="dk-disc" id="dkDisc"><div class="dk-hub">🎯</div></div><div class="dk-dart" id="dkDart"></div>';
+if(!stage||typeof FORTUNES==="undefined") return;
+var wrap=document.createElement("div");
+wrap.className="scr-wrap";
+wrap.innerHTML='<div class="scr" id="scr"><div class="scr-bar"></div><div class="scr-paper"><div class="scr-inner"><div class="scr-no" id="scrNo"></div><div class="scr-grade" id="scrGrade"></div><div class="scr-text" id="scrText"></div><div class="scr-film">🎬 ラッキー映画<br><b id="scrFilm"></b></div></div></div><div class="scr-bar"></div></div><button type="button" id="scrAgain">🎋 もう一度引く</button>';
 stage.appendChild(wrap);
-var disc=wrap.querySelector("#dkDisc"), dart=wrap.querySelector("#dkDart");
-var GRADES=["大吉","中吉","小吉","吉","末吉","凶","大吉","小吉","中吉","吉","末吉","大凶"];
-var RANK=["大凶","凶","末吉","吉","小吉","中吉","大吉"];
-var COLS={"大吉":"#f6c453","中吉":"#fdeeda","小吉":"#f9e2c0","吉":"#fdf6e3","末吉":"#e8e3d5","凶":"#cbbfd6","大凶":"#9a8bab"};
-var stops=[];
-for(var i=0;i<12;i++){ stops.push(COLS[GRADES[i]]+" "+(i*30)+"deg "+((i+1)*30)+"deg"); }
-disc.style.background="conic-gradient("+stops.join(",")+")";
-for(var j=0;j<12;j++){
-  var s=document.createElement("span"); s.className="dk-seg"; s.textContent=GRADES[j];
-  var a=(j*30+15)*Math.PI/180, R=disc.clientWidth? 118:118;
-  s.style.transform="rotate("+(j*30+15)+"deg) translate(0,-"+Math.round(Math.min(118,window.innerWidth*.30))+"px) rotate(90deg)";
-  s.style.marginLeft="-14px"; s.style.marginTop="-9px";
-  disc.appendChild(s);
+var scr=wrap.querySelector("#scr");
+function kanji(n){
+  if(typeof kanjiNum==="function"){ try{ return kanjiNum(n); }catch(e){} }
+  return String(n);
 }
-var controls=document.querySelector(".controls");
-var pow=document.createElement("div"); pow.className="dk-powrap";
-pow.innerHTML='<div class="dk-pow"><div class="dk-powfill" id="dkPowFill"></div></div><div class="dk-powlab" id="dkPowLab">エナジーパワー： ―</div>';
-controls.parentNode.insertBefore(pow,controls);
-var btn=document.createElement("button"); btn.type="button"; btn.id="dkBtn"; btn.textContent="🎯 パワーをためる";
-controls.appendChild(btn);
-var status=document.createElement("p"); status.className="dk-status"; status.textContent="回る円盤にダーツを投げて、今日の映画運を決めましょう。パワーが強いほど中心に刺さり、運勢も上向きます。";
-controls.appendChild(status);
-var hint=document.getElementById("hint");
-hint.textContent="まず「パワーをためる」を押して、エナジーパワーを決めてください。";
-var state=0, power=0, powTimer=null, powT0=0;
-function powVal(){ var ph=((Date.now()-powT0)%1100)/1100; return Math.round((ph<.5?ph*2:(1-ph)*2)*100); }
-btn.addEventListener("click",function(){
-  if(state===0){
-    state=1; disc.classList.add("fast");
-    powT0=Date.now();
-    powTimer=setInterval(function(){ var v=powVal(); document.getElementById("dkPowFill").style.width=v+"%"; document.getElementById("dkPowLab").textContent="エナジーパワー： "+v; },30);
-    btn.textContent="💪 パワーを決める！";
-    status.textContent="メーターが動いています。狙いの強さでボタンを押してください。";
-  } else if(state===1){
-    state=2; clearInterval(powTimer); power=powVal();
-    document.getElementById("dkPowFill").style.width=power+"%";
-    document.getElementById("dkPowLab").textContent="エナジーパワー： "+power+(power>=85?"（すごい！運勢アップ）":power<=20?"（弱い…運勢ダウン注意）":"");
-    btn.textContent="🎯 ダーツを投げる！";
-    status.textContent="パワーは "+power+" に決まりました。円盤の回転が止まる瞬間を狙って、ダーツを投げましょう。";
-  } else if(state===2){
-    state=3; btn.disabled=true;
-    throwDart();
-  } else if(state===3){
-    resetGame();
-  }
-});
-function discAngle(){
-  var m=getComputedStyle(disc).transform;
-  if(!m||m==="none") return 0;
-  var v=m.match(/matrix\(([^)]+)\)/); if(!v) return 0;
-  var p=v[1].split(","), a=parseFloat(p[0]), b=parseFloat(p[1]);
-  var deg=Math.atan2(b,a)*180/Math.PI;
-  return ((deg%360)+360)%360;
+function draw(){
+  var i=Math.floor(Math.random()*FORTUNES.length);
+  var f=FORTUNES[i];
+  document.getElementById("scrNo").textContent="第 "+kanji(i+1)+" 番";
+  var g=document.getElementById("scrGrade");
+  g.textContent=f.g;
+  g.classList.toggle("dark",f.g.indexOf("凶")>-1);
+  document.getElementById("scrText").textContent=f.t;
+  document.getElementById("scrFilm").textContent=f.f||"";
+  scr.classList.remove("open");
+  void scr.offsetWidth;
+  scr.classList.add("open");
+  if(typeof playChime==="function"){ try{ playChime(); }catch(e){} }
+  if(window.ZKE_PLAY){ try{ ZKE_PLAY("chime"); }catch(e){} }
 }
-function throwDart(){
-  var theta=discAngle();
-  var phi=((270-theta)%360+360)%360;
-  var idx=Math.floor(phi/30)%12;
-  var grade=GRADES[idx];
-  var ri=RANK.indexOf(grade);
-  if(power>=85&&ri<RANK.length-1) ri++;
-  if(power<=20&&ri>0) ri--;
-  var finalGrade=RANK[ri];
-  var pool=(typeof FORTUNES!=="undefined")?FORTUNES.filter(function(f){ return f.g===finalGrade; }):[];
-  if(!pool.length&&typeof FORTUNES!=="undefined") pool=FORTUNES;
-  var f=pool[Math.floor(Math.random()*pool.length)]||{g:finalGrade,t:"",f:"",n:1};
-  /* dart flight */
-  var wr=wrap.getBoundingClientRect(), dr=disc.getBoundingClientRect();
-  var cx=dr.left-wr.left+dr.width/2, cy=dr.top-wr.top+dr.height/2;
-  var rr=power<30?.42:(power<70?.31:.17);
-  var tx=cx, ty=cy-dr.height*rr;
-  dart.style.opacity="1";
-  dart.style.left=tx+"px"; dart.style.top=(wr.height-60)+"px";
-  var anim=dart.animate([{transform:"translate(0,0) rotate(0deg)",opacity:1},{transform:"translate(0,"+(-( (wr.height-60)-ty ))+"px) rotate(0deg)",opacity:1}],{duration:330,easing:"cubic-bezier(.2,.7,.3,1)",fill:"forwards"});
-  status.textContent="ダーツが飛んでいきます……！";
-  setTimeout(function(){
-    disc.classList.add("stop");
-    if(window.ZKE_PLAY) ZKE_PLAY("pop");
-    var bad=(finalGrade==="凶"||finalGrade==="大凶");
-    var card=document.getElementById("card");
-    document.getElementById("cardNo").textContent="第 "+kanjiNum(f.n)+" 番";
-    document.getElementById("cardGrade").textContent=f.g;
-    document.getElementById("cardText").textContent=f.t;
-    document.getElementById("cardFilm").textContent=f.f;
-    card.classList.toggle("bad",bad);
-    card.classList.add("show");
-    sparkles(stage); sparkles(card);
-    playChime(!bad);
-    var adj=(power>=85&&f.g!==GRADES[idx])?"パワーのおかげで運勢アップ！":(power<=20&&f.g!==GRADES[idx]?"パワーが弱く、運勢は一歩後退…":"");
-    hint.textContent="円盤の「"+GRADES[idx]+"」のマスに命中（パワー "+power+"）。"+adj+(bad?" 結んで厄を置いていくもよし。":" よい札が出ました。ラッキー映画もぜひどうぞ。");
-    status.textContent="結果が出ました。おすすめ作品も下に表示しました。";
-    document.getElementById("omkReco").classList.add("dk-show");
-    btn.disabled=false; btn.textContent="🎯 もう一度投げる";
-  }, 420);
-}
-function resetGame(){
-  state=0; power=0;
-  disc.classList.remove("fast","stop");
-  dart.style.opacity="0";
-  document.getElementById("dkPowFill").style.width="0%";
-  document.getElementById("dkPowLab").textContent="エナジーパワー： ―";
-  document.getElementById("card").classList.remove("show");
-  btn.textContent="🎯 パワーをためる";
-  status.textContent="回る円盤にダーツを投げて、今日の映画運を決めましょう。";
-  hint.textContent="まず「パワーをためる」を押して、エナジーパワーを決めてください。";
-}
+wrap.querySelector("#scrAgain").addEventListener("click",draw);
+setTimeout(draw,350);
 })();
 </script>
+
+
 
 </body>
 </html>
