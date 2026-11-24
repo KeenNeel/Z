@@ -1217,7 +1217,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v85）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v87）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -10421,6 +10421,7 @@ setInterval(function(){
   }
 },1000);
 window.ZKE_THEME_STATE=function(){ return active; };
+window.ZKE_THEME_NOW=function(){ if(active&&themeEl&&themeEl.src&&!themeEl.paused){ try{ return decodeURIComponent(themeEl.src.split("/").pop()); }catch(e){ return null; } } return null; };
 window.ZKE_THEME_RESUME=function(){ if(active&&themeEl){ if(themeEl.paused) playCur(); } };
 if(curView==="bekkan1") setTimeout(enterBekkan1,2500);
 })();
@@ -10446,6 +10447,7 @@ function startSelected(){
   sel.dispatchEvent(new Event("change",{bubbles:true}));
 }
 function playPressed(){
+    window.__nb23HoldUntil=Date.now()+3000;
     try{
       var view=sessionStorage.getItem("zkeView");
       if(view==="bekkan1"&&window.ZKE_THEME_STATE&&window.ZKE_THEME_STATE()&&window.ZKE_THEME_RESUME){ window.ZKE_THEME_RESUME(); return; }
@@ -10478,6 +10480,93 @@ function insert(){
 }
 var tries=0;
 var iv=setInterval(function(){ if(insert()||++tries>20) clearInterval(iv); },400);
+})();
+</script>
+
+<style id="nb23style">
+.nb23Now{font-size:11px;color:#8a6d1f;margin-left:6px;white-space:nowrap}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb23) return; window.__nb23=1;
+function E(id){ return document.getElementById(id); }
+function sndOn(){ try{ return localStorage.getItem("zkeSndOn")==="1"; }catch(e){ return false; } }
+var KEYS=["eldra","zenkwan","theme"];
+function songOptions(){
+  var sel=E("bgmSel"); if(!sel) return [];
+  return Array.prototype.slice.call(sel.options).filter(function(o){ return o.value&&o.value.indexOf("song:")===0; });
+}
+function pickRandom(){
+  var opts=songOptions(); if(!opts.length) return null;
+  var pri=opts.filter(function(o){
+    var n=o.value.toLowerCase();
+    return KEYS.some(function(k){ return n.indexOf(k)>-1; });
+  });
+  var pool=pri.length?pri:opts;
+  return pool[Math.floor(Math.random()*pool.length)].value;
+}
+function applyPick(){
+  var sel=E("bgmSel"); if(!sel) return;
+  var v=pickRandom(); if(!v) return;
+  if(sel.value===v&&optsPlaying()) return;
+  sel.value=v;
+  sel.dispatchEvent(new Event("change",{bubbles:true}));
+}
+function optsPlaying(){ return sndOn()&&!window.__zkeBgmStopped; }
+var lastOn=sndOn();
+setInterval(function(){
+  var on=sndOn();
+  if(on&&!lastOn){
+    setTimeout(function(){
+      if(!sndOn()) return;
+      if(window.__nb23HoldUntil&&Date.now()<window.__nb23HoldUntil) return;
+      var view=null; try{ view=sessionStorage.getItem("zkeView"); }catch(e){}
+      if(view==="bekkan1") return;
+      applyPick();
+    },900);
+  }
+  lastOn=on;
+},500);
+/* ---- now playing label ---- */
+function stripExt(n){ return n.replace(/\.(mp3|wav|midi?)$/i,""); }
+function nowName(){
+  try{
+    var view=sessionStorage.getItem("zkeView");
+    if(view==="bekkan1"&&window.ZKE_THEME_NOW){
+      var t=window.ZKE_THEME_NOW();
+      if(t) return stripExt(t);
+    }
+  }catch(e){}
+  var nb=E("nbOverlay");
+  if(nb&&nb.classList.contains("open")&&sndOn()) return "kaite_rock";
+  if(!optsPlaying()) return "";
+  var sel=E("bgmSel");
+  if(!sel||!sel.value||sel.value==="none") return "";
+  return stripExt(sel.value.replace(/^song:music\//,""));
+}
+function ensureLabels(){
+  var made=false;
+  var anchor=E("nb22Play");
+  if(anchor&&!document.querySelector(".nb23NowA")){
+    var s=document.createElement("span"); s.className="nb23Now nb23NowA";
+    anchor.parentNode.insertBefore(s,anchor.nextSibling); made=true;
+  }
+  var twin=document.querySelector(".nb22PlayT");
+  if(twin&&!document.querySelector(".nb23NowB")){
+    var s2=document.createElement("span"); s2.className="nb23Now nb23NowB";
+    twin.parentNode.insertBefore(s2,twin.nextSibling); made=true;
+  }
+  return made;
+}
+setInterval(function(){
+  ensureLabels();
+  var name=nowName();
+  var txt=name?("♪ "+name):"";
+  Array.prototype.forEach.call(document.querySelectorAll(".nb23Now"),function(el){
+    if(el.textContent!==txt) el.textContent=txt;
+  });
+},1000);
 })();
 </script>
 
