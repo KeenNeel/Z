@@ -2,3 +2,6 @@ Code.gs
 deploy_gs.bat
 gas_work/
 _zip_tmp/
+*.mp4
+*.mov
+*.zip

@@ -45,6 +45,11 @@ for %%Z in ("zenkanei_archive_github_*.zip") do (
 )
 if "%ZIPFOUND%"=="0" echo No ZIP found. Skipping step 1.
 
+rem ---------- Step 1b: retire separate-volume files (merged into index.html in v83) ----------
+del /f /q bekkan1_reunion2026.html bekkan2_otokotomodachi.html bekkan3_ob_academy.html 2>nul
+rem ---------- Step 1c: admin console is published on GitHub (code-gated) ----------
+if exist ".gitignore" ( findstr /v /x /c:"zke_admin.html" .gitignore > .gitignore.tmp && move /y .gitignore.tmp .gitignore >nul )
+
 rem ---------- Step 2: sync with GitHub ----------
 where git >nul 2>nul
 if errorlevel 1 ( echo [ERROR] Git not found. Install Git for Windows. & pause & exit /b 1 )
@@ -74,11 +79,14 @@ git checkout -B %BRANCH% >nul 2>nul
 if not exist ".gitignore" (
   echo Code.gs> .gitignore
   echo deploy_gs.bat>> .gitignore
-  echo zke_admin.html>> .gitignore
   echo gas_work/>> .gitignore
   echo _zip_tmp/>> .gitignore
 )
-git rm --cached --ignore-unmatch Code.gs deploy_gs.bat zke_admin.html >nul 2>nul
+git rm --cached --ignore-unmatch Code.gs deploy_gs.bat >nul 2>nul
+findstr /x /c:"*.mp4" .gitignore >nul 2>nul || echo *.mp4>> .gitignore
+findstr /x /c:"*.mov" .gitignore >nul 2>nul || echo *.mov>> .gitignore
+findstr /x /c:"*.zip" .gitignore >nul 2>nul || echo *.zip>> .gitignore
+git rm --cached --ignore-unmatch "*.mp4" "*.mov" "*.zip" >nul 2>nul
 
 echo MP3 files in this folder (sync targets):
 for %%M in (*.mp3) do echo   %%~nxM
@@ -100,7 +108,7 @@ if "%REMOTE_EXISTS%"=="1" (
     exit /b 1
   )
   rem Make sure private files are not in the repo tree after the merge.
-  git rm --cached --ignore-unmatch Code.gs deploy_gs.bat zke_admin.html >nul 2>nul
+  git rm --cached --ignore-unmatch Code.gs deploy_gs.bat >nul 2>nul
   git add -A
   git diff --cached --quiet || git commit -m "keep private files out of repo"
 )
