@@ -1217,7 +1217,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v87）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v89）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -6827,7 +6827,7 @@ function ksPlay(midi,when,dur,vel){
   src.start(when); src.stop(rel+.5);
 }
 /* ---------- playback state ---------- */
-var au=document.createElement('audio'); au.loop=true; au.preload='auto';
+var au=document.createElement('audio'); au.loop=false; au.preload='auto'; au.addEventListener('ended',function(){ try{ if(window.ZKE_BGM_NEXT) ZKE_BGM_NEXT(); }catch(e){} });
 var mode=null; /* 'audio' | 'midi' */
 var midiTimer=null, midiData=null;
 var selVal='none'; try{ selVal=localStorage.getItem('zkeBgm')||'none'; }catch(e){}
@@ -6882,7 +6882,7 @@ function startSelected(){
   else { src=TRACKS[selVal]||TRACKS.orgelSynth; }
   var el=(src==='__legacy__')?oldBgm():au;
   if(src!=='__legacy__'&&au.getAttribute('src')!==src) au.src=src;
-  el.loop=true;
+  el.loop=false; if(el.__zkeEndHook!==1){ el.__zkeEndHook=1; el.addEventListener('ended',function(){ try{ if(window.ZKE_BGM_NEXT) ZKE_BGM_NEXT(); }catch(e){} }); }
   if(seekTo>0){ try{ el.currentTime=seekTo; }catch(e){} seekTo=0; }
   mode='audio';
   var p=el.play(); if(p&&p.catch) p.catch(function(){});
@@ -10135,13 +10135,12 @@ function relocate(){
   var snd=document.querySelector(".snd-btn"), bgm=document.querySelector(".ctl-bgm"), tog=document.querySelector(".choko-toggle"), nb=document.querySelector(".nb-all-btn"), nick=E("nb20Nick");
   if(mq.matches){
     if(!bar) return;
-    [snd,bgm,tog,nb].forEach(function(el){ if(el) slots.appendChild(el); });
+    [nb,snd,bgm,tog].forEach(function(el){ if(el) slots.appendChild(el); });
     if(nick) bar.appendChild(nick);
   } else {
     if(right){ [snd,tog].forEach(function(el){ if(el) right.appendChild(el); }); if(nick) right.appendChild(nick); }
-    var ctl=document.querySelector(".ctl-wrap");
-    if(bgm&&ctl) ctl.appendChild(bgm);
-    if(nb&&tb) tb.appendChild(nb);
+    if(bgm&&snd&&snd.parentNode) snd.parentNode.insertBefore(bgm,snd.nextSibling);
+    if(nb&&tb) tb.insertBefore(nb,tb.firstChild);
   }
 }
 if(mq.addEventListener) mq.addEventListener("change",relocate);
@@ -10567,6 +10566,135 @@ setInterval(function(){
     if(el.textContent!==txt) el.textContent=txt;
   });
 },1000);
+})();
+</script>
+
+<style id="nb24style">
+/* ===== v88 NB24: header layout, fancy BGM dropdown, gacha scrollbar ===== */
+#bgmSel{appearance:none;-webkit-appearance:none;border:2px solid #b8860b;border-radius:999px;padding:5px 30px 5px 14px;font-size:13.5px;font-weight:700;color:#5a4310;cursor:pointer;max-width:230px;
+background:linear-gradient(180deg,#fff8dc,#ffe082) url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%23b8860b' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E") no-repeat right 11px center;
+box-shadow:0 2px 6px rgba(90,67,16,.18)}
+#bgmSel:hover{filter:brightness(1.04)}
+#bgmSel:focus{outline:2px solid #f6c453;outline-offset:1px}
+.nb23NowA{display:none!important}
+.zg-overlay{overflow-y:auto!important;scrollbar-width:thin;scrollbar-color:#b8860b rgba(0,0,0,.25)}
+.zg-overlay::-webkit-scrollbar{width:10px}
+.zg-overlay::-webkit-scrollbar-track{background:rgba(0,0,0,.25)}
+.zg-overlay::-webkit-scrollbar-thumb{background:#b8860b;border-radius:6px;border:2px solid rgba(0,0,0,.25)}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb24) return; window.__nb24=1;
+function E(id){ return document.getElementById(id); }
+/* ---- header arrangement: notebook first, BGM dropdown right of the speaker ---- */
+function arrange(){
+  var tb=document.querySelector(".topbar");
+  var nb=document.querySelector(".nb-all-btn");
+  var snd=document.querySelector(".snd-btn");
+  var bgm=document.querySelector(".ctl-bgm");
+  if(!tb||!nb||!snd||!bgm) return false;
+  if(nb.parentNode===tb&&tb.firstElementChild!==nb) tb.insertBefore(nb,tb.firstChild);
+  if(bgm.previousElementSibling!==snd&&snd.parentNode) snd.parentNode.insertBefore(bgm,snd.nextSibling);
+  var twin=document.querySelector(".nb22PlayT");
+  if(twin) twin.remove();
+  var nowB=document.querySelector(".nb23NowB");
+  if(nowB) nowB.remove();
+  return true;
+}
+var aTries=0;
+var aIv=setInterval(function(){ if(arrange()||++aTries>25) clearInterval(aIv); },400);
+/* ---- strip audio extensions from the dropdown labels ---- */
+setInterval(function(){
+  var sel=E("bgmSel"); if(!sel) return;
+  Array.prototype.forEach.call(sel.options,function(o){
+    var t=o.textContent;
+    if(/\.(mp3|wav|midi?)$/i.test(t)) o.textContent=t.replace(/\.(mp3|wav|midi?)$/i,"");
+  });
+},1500);
+/* ---- top navigation: section links always reach the main view ---- */
+document.addEventListener("click",function(ev){
+  var a=ev.target&&ev.target.closest?ev.target.closest(".topnav a[href^='#']"):null;
+  if(!a) return;
+  var href=a.getAttribute("href");
+  if(!href||href==="#top") return;
+  var view="main";
+  try{ view=sessionStorage.getItem("zkeView")||"main"; }catch(e){}
+  if(view!=="main"){
+    ev.preventDefault(); ev.stopPropagation();
+    if(window.ZKE_VIEW) ZKE_VIEW("main");
+    setTimeout(function(){ var t=document.querySelector(href); if(t) t.scrollIntoView(); },120);
+  }
+},true);
+/* ---- gacha: after the draw, machine top to the screen top ---- */
+function scrollGachaTop(){
+  var ov=document.querySelector(".zg-overlay");
+  var stage=document.querySelector(".zg-stage")||document.querySelector(".zg-card");
+  if(!ov||!stage) return;
+  try{ stage.scrollIntoView({block:"start"}); }catch(e){}
+  var orr=ov.getBoundingClientRect(), sr=stage.getBoundingClientRect();
+  var target=ov.scrollTop+(sr.top-orr.top)-4;
+  ov.scrollTop=Math.max(0,target);
+}
+/* keep a bottom spacer inside the gacha card while it is open,
+   so the overlay can always scroll the machine to the very top */
+setInterval(function(){
+  var ov=document.querySelector(".zg-overlay");
+  if(!ov) return;
+  var st=getComputedStyle(ov);
+  if(st.display==="none"||st.visibility==="hidden") return;
+  var card=document.querySelector(".zg-card");
+  if(card&&!E("nb24GachaSpacer")){
+    var sp=document.createElement("div");
+    sp.id="nb24GachaSpacer"; sp.style.height="50vh";
+    card.appendChild(sp);
+  }
+},800);
+document.addEventListener("click",function(ev){
+  if(ev.target&&ev.target.id==="zgCrankBtn"){
+    setTimeout(scrollGachaTop,1000);
+    setTimeout(scrollGachaTop,1750);
+  }
+},true);
+setInterval(function(){
+  var rv=E("zgReveal");
+  if(rv&&rv.offsetHeight>0&&!rv.dataset.nb24s){ rv.dataset.nb24s="1"; setTimeout(scrollGachaTop,200); }
+  if(rv&&rv.offsetHeight===0&&rv.dataset.nb24s) delete rv.dataset.nb24s;
+},700);
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+if(window.__nb25) return; window.__nb25=1;
+/* Called by MUSIC5 when a song ends: advance to a different song,
+   preferring the priority pool (eldra / zenkwan / theme). */
+window.ZKE_BGM_NEXT=function(){
+  try{
+    if(localStorage.getItem("zkeSndOn")!=="1") return;
+    if(window.__zkeBgmStopped) return;
+    var view="main";
+    try{ view=sessionStorage.getItem("zkeView")||"main"; }catch(e){}
+    if(view==="bekkan1") return; /* NB21 rotates the themes itself */
+    var nb=document.getElementById("nbOverlay");
+    if(nb&&nb.classList.contains("open")) return; /* kaite_rock is fixed */
+    var gz=document.querySelector(".zg-overlay");
+    if(gz){ var st=getComputedStyle(gz); if(st.display!=="none"&&st.visibility!=="hidden") return; }
+    var sel=document.getElementById("bgmSel"); if(!sel) return;
+    var opts=Array.prototype.slice.call(sel.options).filter(function(o){ return o.value&&o.value.indexOf("song:")===0; });
+    if(!opts.length) return;
+    var cur=sel.value;
+    var pool=opts.filter(function(o){ return o.value!==cur; });
+    if(!pool.length) pool=opts; /* only one song exists: replay it */
+    var KEYS=["eldra","zenkwan","theme"];
+    var pri=pool.filter(function(o){ var n=o.value.toLowerCase(); return KEYS.some(function(k){ return n.indexOf(k)>-1; }); });
+    var use=pri.length?pri:pool;
+    var v=use[Math.floor(Math.random()*use.length)].value;
+    sel.value=v;
+    sel.dispatchEvent(new Event("change",{bubbles:true}));
+  }catch(e){}
+};
 })();
 </script>
 
