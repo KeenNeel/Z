@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
-<head>
+<head><meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
 <meta charset="UTF-8">
 <meta name="robots" content="noindex, nofollow">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -1217,7 +1217,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v89）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全69作品（v91）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -10330,7 +10330,7 @@ setTimeout(relocate,2500);
 if(window.__nb21) return; window.__nb21=1;
 function E(id){ return document.getElementById(id); }
 function sndOn(){ try{ return localStorage.getItem("zkeSndOn")==="1"; }catch(e){ return false; } }
-var themeEl=null, pool=null, poolIdx=0, active=false, savedSel=null, myChange=false, curView="main", lastSnd=null;
+var themeEl=null, pool=null, poolIdx=0, active=false, savedSel=null, myChange=false, curView="main", lastSnd=null, errStreak=0;
 try{ curView=sessionStorage.getItem("zkeView")||"main"; }catch(e){}
 function ensureEl(){
   if(themeEl) return themeEl;
@@ -10338,13 +10338,16 @@ function ensureEl(){
   themeEl.preload="auto";
   themeEl.addEventListener("ended",function(){
     if(!active||!pool||!pool.length) return;
-    poolIdx=(poolIdx+1)%pool.length;
+    poolIdx=nextIdx();
     playCur();
   });
+  themeEl.addEventListener("playing",function(){ errStreak=0; });
   themeEl.addEventListener("error",function(){
     if(!active||!pool||!pool.length) return;
-    poolIdx=(poolIdx+1)%pool.length;
-    if(poolIdx!==0) playCur(); else { themeEl.pause(); }
+    errStreak++;
+    if(errStreak>=pool.length){ themeEl.pause(); return; }
+    poolIdx=nextIdx();
+    playCur();
   });
   return themeEl;
 }
@@ -10354,6 +10357,11 @@ function playCur(){
   el.src="music/"+encodeURI(pool[poolIdx]);
   var p=el.play();
   if(p&&p.catch) p.catch(function(){});
+}
+function nextIdx(){
+  if(!pool||pool.length<2) return 0;
+  var n; do{ n=Math.floor(Math.random()*pool.length); }while(n===poolIdx);
+  return n;
 }
 function fetchPool(cb){
   if(pool){ cb(pool); return; }
@@ -10373,7 +10381,7 @@ function enterBekkan1(){
     var sel=E("bgmSel");
     savedSel=sel?sel.value:null;
     if(window.ZKE_BGM_STOP) ZKE_BGM_STOP();
-    active=true; poolIdx=0; lastSnd=true;
+    active=true; poolIdx=p.length?Math.floor(Math.random()*p.length):0; lastSnd=true;
     playCur();
   });
 }
@@ -10652,8 +10660,11 @@ setInterval(function(){
 },800);
 document.addEventListener("click",function(ev){
   if(ev.target&&ev.target.id==="zgCrankBtn"){
-    setTimeout(scrollGachaTop,1000);
-    setTimeout(scrollGachaTop,1750);
+    var keepUntil=Date.now()+4000;
+    var kIv=setInterval(function(){
+      scrollGachaTop();
+      if(Date.now()>keepUntil) clearInterval(kIv);
+    },350);
   }
 },true);
 setInterval(function(){
@@ -10695,6 +10706,35 @@ window.ZKE_BGM_NEXT=function(){
     sel.dispatchEvent(new Event("change",{bubbles:true}));
   }catch(e){}
 };
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+if(window.__nb26) return; window.__nb26=1;
+/* ===== v90: always show the latest version =====
+   On load, fetch the tiny version.txt next to this page (no-store).
+   If the published version is newer than this file, reload once
+   with a cache-busting ?v= so the browser/CDN serve the new file. */
+var MY_VER=91;
+try{
+  if(location.protocol!=="http:"&&location.protocol!=="https:") return;
+  var m=/[?&]v=(\d+)/.exec(location.search);
+  var urlVer=m?parseInt(m[1],10):0;
+  setTimeout(function(){
+    fetch("version.txt?nc="+Date.now(),{cache:"no-store"}).then(function(r){ return r.text(); }).then(function(t){
+      var rv=parseInt(String(t).trim(),10);
+      if(!rv||rv<=MY_VER) return;
+      if(urlVer>=rv) return;
+      try{
+        if(sessionStorage.getItem("zkeVcReloaded")===String(rv)) return;
+        sessionStorage.setItem("zkeVcReloaded",String(rv));
+      }catch(e){}
+      location.replace(location.origin+location.pathname+"?v="+rv+location.hash);
+    }).catch(function(){});
+  },1200);
+}catch(e){}
 })();
 </script>
 
