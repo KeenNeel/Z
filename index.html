@@ -1217,7 +1217,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全71作品（v94）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全71作品（v95）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -10145,11 +10145,14 @@ function relocate(){
   var tb=document.querySelector(".topbar"), right=document.querySelector(".bar-right");
   var snd=document.querySelector(".snd-btn"), bgm=document.querySelector(".ctl-bgm"), tog=document.querySelector(".choko-toggle"), nb=document.querySelector(".nb-all-btn"), nick=E("nb20Nick");
   if(mq.matches){
-    if(!bar) return;
-    [snd,bgm,tog,nb].forEach(function(el){ if(el) slots.appendChild(el); });
-    if(nick) bar.appendChild(nick);
+    if(!right||!tb) return;
+    [snd,bgm,tog,nb].forEach(function(el){ if(el) right.appendChild(el); });
+    var nav=E("nb20Nav");
+    if(nav) tb.appendChild(nav);
+    if(nick) tb.appendChild(nick);
   } else {
     if(right){ [snd,tog].forEach(function(el){ if(el) right.appendChild(el); }); if(nick) right.appendChild(nick); }
+    var navB=E("nb20Nav"); if(navB&&bar) bar.appendChild(navB);
     if(bgm&&snd&&snd.parentNode) snd.parentNode.insertBefore(bgm,snd.nextSibling);
     if(nb&&right) right.appendChild(nb);
   }
@@ -10729,7 +10732,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=94;
+var MY_VER=95;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -10839,6 +10842,52 @@ function coverHint(){
 }
 var cTries=0;
 var cIv=setInterval(function(){ if(coverHint()||++cTries>40) clearInterval(cIv); },500);
+})();
+</script>
+
+<style id="nb29style">
+/* ===== v95 NB29: phone header = one navy block, compact controls ===== */
+@media (max-width:760px){
+  #nb20Bar{display:none!important}
+  .topbar{padding:6px 8px;gap:6px}
+  .topbar h1{font-size:15px}
+  .topbar button,.topbar .bar-btn{font-size:11px!important;padding:2px 6px!important}
+  .topbar select{font-size:11px!important;padding:2px 4px!important}
+  .ctl-bgm select{max-width:112px}
+  .topnav a{font-size:11px!important;padding:2px 7px!important}
+  #nb20Nav{flex:1 1 100%;order:60;min-width:0}
+  #nb20Nick{order:61;color:#ffe9a8}
+  #nb20Nick button{border-radius:3px}
+}
+#nb29Spacer{display:none}
+@media (max-width:760px){ #nb29Spacer{display:block} }
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb29) return; window.__nb29=1;
+function E(id){ return document.getElementById(id); }
+var mq=window.matchMedia("(max-width:760px)");
+/* the topbar is fixed: reserve exactly the space it needs so the
+   first content never slides underneath the taller navy header */
+function fitSpacer(){
+  var tb=document.querySelector(".topbar"), sp=E("nb29Spacer");
+  if(!tb) return;
+  if(!sp){
+    sp=document.createElement("div");
+    sp.id="nb29Spacer";
+    tb.parentNode.insertBefore(sp,tb.nextSibling);
+  }
+  if(!mq.matches){ sp.style.height="0px"; return; }
+  var want=tb.offsetHeight+16;
+  var have=sp.offsetTop;
+  sp.style.height=Math.max(0,want-have)+"px";
+}
+var tries=0;
+var iv=setInterval(function(){ fitSpacer(); if(++tries>30) clearInterval(iv); },400);
+window.addEventListener("resize",fitSpacer);
+window.addEventListener("orientationchange",function(){ setTimeout(fitSpacer,300); setTimeout(fitSpacer,900); });
+if(mq.addEventListener) mq.addEventListener("change",function(){ setTimeout(fitSpacer,60); });
 })();
 </script>
 
