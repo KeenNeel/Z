@@ -1217,7 +1217,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全71作品（v95）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全71作品（v96）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -7480,9 +7480,9 @@ new MutationObserver(function(){
 .nb6-jump input{width:52px;padding:3px 5px;border:1px solid #c9b98a;border-radius:6px;font-size:12px}
 .nb6-jump button{padding:3px 9px;border:1px solid #c9b98a;background:#fff8e1;border-radius:6px;cursor:pointer;font-size:12px}
 #nbOverlay.nb6-placing #nbPage{cursor:crosshair;outline:3px dashed #fb8500;outline-offset:-3px}
-#nb6Ed{position:absolute;z-index:80;width:36%;min-width:250px;background:linear-gradient(175deg,#fff6a8,#ffef8a);border-radius:4px 4px 14px 4px;box-shadow:0 12px 30px rgba(0,0,0,.35);transform:none;display:none;resize:both;overflow:hidden;min-height:230px}
+#nb6Ed{position:absolute;z-index:80;width:46%;min-width:250px;background:linear-gradient(175deg,#fff6a8,#ffef8a);border-radius:4px 4px 14px 4px;box-shadow:0 12px 30px rgba(0,0,0,.35);transform:rotate(-1deg);display:none;resize:both;overflow:hidden;min-height:230px}
 #nb6Ed.open{display:block}
-#nb6Ed .nb6-tape{position:absolute;top:-2px;left:50%;transform:translateX(-50%);width:96px;height:20px;background:rgba(255,255,255,.55);border-left:1px dashed rgba(0,0,0,.12);border-right:1px dashed rgba(0,0,0,.12)}
+#nb6Ed .nb6-tape{position:absolute;top:-2px;left:50%;transform:translateX(-50%) rotate(1deg);width:96px;height:20px;background:rgba(255,255,255,.55);border-left:1px dashed rgba(0,0,0,.12);border-right:1px dashed rgba(0,0,0,.12)}
 .nb6-head{display:flex;align-items:center;gap:6px;padding:16px 10px 4px;cursor:grab;font-weight:900;font-size:13px;color:#6b5200;touch-action:none}
 .nb6-head .nb6-mode{font-size:11px;color:#8a6d1a;font-weight:700}
 .nb6-head input{flex:1;min-width:60px;border:none;border-bottom:1px dashed #b8860b;background:transparent;font-size:12.5px;padding:2px;color:#333;outline:none}
@@ -7583,7 +7583,7 @@ function curPage(){
 function pagePos(clientX,clientY){
   var pg=E("nbPage"); var r=pg.getBoundingClientRect();
   var x=(clientX-r.left)/r.width*100, y=(clientY-r.top)/r.height*100;
-  x=Math.max(1,Math.min(53,x)); y=Math.max(2,Math.min(54,y));
+  x=Math.max(1,Math.min(84,x)); y=Math.max(2,Math.min(88,y));
   return {x:Math.round(x*10)/10, y:Math.round(y*10)/10};
 }
 function reloadBook(){
@@ -9904,7 +9904,7 @@ setInterval(function(){
 </script>
 
 <style id="nb19style">
-/* ===== v92 NB19: open prompt (YES/NO questions) ===== */
+/* ===== v96 NB19: open prompt (BGM only) ===== */
 #nb19Prompt{position:fixed;left:50%;transform:translateX(-50%);top:calc(var(--hdrH,64px) + 12px);z-index:999988;background:#fffef9;border:2px solid #b8860b;border-radius:14px;box-shadow:0 8px 28px rgba(38,50,74,.28);padding:12px 16px 13px;max-width:92vw;width:330px;font-size:13.5px;color:#3a2c10;line-height:1.55;transition:opacity .45s}
 #nb19Prompt::before{content:"";position:absolute;left:50%;top:-10px;margin-left:-9px;border:9px solid transparent;border-bottom-color:#b8860b;border-top:0}
 #nb19Prompt .nb19-q{margin-bottom:11px}
@@ -9922,34 +9922,27 @@ setInterval(function(){
 "use strict";
 if(window.__nb19) return; window.__nb19=1;
 function sndOn(){ try{ return localStorage.getItem("zkeSndOn")==="1"; }catch(e){ return false; } }
-function chokoOn(){ try{ return localStorage.getItem("zkeChoko")==="1"; }catch(e){ return false; } }
 function build(){
   if(document.getElementById("nb19Prompt")) return;
   var d=document.createElement("div"); d.id="nb19Prompt";
   d.innerHTML='<button class="nb19-x" type="button" aria-label="閉じる">✕</button>'
     +'<div class="nb19-q" id="nb19Q1"><div class="nb19-qt">音を出しますか？</div>'
     +'<div class="nb19-btns"><button type="button" id="nb19SndYes">YES</button><button type="button" id="nb19SndNo">NO</button></div>'
-    +'<div class="nb19-note">メニューのスピーカーマークであとから切り替え可能</div></div>'
-    +'<div class="nb19-q" id="nb19Q2"><div class="nb19-qt">アシスタントを出しますか？</div>'
-    +'<div class="nb19-btns"><button type="button" id="nb19ChoYes">YES</button><button type="button" id="nb19ChoNo">NO</button></div>'
-    +'<div class="nb19-note">メニューからあとから切り替え可能</div></div>';
+    +'<div class="nb19-note">メニューのスピーカーマークであとから切り替え可能</div></div>';
   document.body.appendChild(d);
-  var answered={q1:false,q2:false};
+  var answered=false;
   function close(){ d.style.opacity="0"; setTimeout(function(){ d.remove(); },480); }
-  function answer(q,btn,apply){
-    if(answered[q]) return;
-    answered[q]=true;
+  function answer(btn,apply){
+    if(answered) return;
+    answered=true;
     apply();
-    var box=d.querySelectorAll("#"+(q==="q1"?"nb19Q1":"nb19Q2")+" button");
-    box.forEach(function(b){ b.disabled=true; if(b===btn) b.classList.add("nb19-picked"); });
-    if(answered.q1&&answered.q2) setTimeout(close,650);
+    d.querySelectorAll("#nb19Q1 button").forEach(function(b){ b.disabled=true; if(b===btn) b.classList.add("nb19-picked"); });
+    setTimeout(close,650);
   }
   function clickIf(sel,cond){ var b=document.querySelector(sel); if(b&&cond) b.click(); }
   d.querySelector(".nb19-x").addEventListener("click",function(){ d.remove(); });
-  document.getElementById("nb19SndYes").addEventListener("click",function(){ answer("q1",this,function(){ clickIf(".snd-btn",!sndOn()); }); });
-  document.getElementById("nb19SndNo").addEventListener("click",function(){ answer("q1",this,function(){ clickIf(".snd-btn",sndOn()); }); });
-  document.getElementById("nb19ChoYes").addEventListener("click",function(){ answer("q2",this,function(){ clickIf(".choko-toggle",!chokoOn()); }); });
-  document.getElementById("nb19ChoNo").addEventListener("click",function(){ answer("q2",this,function(){ clickIf(".choko-toggle",chokoOn()); }); });
+  document.getElementById("nb19SndYes").addEventListener("click",function(){ answer(this,function(){ clickIf(".snd-btn",!sndOn()); }); });
+  document.getElementById("nb19SndNo").addEventListener("click",function(){ answer(this,function(){ clickIf(".snd-btn",sndOn()); }); });
 }
 function blockersUp(){
   var ids=["nickModal","pgModal","zkeGateModal"];
@@ -10172,14 +10165,15 @@ document.addEventListener("click",function(ev){
 /* ================= notebook: page lock + open at latest ================= */
 var intended=0;
 function curPg(){ var t=(E("nbPgInfo")||{}).textContent||""; var m=/(\d+)\s*ページ目/.exec(t); return m?+m[1]:0; }
+function totPg(){ var t=(E("nbPgInfo")||{}).textContent||""; var m=/全\s*(\d+)\s*ページ/.exec(t); return m?+m[1]:0; }
 function jumpTo(p){
   var j=E("nb6JumpNo"), g=E("nb6JumpGo");
   if(j&&g){ j.value=p; g.click(); }
 }
 document.addEventListener("click",function(ev){
   var id=ev.target&&ev.target.id;
-  if(id==="nbPgPrev"){ var p=curPg(); if(p) intended=Math.max(1,p-1); setTimeout(function(){ var q=curPg(); if(q) intended=q; },350); }
-  if(id==="nbPgNext"){ setTimeout(function(){ var q=curPg(); if(q) intended=q; },350); }
+  if(id==="nbPgPrev"||id==="nbEdgePrev"){ var p=curPg(); if(p) intended=Math.max(1,p-1); setTimeout(function(){ var q=curPg(); if(q) intended=q; },350); }
+  if(id==="nbPgNext"||id==="nbEdgeNext"){ var p=curPg(); if(p){ var t=totPg(); intended=t?Math.min(t,p+1):p+1; } setTimeout(function(){ var q=curPg(); if(q) intended=q; },350); }
   if(id==="nb6JumpGo"){ var j=E("nb6JumpNo"); if(j&&+j.value) intended=+j.value; }
 },true);
 setInterval(function(){
@@ -10732,7 +10726,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=95;
+var MY_VER=96;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -10891,5 +10885,148 @@ if(mq.addEventListener) mq.addEventListener("change",function(){ setTimeout(fitS
 })();
 </script>
 
+<style id="nb30style">
+/* ===== v96 NB30: header = content links; controls grouped; bottom-right text controls ===== */
+.topnav a.nv-work,.topnav a.nv-info,.topnav a[href="#top"]{display:none!important}
+.choko-toggle{display:none!important}
+.nb-all-btn{display:none!important}
+#a11yBtn{display:none!important}
+#nb30TreeBtn,#nb30OtherBtn{white-space:nowrap}
+#nb30Tree,#nb30Other{position:fixed;z-index:999900;background:#fffef9;border:2px solid #b8860b;border-radius:10px;box-shadow:0 10px 30px rgba(38,50,74,.30);padding:10px 12px;display:none;width:min(300px,92vw);max-height:62vh;overflow-y:auto;font-size:14px;color:#3a2c10}
+#nb30Tree.open,#nb30Other.open{display:block}
+#nb30Tree .nb30-grp{font-weight:900;color:#8a6d1f;font-size:12px;margin:2px 0 5px}
+#nb30Tree a{display:block;padding:6px 8px 6px 18px;color:#274b8f;text-decoration:none;border-radius:6px;font-weight:700}
+#nb30Tree a:hover{background:#fdf3d0}
+#nb30Other .nb30-row{display:flex;align-items:center;gap:8px;padding:6px 2px;border-bottom:1px dotted #d8c690}
+#nb30Other .nb30-row:last-child{border-bottom:none}
+#nb30Other .nb30-row .bar-btn{flex:1;text-align:left}
+#nb30FsVal{min-width:44px;text-align:center;font-weight:800}
+#nb30Other button.nb30-fs{border:2px solid #b8860b;background:#fff;color:#5a4310;border-radius:3px;padding:3px 12px;font-weight:900;cursor:pointer;font-size:14px}
+#nb30Br{position:fixed;right:10px;bottom:10px;z-index:9000;display:flex;gap:12px;align-items:center;background:rgba(255,254,249,.94);border:1px solid #b8860b;border-radius:8px;padding:5px 12px;box-shadow:0 3px 10px rgba(38,50,74,.22)}
+#nb30Br button{border:none;background:none;color:#274b8f;font-size:12.5px;font-weight:700;text-decoration:underline;cursor:pointer;padding:2px 0}
+#nb6Ed>#nb20EdBar{position:sticky!important;top:0!important;left:0!important;z-index:60;background:rgba(255,254,249,.95);padding:4px 2px}
+.footbar #dailyBtn{margin-left:8px}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb30) return; window.__nb30=1;
+function E(id){ return document.getElementById(id); }
+function onMain(){ var v=E("view-main"); return !v||!v.hidden; }
+function goSection(href){
+  function sc(){
+    if(href==="#top"){ window.scrollTo({top:0,behavior:"smooth"}); return; }
+    var t=document.querySelector(href);
+    if(t) t.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  if(!onMain()&&window.ZKE_VIEW){ window.ZKE_VIEW("main"); setTimeout(sc,200); } else sc();
+}
+/* ---------- tree navigation ---------- */
+var treeBtn=document.createElement("button");
+treeBtn.type="button"; treeBtn.id="nb30TreeBtn"; treeBtn.className="bar-btn"; treeBtn.textContent="コンテンツ ▾";
+var tree=document.createElement("div"); tree.id="nb30Tree";
+var otherBtn=document.createElement("button");
+otherBtn.type="button"; otherBtn.id="nb30OtherBtn"; otherBtn.className="bar-btn"; otherBtn.textContent="その他 ▾";
+var other=document.createElement("div"); other.id="nb30Other";
+function placePanel(panel){
+  var tb=document.querySelector(".topbar");
+  if(tb){ var r=tb.getBoundingClientRect(); panel.style.top=(r.bottom+6)+"px"; }
+}
+function togglePanel(panel,btn){
+  var open=panel.classList.contains("open");
+  tree.classList.remove("open"); other.classList.remove("open");
+  if(!open){ placePanel(panel); panel.classList.add("open"); }
+}
+treeBtn.addEventListener("click",function(ev){ ev.stopPropagation(); togglePanel(tree); });
+otherBtn.addEventListener("click",function(ev){ ev.stopPropagation(); togglePanel(other); });
+document.addEventListener("click",function(ev){
+  if(!ev.target.closest||!ev.target.closest("#nb30Tree,#nb30Other,#nb30TreeBtn,#nb30OtherBtn")){ tree.classList.remove("open"); other.classList.remove("open"); }
+},true);
+function buildTree(){
+  var nav=document.querySelector(".topnav");
+  if(!nav||tree.dataset.built) return;
+  var links=nav.querySelectorAll('a[href="#top"],a.nv-work,a.nv-info');
+  if(!links.length) return;
+  tree.dataset.built="1";
+  var grp=document.createElement("div"); grp.className="nb30-grp"; grp.textContent="本編（作品アーカイブ）";
+  tree.appendChild(grp);
+  links.forEach(function(a){
+    var c=document.createElement("a");
+    c.href=a.getAttribute("href"); c.textContent=a.textContent;
+    c.addEventListener("click",function(ev){ ev.preventDefault(); tree.classList.remove("open"); goSection(c.getAttribute("href")); });
+    tree.appendChild(c);
+  });
+  nav.insertBefore(treeBtn,nav.firstChild);
+  document.body.appendChild(tree);
+  /* rename the standalone volume links */
+  nav.querySelectorAll("a.nv-extra").forEach(function(a){
+    var h=a.getAttribute("href")||"";
+    if(h.indexOf("bekkan1")>-1) a.textContent="同窓会";
+    else if(h.indexOf("bekkan2")>-1) a.textContent="三島さん";
+    else if(h.indexOf("bekkan3")>-1) a.textContent="OB";
+  });
+}
+/* ---------- other panel: ask / QR / font size ---------- */
+var FS=[0.76,0.84,0.92,1,1.15,1.32,1.5], FSNAME=["小3","小2","小1","標準","大1","大2","大3"];
+function fsLevel(){ try{ var v=+localStorage.getItem("nb30Fs"); return isNaN(v)?0:Math.max(-3,Math.min(3,v)); }catch(e){ return 0; } }
+function fsApply(){
+  var lv=fsLevel();
+  document.documentElement.classList.remove("a11y-zoom-1","a11y-zoom-2");
+  document.documentElement.style.zoom=(lv===0)?"":String(FS[lv+3]);
+  var val=E("nb30FsVal"); if(val) val.textContent=FSNAME[lv+3];
+  try{ window.dispatchEvent(new Event("resize")); }catch(e){}
+}
+function buildOther(){
+  var right=document.querySelector(".bar-right");
+  if(!right||other.dataset.built) return;
+  other.dataset.built="1";
+  right.appendChild(otherBtn);
+  var r1=document.createElement("div"); r1.className="nb30-row"; r1.id="nb30RowAsk";
+  var r2=document.createElement("div"); r2.className="nb30-row"; r2.id="nb30RowShare";
+  var r3=document.createElement("div"); r3.className="nb30-row";
+  r3.innerHTML='<span style="font-weight:700">文字サイズ</span><button type="button" class="nb30-fs" id="nb30FsMinus">－</button><span id="nb30FsVal">標準</span><button type="button" class="nb30-fs" id="nb30FsPlus">＋</button>';
+  other.appendChild(r1); other.appendChild(r2); other.appendChild(r3);
+  document.body.appendChild(other);
+  E("nb30FsMinus").addEventListener("click",function(){ var lv=Math.max(-3,fsLevel()-1); try{ localStorage.setItem("nb30Fs",String(lv)); }catch(e){} fsApply(); });
+  E("nb30FsPlus").addEventListener("click",function(){ var lv=Math.min(3,fsLevel()+1); try{ localStorage.setItem("nb30Fs",String(lv)); }catch(e){} fsApply(); });
+  fsApply();
+}
+function moveControls(){
+  var ask=E("nb7AskBtn"), r1=E("nb30RowAsk");
+  if(ask&&r1&&ask.parentNode!==r1) r1.appendChild(ask);
+  var sh=E("tbShare"), r2=E("nb30RowShare");
+  if(sh&&r2&&sh.parentNode!==r2) r2.appendChild(sh);
+  var daily=E("dailyBtn"), foot=document.querySelector(".footbar");
+  if(daily&&foot&&daily.parentNode!==foot) foot.appendChild(daily);
+  var edBar=E("nb20EdBar"), ed=E("nb6Ed");
+  if(edBar&&ed&&edBar.parentNode!==ed) ed.insertBefore(edBar,ed.firstChild);
+}
+/* ---------- bottom-right text controls ---------- */
+var br=document.createElement("div"); br.id="nb30Br";
+br.innerHTML='<button type="button" id="nb30BrNb">かいて帳</button><button type="button" id="nb30BrCho"></button>';
+document.body.appendChild(br);
+function choLabel(){
+  var on=false; try{ on=localStorage.getItem("zkeChoko")==="1"; }catch(e){}
+  var b=E("nb30BrCho"); if(b) b.textContent=on?"アシスタント非表示":"アシスタント表示";
+}
+E("nb30BrNb").addEventListener("click",function(){ var b=document.querySelector(".nb-all-btn"); if(b) b.click(); });
+E("nb30BrCho").addEventListener("click",function(){ var t=document.querySelector(".choko-toggle"); if(t) t.click(); setTimeout(choLabel,350); });
+choLabel();
+/* ---------- song display names (selector labels from GAS meta desc) ---------- */
+function relabelSongs(){
+  var sel=E("bgmSel"), meta=window.__zkeMusicMeta;
+  if(!sel||!meta) return;
+  for(var i=0;i<sel.options.length;i++){
+    var o=sel.options[i], v=o.value||"";
+    if(v.indexOf("song:music/")===0){
+      var m=meta[v.slice(5)];
+      if(m&&m.desc&&o.textContent!==m.desc) o.textContent=m.desc;
+    }
+  }
+}
+buildTree(); buildOther(); moveControls(); relabelSongs();
+setInterval(function(){ buildTree(); buildOther(); moveControls(); relabelSongs(); choLabel(); },2000);
+})();
+</script>
 </body>
 </html>

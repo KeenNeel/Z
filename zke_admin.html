@@ -211,8 +211,8 @@ secMusic.innerHTML='<h2>🎶 音楽MP3の登録と、リスト表示の設定</h
 +'<div style="margin-top:8px"><button type="button" id="muHiddenSave" class="primary">表示設定を保存する</button><span id="muHiddenStatus"></span></div>';
 main.appendChild(secMusic);
 var secMeta=document.createElement("section");
-secMeta.innerHTML='<h2>🎼 曲の説明とシーン設定（GitHubのmusicフォルダ）</h2>'
-+'<p class="small">GitHubリポジトリの music フォルダに入っている曲（mp3 / wav / midi）が対象です。各曲に「説明」を付けると音楽リストに表示され、「シーン」を選ぶとその場面専用の曲になります（かいて帳＝かいて帳を開いたときのBGM、ガチャ＝ガチャの抽選後に流れる曲）。空欄で保存すると設定が消えます。</p>'
+secMeta.innerHTML='<h2>🎼 曲の表示名とシーン設定（GitHubのmusicフォルダ）</h2>'
++'<p class="small">GitHubリポジトリの music フォルダに入っている曲（mp3 / wav / midi）が対象です。各曲に「表示名」を付けると、曲リストにファイル名ではなくその名前で表示され、「シーン」を選ぶとその場面専用の曲になります（かいて帳＝かいて帳を開いたときのBGM、ガチャ＝ガチャの抽選後に流れる曲）。空欄で保存すると設定が消えます。</p>'
 +'<div id="smList"><p class="small">読み込み中…</p></div>';
 main.appendChild(secMeta);
 function renderSongMeta(){
@@ -231,7 +231,7 @@ function renderSongMeta(){
         var row=document.createElement("div");
         row.style.cssText="display:flex;gap:7px;align-items:center;flex-wrap:wrap;margin:5px 0;border-bottom:1px dotted #ccc;padding-bottom:5px";
         row.innerHTML='<span style="min-width:170px">🎵 '+s.label.replace(/</g,"&lt;")+'</span>';
-        var di=document.createElement("input"); di.type="text"; di.placeholder="説明（例：同窓会テーマソング）"; di.value=cur.desc||""; di.style.minWidth="220px";
+        var di=document.createElement("input"); di.type="text"; di.placeholder="表示名（例：同窓会テーマソング）"; di.value=cur.desc||""; di.style.minWidth="220px";
         var se=document.createElement("select");
         se.innerHTML='<option value="">通常（音楽リスト）</option><option value="notebook">かいて帳で使う</option><option value="gacha">ガチャで使う</option>';
         se.value=cur.scene||"";
