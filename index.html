@@ -1217,7 +1217,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全74作品（v99）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><a class="bar-btn" href="#carouselSec"><span class="ui-ic ic-strip"></span> カルーセル</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全74作品（v100）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -5689,7 +5689,7 @@ html.a11y-zoom-2{zoom:1.32}
   });
   /* ===== v39: merged SHOW (lights + fireworks + sound, random pattern each press) ===== */
 var COLORS=['#ff5d5d','#ffd93d','#6bcbef','#c77dff','#7bf1a8','#ff9f43','#fff3b0','#ff8fab'];
-var __ac=null; function __audio(){ if(!__ac){ try{ __ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(__ac&&__ac.state==='suspended') __ac.resume(); return __ac; }
+var __ac=null; function __audio(){ if(window.ZKE_SND_ON&&!window.ZKE_SND_ON()) return null; if(!__ac){ try{ __ac=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } if(__ac&&__ac.state==='suspended') __ac.resume(); return __ac; }
 function __boom(vol){ var c=__audio(); if(!c) return; var t=c.currentTime, len=0.5, buf=c.createBuffer(1, Math.floor(c.sampleRate*len), c.sampleRate), d=buf.getChannelData(0); for(var i=0;i<d.length;i++){ d[i]=(Math.random()*2-1)*(1-i/d.length); } var src=c.createBufferSource(); src.buffer=buf; var f=c.createBiquadFilter(); f.type='lowpass'; f.frequency.setValueAtTime(900,t); f.frequency.exponentialRampToValueAtTime(60,t+len); var g=c.createGain(); g.gain.setValueAtTime(vol||0.5,t); g.gain.exponentialRampToValueAtTime(0.001,t+len); src.connect(f); f.connect(g); g.connect(c.destination); src.start(); }
 function __crackle(){ var c=__audio(); if(!c) return; for(var k=0;k<16;k++){ setTimeout(function(){ try{ var t=c.currentTime, o=c.createOscillator(), g=c.createGain(); o.type='square'; o.frequency.value=1400+Math.random()*2400; g.gain.setValueAtTime(0.05,t); g.gain.exponentialRampToValueAtTime(0.001,t+0.03); o.connect(g); g.connect(c.destination); o.start(); o.stop(t+0.04); }catch(e){} }, Math.random()*750); } }
 function bigFirework(n, palette, big){ var r=vp.getBoundingClientRect(); for(var burst=0;burst<n;burst++){ (function(burst){ setTimeout(function(){ var cx=r.width*(0.12+Math.random()*0.76), cy=r.height*(0.1+Math.random()*0.34); var col=palette[Math.floor(Math.random()*palette.length)]; var cnt=big?54:34; for(var i=0;i<cnt;i++){ var p=document.createElement('span'); p.className='fw-p'; var sz=5+Math.random()*(big?9:6); p.style.width=sz+'px'; p.style.height=sz+'px'; p.style.background=col; p.style.boxShadow='0 0 10px '+col; p.style.left=cx+'px'; p.style.top=cy+'px'; var ang=Math.PI*2*i/cnt+Math.random()*0.25, dist=(big?95:62)+Math.random()*(big?125:72); p.style.setProperty('--dx', Math.cos(ang)*dist+'px'); p.style.setProperty('--dy', Math.sin(ang)*dist+46+'px'); vp.appendChild(p); setTimeout(function(el){ el.remove(); }, 1400, p); } __boom(big?0.55:0.35); __crackle(); if(window.ZKE_PLAY) window.ZKE_PLAY('pop'); }, burst*(big?330:230)); })(burst); } }
@@ -5884,6 +5884,7 @@ tr.pink td{background:#ffe3ee!important}
   "use strict";
   /* ===== v39: fanfare (WebAudio synth) ===== */
   window.ZKE_FANFARE=function(){
+    if(window.ZKE_SND_ON&&!window.ZKE_SND_ON()) return;
     try{
       var C=window.__zkeAC||(window.__zkeAC=new (window.AudioContext||window.webkitAudioContext)());
       if(C.state==="suspended") C.resume();
@@ -9149,7 +9150,6 @@ function pickReveal(it,el){
       var w=E("zgRWatch"); if(w&&it.url) w.setAttribute("href",it.url);
       R.classList.add("open");
       confetti3();
-      R.scrollIntoView({behavior:"smooth",block:"nearest"});
     }
     setTimeout(function(){ el.classList.remove("zg3-picked"); },1700);
     revealing=false;
@@ -10645,13 +10645,7 @@ document.addEventListener("click",function(ev){
 },true);
 /* ---- gacha: after the draw, machine top to the screen top ---- */
 function scrollGachaTop(){
-  var ov=document.querySelector(".zg-overlay");
-  var stage=document.querySelector(".zg-stage")||document.querySelector(".zg-card");
-  if(!ov||!stage) return;
-  try{ stage.scrollIntoView({block:"start"}); }catch(e){}
-  var orr=ov.getBoundingClientRect(), sr=stage.getBoundingClientRect();
-  var target=ov.scrollTop+(sr.top-orr.top)-4;
-  ov.scrollTop=Math.max(0,target);
+  /* v100: auto-slide inside the gacha overlay removed at the user's request */
 }
 /* keep a bottom spacer inside the gacha card while it is open,
    so the overlay can always scroll the machine to the very top */
@@ -10726,7 +10720,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=99;
+var MY_VER=100;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -11179,7 +11173,7 @@ function collect(){
       ask.title="何でも聞く（コンシェルジュ）";
     }
   }
-  put(document.querySelector(".snd-btn"));
+  /* speaker placement is owned by NB33 (top-right of the title row) */
   clampTx();
 }
 /* ---------- header slide (drag / swipe) ---------- */
@@ -11213,6 +11207,53 @@ collect();
 var fast=setInterval(collect,500);
 setTimeout(function(){ clearInterval(fast); },16000);
 setInterval(collect,2500);
+})();
+</script>
+<style id="nb33style">
+/* ===== v100 NB33: header in two rows (title row + left-aligned nav row), tree panel under its button ===== */
+.topbar{flex-direction:column!important;align-items:stretch!important}
+.topbar-title{padding-right:54px}
+.bar-right{justify-content:flex-start!important;width:100%}
+.topbar .snd-btn{position:absolute;top:10px;right:12px;z-index:6}
+#nb30Tree{top:auto!important;bottom:auto!important}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb33) return; window.__nb33=1;
+function E(id){ return document.getElementById(id); }
+function placeSpeaker(){
+  var tb=document.querySelector(".topbar"), snd=document.querySelector(".snd-btn");
+  if(tb&&snd&&snd.parentNode!==tb) tb.appendChild(snd);
+}
+function placeTree(){
+  var btn=E("nb30TreeBtn"), panel=E("nb30Tree");
+  if(!btn||!panel||!panel.classList.contains("open")) return;
+  var r=btn.getBoundingClientRect();
+  panel.style.setProperty("top",(r.bottom+6)+"px","important");
+  var left=Math.max(8,Math.min(r.left,window.innerWidth-panel.offsetWidth-8));
+  panel.style.setProperty("left",left+"px","important");
+}
+function wire(){
+  var btn=E("nb30TreeBtn");
+  if(btn&&!btn.dataset.nb33w){
+    btn.dataset.nb33w="1";
+    btn.addEventListener("click",function(){ setTimeout(placeTree,30); setTimeout(placeTree,220); });
+  }
+  var nick=E("nb20Nick");
+  if(nick&&!nick.dataset.nb33w){
+    nick.dataset.nb33w="1";
+    nick.addEventListener("click",function(e){
+      if(e.target&&e.target.closest&&e.target.closest("#nb20NickBtn")) return;
+      var b=E("nb20NickBtn"); if(b) b.click();
+    });
+  }
+}
+function tick(){ placeSpeaker(); wire(); }
+tick();
+var fast=setInterval(tick,500);
+setTimeout(function(){ clearInterval(fast); },16000);
+setInterval(tick,2500);
 })();
 </script>
 </body>
