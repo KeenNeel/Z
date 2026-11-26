@@ -47,7 +47,7 @@ textarea{width:100%;font-size:14px}
 <main id="main" style="display:none">
 <p style="margin:2px 0 12px"><button type="button" id="openSheet" style="background:#2e7d4f;color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:15px;font-weight:700;cursor:pointer">📊 Googleスプレッドシートを開く（かいて帳データベース）</button></p>
   <div class="cards" id="cards"></div>
-  <section><h2>アクセス分析</h2><div id="accPage"></div><h3 style="font-size:14.5px;margin:14px 0 6px">日別（直近14日）</h3><div id="accDay"></div></section>
+  <section><h2>アクセス分析</h2><div id="accPage"></div><h3 style="font-size:14.5px;margin:14px 0 6px">日別（直近14日）</h3><div id="accDay"></div><h3 style="font-size:14.5px;margin:14px 0 6px">ユーザー別（ニックネーム）</h3><div id="accUser"></div></section>
   <section><h2>かいて帳データベース（直接編集）</h2>
     <p class="small">本文・名前の編集と削除ができます。編集は即座にスプレッドシートへ反映されます。「要確認」は自動チェックで不適切な表現の可能性がある投稿です。</p>
     <div class="tblwrap"><table id="notesTbl"><thead><tr><th>日時</th><th>項目</th><th>名前</th><th>本文</th><th>状態</th><th>操作</th></tr></thead><tbody></tbody></table></div>
@@ -114,6 +114,8 @@ function render(){
   var days={}; var now=new Date();
   for(var i=13;i>=0;i--){ var t=new Date(now.getTime()-i*86400000); var k=t.getFullYear()+"-"+("0"+(t.getMonth()+1)).slice(-2)+"-"+("0"+t.getDate()).slice(-2); days[k]=d.access.byDay[k]||0; }
   document.getElementById("accDay").innerHTML=bars(days);
+  var byUser={}; (d.users||[]).forEach(function(u){ if(u&&u.name) byUser[u.name]=u.accessRows||0; });
+  document.getElementById("accUser").innerHTML=bars(byUser);
   var tb=document.querySelector("#notesTbl tbody"); tb.innerHTML="";
   d.notes.slice().reverse().forEach(function(n){
     var tr=document.createElement("tr");
@@ -204,11 +206,9 @@ secMidi.innerHTML='<h2>🎵 オリジナルMIDIの登録（カルーセルの音
 main.appendChild(secMidi);
 var secMusic=document.createElement("section");
 secMusic.innerHTML='<h2>🎶 音楽MP3の登録と、リスト表示の設定</h2>'
-+'<p class="small">MP3のURLを登録すると、カルーセルの「🎵 音楽」リストに出ます（httpsのURLのみ）。デフォルト曲はチェックを外すとリストに出なくなります（管理者が決められます）。</p>'
++'<p class="small">MP3のURLを登録すると、カルーセルの「🎵 音楽」リストに出ます（httpsのURLのみ）。</p>'
 +'<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input type="text" id="muName" placeholder="曲名" style="min-width:150px"><input type="text" id="muUrl" placeholder="https://… .mp3" style="min-width:320px;flex:1"><button type="button" id="muSave" class="primary">MP3を登録する</button><span id="muStatus"></span></div>'
-+'<div id="muList" style="margin-top:10px"></div>'
-+'<h3 style="font-size:14.5px;margin:16px 0 6px">デフォルト曲の表示/非表示</h3><div id="muDefaults"></div>'
-+'<div style="margin-top:8px"><button type="button" id="muHiddenSave" class="primary">表示設定を保存する</button><span id="muHiddenStatus"></span></div>';
++'<div id="muList" style="margin-top:10px"></div>';
 main.appendChild(secMusic);
 var secMeta=document.createElement("section");
 secMeta.innerHTML='<h2>🎼 曲の表示名とシーン設定（GitHubのmusicフォルダ）</h2>'
@@ -250,15 +250,13 @@ function renderSongMeta(){
 var MU_DEFS=[["orgel","ファンタジーオルゴール"],["orgelSynth","オルゴール"],["piano","ピアノソロ"],["jazz","ジャズ"],["rock","ロック"],["country","カントリー"],["techno","テクノ"],["okinawa","沖縄"],["bossa","ボサノバ"],["guitar","ギター"],["pad","パッド"]];
 function renderMusic(){
   jsonp({action:"music_config",code:code()},function(err,d){
-    var list=document.getElementById("muList"), defs=document.getElementById("muDefaults");
-    if(err||!d||!d.ok){ list.innerHTML='<p class="small">音楽設定を取得できませんでした（GASの再デプロイが必要です）。</p>'; defs.innerHTML=""; return; }
+    var list=document.getElementById("muList");
+    if(err||!d||!d.ok){ list.innerHTML='<p class="small">音楽設定を取得できませんでした（GASの再デプロイが必要です）。</p>'; return; }
     if(!d.mp3s.length) list.innerHTML='<p class="small">登録済みMP3はまだありません。</p>';
     else list.innerHTML=d.mp3s.map(function(m){ return '<div style="display:flex;gap:8px;align-items:center;margin:3px 0"><span>🎵 '+m.name.replace(/</g,"&lt;")+'</span><span class="small" style="word-break:break-all">'+m.url.replace(/</g,"&lt;")+'</span><button type="button" data-mudel="'+m.name.replace(/"/g,"&quot;")+'">削除</button></div>'; }).join("");
     list.querySelectorAll("[data-mudel]").forEach(function(b){ b.addEventListener("click",function(){
       post({action:"admin_music",code:code(),op:"del",name:b.getAttribute("data-mudel")}).then(function(){ setTimeout(renderMusic,1500); });
     }); });
-    var hidden=d.hidden||[];
-    defs.innerHTML=MU_DEFS.map(function(g){ return '<label style="display:inline-block;margin:2px 10px 2px 0"><input type="checkbox" class="mu-def" value="'+g[0]+'"'+(hidden.indexOf(g[0])>-1?"":" checked")+'> '+g[1]+'</label>'; }).join("");
   });
 }
 document.getElementById("muSave").addEventListener("click",function(){
@@ -267,12 +265,6 @@ document.getElementById("muSave").addEventListener("click",function(){
   st.textContent="登録中…";
   post({action:"admin_music",code:code(),op:"add",name:nm,url:url}).then(function(){ st.textContent="登録しました。"; document.getElementById("muName").value=""; document.getElementById("muUrl").value=""; setTimeout(renderMusic,1500); }).catch(function(){ st.textContent="登録できませんでした。"; });
 });
-document.getElementById("muHiddenSave").addEventListener("click",function(){
-  var hidden=[]; document.querySelectorAll(".mu-def").forEach(function(c){ if(!c.checked) hidden.push(c.value); });
-  var st=document.getElementById("muHiddenStatus"); st.textContent="保存中…";
-  post({action:"admin_music",code:code(),op:"hidden",hidden:hidden}).then(function(){ st.textContent="保存しました。"; }).catch(function(){ st.textContent="保存できませんでした。"; });
-});
-
 var secUse=document.createElement("section");
 secUse.innerHTML='<h2>📊 使用量と料金の概算</h2><div id="usageBox"><p class="small">読み込み中…</p></div>';
 main.appendChild(secUse);
