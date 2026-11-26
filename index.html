@@ -1070,7 +1070,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全74作品（v107）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全74作品（v108）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -1223,16 +1223,19 @@ function render(){
   for(var i=0;i<n;i++){
     var x=s+i*step-(phase+setW);
     var el=track.children[i];
-    if(x+itemW<-60||x>vw+60){ el.style.visibility="hidden"; continue; }
+    if(x+itemW<-130||x>vw+130){ el.style.visibility="hidden"; continue; }
     el.style.visibility="";
-    var rel=(x+itemW/2-cx)/vw;
-    var a=Math.min(Math.abs(rel),1);
-    var sc=1-a*0.30, op=1-a*0.38, zi=100-Math.round(a*60);
+    var d=(x+itemW/2-cx)/step;
+    var ad=Math.abs(d);
+    if(ad>3.6){ el.style.visibility="hidden"; continue; }
+    var t=Math.max(0,Math.min(1,(ad-1.35)/1.0));
+    var ry=(d<0?-1:1)*t*30;
+    var sc=1-t*0.06, op=1-Math.max(0,ad-3.0)*1.4, zi=100-Math.round(ad*10);
     if(selectedChild>=0){
       if(i===selectedChild){ sc*=1.45; op=1; zi=200; }
       else op*=0.55;
     }
-    el.style.transform="rotateY("+(rel*108).toFixed(1)+"deg) scale("+sc.toFixed(3)+") translateZ("+(-a*190).toFixed(0)+"px)";
+    el.style.transform="rotateY("+ry.toFixed(1)+"deg) scale("+sc.toFixed(3)+") translateZ("+(-t*70).toFixed(0)+"px)";
     el.style.zIndex=String(zi);
     el.style.opacity=op.toFixed(2);
   }
@@ -6309,7 +6312,7 @@ var img=root.querySelector("#chokoImg2"), txt=root.querySelector("#chokoText2"),
 img.src=POSES.stand;
 try{ var savedPos=JSON.parse(localStorage.getItem("zkeChokoPos")||"null"); if(savedPos){ root.style.left=savedPos.l+"px"; root.style.top=savedPos.t+"px"; root.style.right="auto"; root.style.bottom="auto"; } }catch(e){}
 var chokoOn=true;
-try{ chokoOn=localStorage.getItem("zkeChoko")==="1"; }catch(e){}
+try{ chokoOn=localStorage.getItem("zkeChokoV2")==="1"; }catch(e){}
 var toggleBtn=document.createElement("button");
 toggleBtn.type="button"; toggleBtn.className="choko-toggle";
 var head=ov.querySelector(".nb-head"), closeBtn=E("nbClose");
@@ -6323,7 +6326,7 @@ function refreshChokoVis(){
 }
 toggleBtn.addEventListener("click",function(){
   chokoOn=!chokoOn;
-  try{ localStorage.setItem("zkeChoko",chokoOn?"1":"0"); }catch(e){}
+  try{ localStorage.setItem("zkeChokoV2",chokoOn?"1":"0"); }catch(e){}
   refreshChokoVis();
   if(chokoOn) chokoSay("チョウ子、登場！書き込みはチョウ子がガイドするよ。","wave");
 });
@@ -6380,7 +6383,7 @@ function chokoTalk(){
     {label:"🎓 小ネタ聞かせて",fn:function(){ var p=tipPool(); chokoSay(p[Math.floor(Math.random()*p.length)],"wave"); }},
     {label:"🎨 装飾のコツ",fn:function(){ setBtns([]); chokoSay("装飾のコツ：大事な言葉は太字＋色。★キラキラは特別な一言に。大きな文字はタイトル向きだよ。やりすぎると読みにくくなるから、1投稿に2つまでがおすすめ。","stand"); }},
     {label:"📕 かいて帳を閉じる",sub:true,fn:function(){ E("nbClose").click(); }},
-    {label:"🔕 静かにする",sub:true,fn:function(){ chokoOn=false; try{ localStorage.setItem("zkeChoko","0"); }catch(e){} refreshChokoVis(); }}
+    {label:"🔕 静かにする",sub:true,fn:function(){ chokoOn=false; try{ localStorage.setItem("zkeChokoV2","0"); }catch(e){} refreshChokoVis(); }}
   ]);
 }
 /* ---- arrow ---- */
@@ -10561,7 +10564,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=107;
+var MY_VER=108;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -10842,7 +10845,7 @@ var br=document.createElement("div"); br.id="nb30Br";
 br.innerHTML='<button type="button" id="nb30BrNb">かいて帳</button><button type="button" id="nb30BrCho"></button>';
 document.body.appendChild(br);
 function choLabel(){
-  var on=false; try{ on=localStorage.getItem("zkeChoko")==="1"; }catch(e){}
+  var on=false; try{ on=localStorage.getItem("zkeChokoV2")==="1"; }catch(e){}
   var b=E("nb30BrCho"); if(b) b.textContent=on?"アシスタント非表示":"アシスタント表示";
 }
 E("nb30BrNb").addEventListener("click",function(){ var b=document.querySelector(".nb-all-btn"); if(b) b.click(); });
