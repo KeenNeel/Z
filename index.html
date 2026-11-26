@@ -1219,7 +1219,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全74作品（v101）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全74作品（v102）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -6927,6 +6927,7 @@ try{
     var resume=function(e){
       document.removeEventListener('pointerdown',resume,true);
       if(e.target&&e.target.closest&&e.target.closest('.snd-btn')) return;
+      if(e.target&&e.target.closest&&e.target.closest('#nb19Prompt')) return;
       if(!sndOn()){ var b=document.querySelector('.snd-btn'); if(b) b.click(); }
     };
     document.addEventListener('pointerdown',resume,true);
@@ -9949,10 +9950,17 @@ function build(){
     d.querySelectorAll("#nb19Q1 button").forEach(function(b){ b.disabled=true; if(b===btn) b.classList.add("nb19-picked"); });
     setTimeout(close,650);
   }
-  function clickIf(sel,cond){ var b=document.querySelector(sel); if(b&&cond) b.click(); }
+  function setSnd(want){
+    function cur(){ try{ return window.ZKE_SND_ON ? !!window.ZKE_SND_ON() : (localStorage.getItem("zkeSndOn")==="1"); }catch(e){ return false; } }
+    function attempt(){ if(cur()!==want){ var b=document.querySelector(".snd-btn"); if(b) b.click(); } }
+    attempt();
+    setTimeout(attempt,350);
+    setTimeout(attempt,1200);
+    setTimeout(attempt,2500);
+  }
   d.querySelector(".nb19-x").addEventListener("click",function(){ d.remove(); });
-  document.getElementById("nb19SndYes").addEventListener("click",function(){ answer(this,function(){ clickIf(".snd-btn",!sndOn()); }); });
-  document.getElementById("nb19SndNo").addEventListener("click",function(){ answer(this,function(){ clickIf(".snd-btn",sndOn()); }); });
+  document.getElementById("nb19SndYes").addEventListener("click",function(){ answer(this,function(){ setSnd(true); }); });
+  document.getElementById("nb19SndNo").addEventListener("click",function(){ answer(this,function(){ setSnd(false); }); });
 }
 function blockersUp(){
   var ids=["nickModal","pgModal","zkeGateModal"];
@@ -10736,7 +10744,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=101;
+var MY_VER=102;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -11345,6 +11353,48 @@ function tick(){ wireFs(); syncFs(); wireNick(); clean(); wirePanel();}
 tick();
 var fast=setInterval(tick,500);
 setTimeout(function(){ clearInterval(fast);},16000);
+setInterval(tick,2500);
+})();
+</script>
+<style id="nb35style">
+/* ===== v102 NB35: version note in the header, footer fits its width, font-size parts removed ===== */
+.footbar{height:auto!important;min-height:56px}
+#nb31Strip{flex-wrap:wrap!important;width:100%!important;max-width:100%!important;height:auto!important;min-height:56px;transform:none!important;row-gap:6px;padding-top:6px;padding-bottom:6px}
+.topbar-title{display:flex!important;align-items:baseline;gap:10px;white-space:normal!important;overflow:visible!important}
+.nb35-note{flex:none;color:#ffd97a;font-size:12.5px;font-weight:700;white-space:nowrap}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb35) return; window.__nb35=1;
+function E(id){ return document.getElementById(id); }
+/* ---- move the version note next to the header title as "NN作品（vNN）" ---- */
+function moveNote(){
+  var note=document.querySelector(".foot-note"), title=document.querySelector(".topbar-title");
+  if(!note||!title||E("nb35Note")) return;
+  var m=/全\s*(\d+)\s*作品（v(\d+)）/.exec(note.textContent||"");
+  var span=document.createElement("span");
+  span.className="nb35-note"; span.id="nb35Note";
+  span.textContent=m?(m[1]+"作品（v"+m[2]+"）"):(note.textContent||"").trim();
+  title.appendChild(span);
+  note.remove();
+}
+/* ---- remove the font-size setting row (stepper + slider) and reset zoom ---- */
+function killFs(){
+  var val=E("nb30FsVal");
+  if(val){ var row=val.closest?val.closest(".nb30-row"):null; if(row) row.remove(); }
+  try{ localStorage.removeItem("nb30Fs"); }catch(e){}
+  if(document.documentElement.style.zoom&&document.documentElement.style.zoom!=="1") document.documentElement.style.zoom="1";
+}
+/* ---- keep body padding matched to the (possibly wrapped) footer height ---- */
+function fitBody(){
+  var foot=document.querySelector(".footbar");
+  if(foot) document.body.style.paddingBottom=(foot.offsetHeight+10)+"px";
+}
+function tick(){ moveNote(); killFs(); fitBody(); }
+tick();
+var fast=setInterval(tick,500);
+setTimeout(function(){ clearInterval(fast); },16000);
 setInterval(tick,2500);
 })();
 </script>
