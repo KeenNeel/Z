@@ -59,6 +59,7 @@ textarea{width:100%;font-size:14px}
     <div style="display:flex;gap:14px;flex-wrap:wrap;align-items:center">
       <label>アクセントカラー <input type="color" id="dzAccent" value="#d9a441"> <input type="text" id="dzAccentTx" style="width:90px"></label>
       <label style="flex:1;min-width:240px">お知らせ文 <input type="text" id="dzNotice" placeholder="（空欄で非表示）" style="width:100%"></label>
+      <label>サムネ画質 <select id="dzHd"><option value="1">高精細（デフォルト）</option><option value="0">元画質</option></select></label>
       <button type="button" class="primary" id="dzSave">保存する</button>
     </div>
     <p id="dzStatus"></p>
@@ -159,6 +160,7 @@ function render(){
   if(d.design){
     if(d.design.accent){ document.getElementById("dzAccent").value=d.design.accent; document.getElementById("dzAccentTx").value=d.design.accent; }
     document.getElementById("dzNotice").value=d.design.notice||"";
+    document.getElementById("dzHd").value=(d.design.hd===undefined?"1":String(d.design.hd));
   }
 }
 document.getElementById("lockForm").addEventListener("submit",function(e){
@@ -172,7 +174,7 @@ document.getElementById("dzAccent").addEventListener("input",function(){ documen
 document.getElementById("dzSave").addEventListener("click",function(){
   var accent=document.getElementById("dzAccentTx").value.trim()||document.getElementById("dzAccent").value;
   var notice=document.getElementById("dzNotice").value.trim();
-  fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_design",code:code(),accent:accent,notice:notice})})
+  fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_design",code:code(),accent:accent,notice:notice,hd:document.getElementById("dzHd").value})})
   .then(function(){ document.getElementById("dzStatus").textContent="保存しました。各ページの次回アクセスから反映されます。"; setTimeout(load,1500); })
   .catch(function(){ document.getElementById("dzStatus").textContent="保存できませんでした。"; });
 });
