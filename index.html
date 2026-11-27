@@ -1105,7 +1105,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v127）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v129）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -6803,6 +6803,7 @@ try{
       document.removeEventListener('pointerdown',resume,true);
       if(e.target&&e.target.closest&&e.target.closest('.snd-btn')) return;
       if(e.target&&e.target.closest&&e.target.closest('#nb19Prompt')) return;
+      if(e.target&&e.target.closest&&e.target.closest('#nb48Prompt')) return;
       if(!sndOn()){ var b=document.querySelector('.snd-btn'); if(b) b.click(); }
     };
     document.addEventListener('pointerdown',resume,true);
@@ -10609,7 +10610,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=127;
+var MY_VER=129;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -11833,14 +11834,8 @@ function setup(body){
 }
 function scan(){ Array.prototype.forEach.call(document.querySelectorAll(".kansou-body"), setup); }
 scan(); setInterval(scan, 900);
-var ticking=false;
-window.addEventListener("scroll", function(){
-  if(ticking) return; ticking=true;
-  requestAnimationFrame(function(){
-    ticking=false;
-    Array.prototype.forEach.call(document.querySelectorAll(".kansou-body.open"), collapse);
-  });
-}, {passive:true});
+/* v128: scrolling no longer collapses an opened impression —
+   only the 「閉じる」 toggle closes it (user instruction). */
 })();
 </script>
 
@@ -12271,6 +12266,7 @@ function syncSpeaker(on){
 }
 function answer(yes){
   var view=promptView||curView();
+  window.__nb48AnswerAt=Date.now();
   hidePrompt();
   if(yes){
     if(view==="bekkan2"){ playBk2(); syncSpeaker(true); setTimeout(pauseMusic5,80); }
@@ -12285,6 +12281,19 @@ function answer(yes){
     else if(view==="bekkan1"){ if(window.ZKE_THEME_PAUSE) ZKE_THEME_PAUSE(); syncSpeaker(false); }
     else { if(sndOn()) sndClick(); else if(window.ZKE_BGM_PAUSE) ZKE_BGM_PAUSE(); }
   }
+  if(yes) yesGuard(view);
+}
+/* guarantee: a YES answer must end with the sound playing and the speaker ON */
+function yesGuard(view){
+  [500,1500,3000].forEach(function(ms){
+    setTimeout(function(){
+      if(window.__nb48ManualAt && window.__nb48ManualAt > window.__nb48AnswerAt) return;
+      if(curView()!==view) return;
+      if(view==="bekkan2"){ if(!sndOn()) sndClick(); playBk2(); setTimeout(pauseMusic5,80); }
+      else if(view==="bekkan1"){ if(!sndOn()) sndClick(); if(window.ZKE_THEME_RESUME) ZKE_THEME_RESUME(); setTimeout(pauseMusic5,80); }
+      else { if(!sndOn()) sndClick(); else if(window.ZKE_BGM_RESUME) ZKE_BGM_RESUME(); }
+    },ms);
+  });
 }
 /* the speaker button is the master switch: keep every page's music in sync with it */
 function speakerSync(){
@@ -12296,6 +12305,7 @@ function speakerSync(){
 document.addEventListener("click",function(ev){
   var b=ev.target&&ev.target.closest?ev.target.closest(".snd-btn"):null;
   if(!b) return;
+  window.__nb48ManualAt=Date.now();
   setTimeout(speakerSync,120);
   setTimeout(speakerSync,600);
 },true); /* capture phase: the button's own handler stops the click from bubbling */
@@ -12456,6 +12466,8 @@ setInterval(scan,1200);
 #nb50Panel details{border-bottom:1px dotted #d8c690;padding:6px 0}
 #nb50Panel summary{cursor:pointer;font-weight:800;font-size:13.5px;color:#274b8f}
 #nb50Panel details p{font-size:13px;line-height:1.7;margin:5px 0 3px}
+.nb50-faq-acts{display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px}
+.nb50-faq-acts button{border:1.5px solid #b8860b;background:#fdf6dd;color:#5a4310;border-radius:999px;padding:4px 11px;font-weight:800;cursor:pointer;font-size:12px}
 .nb50-note{font-size:11.5px;color:#8a8f98}
 </style>
 <script>
@@ -12643,6 +12655,26 @@ E("nb50MailBtn").addEventListener("click",function(){
   msg.textContent="登録を受け付けました。お知らせは管理側のGAS更新後に届くようになります。";
   msg.style.color="#2e7d32";
 });
+/* action buttons inside the FAQ answers, so each question resolves on the spot */
+var FAQ_ACTS=[
+  [["音楽 ON／OFF",function(){ var b=document.querySelector(".snd-btn"); if(b)b.click(); },false]],
+  [["かいて帳を開く",function(){ var br=E("nb30BrNb"); if(br)br.click(); },false]],
+  [["本巻トップへ",function(){ if(window.ZKE_VIEW)ZKE_VIEW("main"); window.scrollTo({top:0,behavior:"smooth"}); },false]],
+  [["メール登録らんへ",function(){ var m=E("nb50Mail"); if(m){ m.scrollIntoView({block:"center"}); m.focus(); } },true]],
+  [["文字サイズ・その他",function(){ var b=E("nb30OtherBtn"); if(b)b.click(); },false],
+   ["コンテンツ ▾ を開く",function(){ var b=E("nb30TreeBtn"); if(b)b.click(); },false]]
+];
+var dets=panel.querySelectorAll("details");
+FAQ_ACTS.forEach(function(list,i){
+  var d=dets[i]; if(!d) return;
+  var row=document.createElement("div"); row.className="nb50-faq-acts";
+  list.forEach(function(a){
+    var b=document.createElement("button"); b.type="button"; b.textContent=a[0];
+    b.addEventListener("click",function(){ if(!a[2]) panel.classList.remove("open"); a[1](); });
+    row.appendChild(b);
+  });
+  d.appendChild(row);
+});
 chokoLabel();
 })();
 </script>
@@ -12763,6 +12795,34 @@ var btn=E("zlBtn"), pass=E("zlPass");
 if(btn) btn.addEventListener("click",submit);
 if(pass) pass.addEventListener("keydown",function(ev){ if(ev.key==="Enter") submit(); });
 if(!tok&&pass) setTimeout(function(){ pass.focus(); },600);
+})();
+</script>
+
+<style id="nb53style">
+/* ===== NB53 (v128): while the notebook （かいて帳） is open, a
+   "back to the top page" button is always on screen ===== */
+#nb53TopBtn{position:fixed;left:10px;bottom:70px;z-index:2147482000;border:2px solid #b8860b;background:#17263f;color:#ffd97a;border-radius:999px;padding:9px 16px;font-weight:900;font-size:13.5px;cursor:pointer;box-shadow:0 8px 22px rgba(0,0,0,.35);display:none;font-family:sans-serif}
+#nb53TopBtn.show{display:block}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb53) return; window.__nb53=1;
+var btn=document.createElement("button");
+btn.id="nb53TopBtn"; btn.type="button"; btn.textContent="🏠 トップページに戻る";
+document.body.appendChild(btn);
+function nbOpen(){
+  var o=document.getElementById("nbOverlay");
+  if(!o) return false;
+  return getComputedStyle(o).display!=="none";
+}
+setInterval(function(){ btn.classList.toggle("show", nbOpen()); },500);
+btn.addEventListener("click",function(){
+  var c=document.getElementById("nbClose"); if(c) c.click();
+  if(window.ZKE_VIEW) ZKE_VIEW("main");
+  window.scrollTo({top:0,behavior:"smooth"});
+  btn.classList.remove("show");
+});
 })();
 </script>
 
