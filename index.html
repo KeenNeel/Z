@@ -1099,7 +1099,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v139）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v141）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -10605,7 +10605,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=139;
+var MY_VER=141;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -12957,13 +12957,15 @@ if(window.__nb57) return; window.__nb57=1;
 #zgRImg{max-height:26dvh!important;width:100%!important;object-fit:cover!important;border-radius:10px!important}
 .zg-card{max-height:96dvh!important}
 .zg-overlay{padding:8px!important;align-items:flex-start!important}
-@media (max-width:900px){
-  #nb48Prompt{position:fixed!important;left:50%!important;top:46%!important;transform:translate(-50%,-50%)!important;width:min(92vw,430px)!important;max-width:92vw!important;box-sizing:border-box!important;padding:18px 16px!important;border-radius:14px!important}
-  #nb48Prompt:before{display:none!important}
-  #nb48Prompt .nb48-q{font-size:17px!important;line-height:1.5!important}
-  #nb48Prompt .nb48-sub{font-size:13px!important}
-  #nb48Yes,#nb48No{min-height:48px!important;font-size:16px!important;padding:10px 0!important}
-}
+/* the speaker ON/OFF button lives at the top-right of the header */
+.topbar .snd-btn{position:absolute!important;top:8px!important;right:10px!important;z-index:60!important}
+/* the sound confirmation is a plain centred dialog on every screen:
+   no speech-bubble tail, always in the middle of the screen */
+#nb48Prompt{position:fixed!important;left:50%!important;top:46%!important;transform:translate(-50%,-50%)!important;width:min(92vw,430px)!important;max-width:92vw!important;box-sizing:border-box!important;padding:18px 16px!important;border-radius:14px!important}
+#nb48Prompt:before{display:none!important}
+#nb48Prompt .nb48-q{font-size:17px!important;line-height:1.5!important}
+#nb48Prompt .nb48-sub{font-size:13px!important}
+#nb48Yes,#nb48No{min-height:48px!important;font-size:16px!important;padding:10px 0!important}
 </style>
 <script>
 (function(){
