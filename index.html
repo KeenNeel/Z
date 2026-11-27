@@ -1105,7 +1105,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v124）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v127）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -10609,7 +10609,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=124;
+var MY_VER=127;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -12264,24 +12264,45 @@ function ensureSong(){
   if(target){ sel.value=target.value; try{ sel.dispatchEvent(new Event("change",{bubbles:true})); }catch(e){} }
 }
 function sndClick(){ var b=document.querySelector(".snd-btn"); if(b) b.click(); }
+function pauseMusic5(){ if(window.ZKE_BGM_PAUSE) ZKE_BGM_PAUSE(); }
+function syncSpeaker(on){
+  if(on&&!sndOn()) sndClick();
+  if(!on&&sndOn()) sndClick();
+}
 function answer(yes){
   var view=promptView||curView();
   hidePrompt();
   if(yes){
-    if(view==="bekkan2") playBk2();
-    else if(view==="bekkan1"){ if(window.ZKE_THEME_RESUME) ZKE_THEME_RESUME(); }
+    if(view==="bekkan2"){ playBk2(); syncSpeaker(true); setTimeout(pauseMusic5,80); }
+    else if(view==="bekkan1"){ if(window.ZKE_THEME_RESUME) ZKE_THEME_RESUME(); syncSpeaker(true); setTimeout(pauseMusic5,80); }
     else {
       ensureSong();
       if(!sndOn()) sndClick(); else if(window.ZKE_BGM_RESUME) ZKE_BGM_RESUME();
       setTimeout(function(){ if(!sndOn()&&curView()!=="bekkan1"&&curView()!=="bekkan2") sndClick(); },1200);
     }
   } else {
-    if(view==="bekkan2") pauseBk2();
-    else if(view==="bekkan1"){ if(window.ZKE_THEME_PAUSE) ZKE_THEME_PAUSE(); }
-    else if(view==="bekkan3"){ if(window.ZKE_BGM_PAUSE) ZKE_BGM_PAUSE(); }
-    else { if(sndOn()) sndClick(); }
+    if(view==="bekkan2"){ pauseBk2(); syncSpeaker(false); }
+    else if(view==="bekkan1"){ if(window.ZKE_THEME_PAUSE) ZKE_THEME_PAUSE(); syncSpeaker(false); }
+    else { if(sndOn()) sndClick(); else if(window.ZKE_BGM_PAUSE) ZKE_BGM_PAUSE(); }
   }
 }
+/* the speaker button is the master switch: keep every page's music in sync with it */
+function speakerSync(){
+  var on=sndOn(), view=curView();
+  if(!on){ pauseBk2(); if(window.ZKE_THEME_PAUSE) ZKE_THEME_PAUSE(); }
+  else if(view==="bekkan2"){ playBk2(); setTimeout(pauseMusic5,80); }
+  else if(view==="bekkan1"){ if(window.ZKE_THEME_RESUME) ZKE_THEME_RESUME(); setTimeout(pauseMusic5,80); }
+}
+document.addEventListener("click",function(ev){
+  var b=ev.target&&ev.target.closest?ev.target.closest(".snd-btn"):null;
+  if(!b) return;
+  setTimeout(speakerSync,120);
+  setTimeout(speakerSync,600);
+},true); /* capture phase: the button's own handler stops the click from bubbling */
+/* watchdog: while the speaker is OFF, nothing NB48 manages may keep playing */
+setInterval(function(){
+  if(!sndOn()){ pauseBk2(); if(window.ZKE_THEME_PAUSE) ZKE_THEME_PAUSE(); }
+},1000);
 E("nb48Yes").addEventListener("click",function(){ answer(true); });
 E("nb48No").addEventListener("click",function(){ answer(false); });
 /* ---------- view tracking ---------- */
@@ -12634,6 +12655,7 @@ chokoLabel();
 #view-bekkan2 table td, #view-bekkan2 table th,
 #view-bekkan3 table td, #view-bekkan3 table th{
   border-bottom:1px solid rgba(101,80,25,.30)!important;
+  border-right:1px solid rgba(101,80,25,.22)!important;
 }
 </style>
 <script>
