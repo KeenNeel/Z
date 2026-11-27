@@ -70,4 +70,23 @@ html.a11y-zoom-2{zoom:1.32}
   apply();
 })();
 </script>
+
+<style>#zkeSubLock{position:fixed;inset:0;background:#17263f;color:#fff;display:flex;align-items:center;justify-content:center;z-index:999999;font-family:sans-serif;text-align:center;padding:20px;box-sizing:border-box}#zkeSubLock a{color:#ffd97a;font-weight:700}</style>
+<div id="zkeSubLock"><p>認証を確認しています…</p></div>
+<script>(function(){
+var tok=null; try{ tok=localStorage.getItem("zkeSiteToken"); }catch(e){}
+var top=location.pathname.indexOf("/links/")>-1?"../index.html":"index.html";
+var lock=document.getElementById("zkeSubLock");
+function deny(msg){ lock.innerHTML="<div><p>"+msg+"</p><p><a href=\""+top+"\">トップページで認証する</a></p></div>"; }
+if(!tok){ deny("このページを見るには、トップページでパスワード認証が必要です。"); return; }
+var settled=false;
+var cb="zkeSubCb"+Date.now();
+window[cb]=function(d){ settled=true; try{ delete window[cb]; }catch(e){}
+  if(d&&d.ok){ lock.remove(); } else { deny("認証が切れています。トップページで認証し直してください。"); } };
+var s=document.createElement("script");
+s.src="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec?action=siteauth_check&token="+encodeURIComponent(tok)+"&callback="+cb;
+s.onerror=function(){ if(!settled){ settled=true; lock.remove(); } };
+document.body.appendChild(s);
+setTimeout(function(){ if(!settled){ settled=true; if(lock.parentNode) lock.remove(); } },6000);
+})();</script>
 </body></html>

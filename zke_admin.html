@@ -739,7 +739,8 @@ sec.innerHTML='<h2>🔄 自動更新チェックとお知らせメール</h2>'
 +'<label style="display:block;margin:6px 0"><input type="checkbox" id="updCheck"> 定期チェック（1日4回）を有効にする</label>'
 +'<label style="display:block;margin:6px 0"><input type="checkbox" id="updNotify"> 更新お知らせメールを有効にする</label>'
 +'<p class="small">お知らせ登録アドレス数：<b id="updSubs">―</b></p>'
-+'<button type="button" class="primary" id="updSave">保存する</button> <span id="updStatus" class="small"></span>';
++'<button type="button" class="primary" id="updSave">保存する</button> <span id="updStatus" class="small"></span>'
++'<p style="margin-top:14px"><button type="button" id="updObBtn">🏆 別巻3（OB会とアカデミー賞）ページを開く</button></p>';
 main.appendChild(sec);
 function load(){
   jsonp({action:"settings"},function(err,d){
@@ -749,6 +750,7 @@ function load(){
     document.getElementById("updSubs").textContent=String(d.subs||0);
   });
 }
+document.getElementById("updObBtn").addEventListener("click",function(){ window.open("index.html#view-bekkan3","_blank"); });
 document.getElementById("updSave").addEventListener("click",function(){
   fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_settings",code:code(),check_enabled:document.getElementById("updCheck").checked,notify_enabled:document.getElementById("updNotify").checked})})
   .then(function(){ document.getElementById("updStatus").textContent="保存しました。"; setTimeout(load,1500); })
