@@ -716,5 +716,49 @@ function seedTips(){
   });
 })();
 </script>
+<script>
+(function(){
+"use strict";
+var API="https://script.google.com/macros/s/AKfycbwogV0XO0IQNhCfPoyPKmEwUKcC1Ed1obpgB47J_oF6-pOlsLhzZE85fHAJ_0fShlqM/exec";
+function code(){ try{ return sessionStorage.getItem("zkeAdminCode")||""; }catch(e){ return ""; } }
+var seq=0;
+function jsonp(params,cb){
+  var done=false, name="updCb"+(++seq)+"_"+Date.now(), s=document.createElement("script");
+  function fin(e,d){ if(done) return; done=true; try{ delete window[name]; }catch(x){} if(s.parentNode) s.parentNode.removeChild(s); cb(e,d); }
+  window[name]=function(d){ fin(null,d); };
+  s.onerror=function(){ fin(new Error("net")); };
+  var q=[]; for(var k in params) q.push(encodeURIComponent(k)+"="+encodeURIComponent(params[k]));
+  s.src=API+"?"+q.join("&")+"&callback="+name;
+  document.body.appendChild(s);
+  setTimeout(function(){ fin(new Error("timeout")); }, 15000);
+}
+var main=document.getElementById("main");
+var sec=document.createElement("section"); sec.id="zkeUpdSec";
+sec.innerHTML='<h2>🔄 自動更新チェックとお知らせメール</h2>'
++'<p class="small">Facebookグループの新着を1日4回（7時・12時・16時・21時）チェックする定期チェックと、アーカイブ更新時のお知らせメールの ON／OFF です。チェックの実行そのものは Muse 側の定期ジョブが担当し、実行前にここの設定を確認します（OFF の間はチェックしません）。お知らせメールは「教えて！」パネルの登録フォームで登録されたアドレスへ送られます。メール送信には GAS のメール送信許可（authorizeMail）が別途必要です。</p>'
++'<label style="display:block;margin:6px 0"><input type="checkbox" id="updCheck"> 定期チェック（1日4回）を有効にする</label>'
++'<label style="display:block;margin:6px 0"><input type="checkbox" id="updNotify"> 更新お知らせメールを有効にする</label>'
++'<p class="small">お知らせ登録アドレス数：<b id="updSubs">―</b></p>'
++'<button type="button" class="primary" id="updSave">保存する</button> <span id="updStatus" class="small"></span>';
+main.appendChild(sec);
+function load(){
+  jsonp({action:"settings"},function(err,d){
+    if(err||!d||!d.ok){ document.getElementById("updStatus").textContent="設定を読み込めませんでした（GASの再デプロイが必要です）。"; return; }
+    document.getElementById("updCheck").checked=!!d.check_enabled;
+    document.getElementById("updNotify").checked=!!d.notify_enabled;
+    document.getElementById("updSubs").textContent=String(d.subs||0);
+  });
+}
+document.getElementById("updSave").addEventListener("click",function(){
+  fetch(API,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain"},body:JSON.stringify({action:"admin_settings",code:code(),check_enabled:document.getElementById("updCheck").checked,notify_enabled:document.getElementById("updNotify").checked})})
+  .then(function(){ document.getElementById("updStatus").textContent="保存しました。"; setTimeout(load,1500); })
+  .catch(function(){ document.getElementById("updStatus").textContent="保存できませんでした。"; });
+});
+var iv=setInterval(function(){
+  if(main.style.display!=="none"&&main.offsetParent!==null||(main.style.display===""&&window.getComputedStyle(main).display!=="none")){ clearInterval(iv); load(); }
+},800);
+setTimeout(function(){ clearInterval(iv); },30000);
+})();
+</script>
 </body>
 </html>
