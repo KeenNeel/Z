@@ -1084,7 +1084,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v115）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v116）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -10587,7 +10587,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=115;
+var MY_VER=116;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -11819,6 +11819,51 @@ window.addEventListener("scroll", function(){
     Array.prototype.forEach.call(document.querySelectorAll(".kansou-body.open"), collapse);
   });
 }, {passive:true});
+})();
+</script>
+
+<style id="nb46style">
+/* ===== NB46 (v116): last-updated labels on bekkan1's folded sections ===== */
+.zke-upd{font-size:11px;color:#8a8f98;font-weight:400;margin-left:10px;white-space:nowrap}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb46) return; window.__nb46=1;
+function parseDate(s){
+  var m = String(s||"").match(/(\d{4})-(\d{2})-(\d{2})/);
+  if(m) return { key: +m[1]*10000 + (+m[2])*100 + (+m[3]), label: (+m[1])+"年"+(+m[2])+"月"+(+m[3])+"日" };
+  m = String(s||"").match(/(\d{4})-(\d{2})/);
+  if(m) return { key: +m[1]*10000 + (+m[2])*100, label: (+m[1])+"年"+(+m[2])+"月" };
+  m = String(s||"").match(/(\d{4})/);
+  if(m) return { key: +m[1]*10000, label: (+m[1])+"年" };
+  return null;
+}
+function process(h2){
+  if(h2.__nb46) return; h2.__nb46 = 1;
+  var best = null;
+  var el = h2.nextElementSibling;
+  while(el && el.tagName !== "H2"){
+    var rows = el.querySelectorAll ? el.querySelectorAll("tr") : [];
+    Array.prototype.forEach.call(rows, function(tr){
+      var td = tr.children && tr.children[4];
+      if(!td) return;
+      var d = parseDate(td.textContent);
+      if(d && (!best || d.key > best.key)) best = d;
+    });
+    el = el.nextElementSibling;
+  }
+  if(best){
+    var sp = document.createElement("span");
+    sp.className = "zke-upd";
+    sp.textContent = "最終更新：" + best.label;
+    h2.appendChild(sp);
+  }
+}
+function scan(){
+  Array.prototype.forEach.call(document.querySelectorAll("#view-bekkan1 h2"), process);
+}
+scan(); setInterval(scan, 900);
 })();
 </script>
 
