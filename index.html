@@ -1084,7 +1084,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v116）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v117）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -10587,7 +10587,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=116;
+var MY_VER=117;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -11826,6 +11826,11 @@ window.addEventListener("scroll", function(){
 /* ===== NB46 (v116): last-updated labels on bekkan1's folded sections ===== */
 .zke-upd{font-size:11px;color:#8a8f98;font-weight:400;margin-left:10px;white-space:nowrap}
 </style>
+<style id="nb46style">
+/* ===== NB46 (v116, extended v117): last-updated labels on bekkan1's
+   folded sections (h2) and sub-category headings (h3) ===== */
+.zke-upd{font-size:11px;color:#8a8f98;font-weight:400;margin-left:10px;white-space:nowrap}
+</style>
 <script>
 (function(){
 "use strict";
@@ -11839,11 +11844,11 @@ function parseDate(s){
   if(m) return { key: +m[1]*10000, label: (+m[1])+"年" };
   return null;
 }
-function process(h2){
-  if(h2.__nb46) return; h2.__nb46 = 1;
+function process(head, stopTags){
+  if(head.__nb46) return; head.__nb46 = 1;
   var best = null;
-  var el = h2.nextElementSibling;
-  while(el && el.tagName !== "H2"){
+  var el = head.nextElementSibling;
+  while(el && stopTags.indexOf(el.tagName) < 0){
     var rows = el.querySelectorAll ? el.querySelectorAll("tr") : [];
     Array.prototype.forEach.call(rows, function(tr){
       var td = tr.children && tr.children[4];
@@ -11857,11 +11862,195 @@ function process(h2){
     var sp = document.createElement("span");
     sp.className = "zke-upd";
     sp.textContent = "最終更新：" + best.label;
-    h2.appendChild(sp);
+    head.appendChild(sp);
   }
 }
 function scan(){
-  Array.prototype.forEach.call(document.querySelectorAll("#view-bekkan1 h2"), process);
+  Array.prototype.forEach.call(document.querySelectorAll("#view-bekkan1 h2"), function(h){ process(h, ["H2"]); });
+  Array.prototype.forEach.call(document.querySelectorAll("#view-bekkan1 h3"), function(h){ process(h, ["H2","H3"]); });
+}
+scan(); setInterval(scan, 900);
+})();
+</script>
+
+
+<script>
+(function(){
+"use strict";
+if(window.__nb30) return; window.__nb30=1;
+function E(id){ return document.getElementById(id); }
+function onMain(){ var v=E("view-main"); return !v||!v.hidden; }
+function goSection(href){
+  function sc(){
+    if(href==="#top"){ window.scrollTo({top:0,behavior:"smooth"}); return; }
+    var t=document.querySelector(href);
+    if(t) t.scrollIntoView({behavior:"smooth",block:"start"});
+  }
+  if(!onMain()&&window.ZKE_VIEW){ window.ZKE_VIEW("main"); setTimeout(sc,200); } else sc();
+}
+/* ---------- tree navigation ---------- */
+var treeBtn=document.createElement("button");
+treeBtn.type="button"; treeBtn.id="nb30TreeBtn"; treeBtn.className="bar-btn"; treeBtn.textContent="コンテンツ ▾";
+var tree=document.createElement("div"); tree.id="nb30Tree";
+var otherBtn=document.createElement("button");
+otherBtn.type="button"; otherBtn.id="nb30OtherBtn"; otherBtn.className="bar-btn"; otherBtn.textContent="その他 ▾";
+var other=document.createElement("div"); other.id="nb30Other";
+function placePanel(panel){
+  var tb=document.querySelector(".topbar");
+  if(tb){ var r=tb.getBoundingClientRect(); panel.style.top=(r.bottom+6)+"px"; }
+}
+function togglePanel(panel,btn){
+  var open=panel.classList.contains("open");
+  tree.classList.remove("open"); other.classList.remove("open");
+  if(!open){ placePanel(panel); panel.classList.add("open"); }
+}
+treeBtn.addEventListener("click",function(ev){ ev.stopPropagation(); togglePanel(tree); });
+otherBtn.addEventListener("click",function(ev){ ev.stopPropagation(); togglePanel(other); });
+document.addEventListener("click",function(ev){
+  if(!ev.target.closest||!ev.target.closest("#nb30Tree,#nb30Other,#nb30TreeBtn,#nb30OtherBtn")){ tree.classList.remove("open"); other.classList.remove("open"); }
+},true);
+function buildTree(){
+  var nav=document.querySelector(".topnav");
+  if(!nav||tree.dataset.built) return;
+  var links=nav.querySelectorAll('a[href="#top"],a.nv-work,a.nv-info');
+  if(!links.length) return;
+  tree.dataset.built="1";
+  var grp=document.createElement("div"); grp.className="nb30-grp"; grp.textContent="本編（作品アーカイブ）";
+  tree.appendChild(grp);
+  links.forEach(function(a){
+    var c=document.createElement("a");
+    c.href=a.getAttribute("href"); c.textContent=a.textContent;
+    c.addEventListener("click",function(ev){ ev.preventDefault(); tree.classList.remove("open"); goSection(c.getAttribute("href")); });
+    tree.appendChild(c);
+  });
+  nav.insertBefore(treeBtn,nav.firstChild);
+  document.body.appendChild(tree);
+  /* rename the standalone volume links */
+  nav.querySelectorAll("a.nv-extra").forEach(function(a){
+    var h=a.getAttribute("href")||"";
+    if(h.indexOf("bekkan1")>-1) a.textContent="【特集】同窓会2026";
+    else if(h.indexOf("bekkan2")>-1) a.textContent="【特集】三島さん「男ともだち」";
+    else if(h.indexOf("bekkan3")>-1) a.textContent="OB";
+  });
+}
+/* ---------- other panel: ask / QR / font size ---------- */
+var FS=[0.76,0.84,0.92,1,1.15,1.32,1.5], FSNAME=["小3","小2","小1","標準","大1","大2","大3"];
+function fsLevel(){ try{ var v=+localStorage.getItem("nb30Fs"); return isNaN(v)?0:Math.max(-3,Math.min(3,v)); }catch(e){ return 0; } }
+function fsApply(){
+  var lv=fsLevel();
+  document.documentElement.classList.remove("a11y-zoom-1","a11y-zoom-2");
+  document.documentElement.style.zoom=(lv===0)?"":String(FS[lv+3]);
+  var val=E("nb30FsVal"); if(val) val.textContent=FSNAME[lv+3];
+  try{ window.dispatchEvent(new Event("resize")); }catch(e){}
+}
+function buildOther(){
+  var right=document.querySelector(".bar-right");
+  if(!right||other.dataset.built) return;
+  other.dataset.built="1";
+  right.appendChild(otherBtn);
+  var r1=document.createElement("div"); r1.className="nb30-row"; r1.id="nb30RowAsk";
+  var r2=document.createElement("div"); r2.className="nb30-row"; r2.id="nb30RowShare";
+  var r3=document.createElement("div"); r3.className="nb30-row";
+  r3.innerHTML='<span style="font-weight:700">文字サイズ</span><button type="button" class="nb30-fs" id="nb30FsMinus">－</button><span id="nb30FsVal">標準</span><button type="button" class="nb30-fs" id="nb30FsPlus">＋</button>';
+  other.appendChild(r1); other.appendChild(r2); other.appendChild(r3);
+  document.body.appendChild(other);
+  E("nb30FsMinus").addEventListener("click",function(){ var lv=Math.max(-3,fsLevel()-1); try{ localStorage.setItem("nb30Fs",String(lv)); }catch(e){} fsApply(); });
+  E("nb30FsPlus").addEventListener("click",function(){ var lv=Math.min(3,fsLevel()+1); try{ localStorage.setItem("nb30Fs",String(lv)); }catch(e){} fsApply(); });
+  fsApply();
+}
+function moveControls(){
+  var edBar=E("nb20EdBar"), ed=E("nb6Ed");
+  if(edBar&&ed&&edBar.parentNode!==ed) ed.insertBefore(edBar,ed.firstChild);
+  if(window.__nb31) return;
+  var ask=E("nb7AskBtn"), r1=E("nb30RowAsk");
+  if(ask&&r1&&ask.parentNode!==r1) r1.appendChild(ask);
+  var sh=E("tbShare"), r2=E("nb30RowShare");
+  if(sh&&r2&&sh.parentNode!==r2) r2.appendChild(sh);
+  var daily=E("dailyBtn"), foot=document.querySelector(".footbar");
+  if(daily&&foot&&!foot.contains(daily)) foot.appendChild(daily);
+}
+/* ---------- bottom-right text controls ---------- */
+var br=document.createElement("div"); br.id="nb30Br";
+br.innerHTML='<button type="button" id="nb30BrNb">かいて帳</button><button type="button" id="nb30BrCho"></button>';
+document.body.appendChild(br);
+function choLabel(){
+  var on=false; try{ on=localStorage.getItem("zkeChoko")==="1"; }catch(e){}
+  var b=E("nb30BrCho"); if(b) b.textContent=on?"アシスタント非表示":"アシスタント表示";
+}
+E("nb30BrNb").addEventListener("click",function(){ var b=document.querySelector(".nb-all-btn"); if(b) b.click(); });
+E("nb30BrCho").addEventListener("click",function(){ var t=document.querySelector(".choko-toggle"); if(t) t.click(); setTimeout(choLabel,350); });
+choLabel();
+/* ---------- song display names (selector labels from GAS meta desc) ---------- */
+function relabelSongs(){
+  var sel=E("bgmSel"), meta=window.__zkeMusicMeta;
+  if(!sel||!meta) return;
+  for(var i=0;i<sel.options.length;i++){
+    var o=sel.options[i], v=o.value||"";
+    if(v.indexOf("song:music/")===0){
+      var m=meta[v.slice(5)];
+      if(m&&m.desc&&o.textContent!==m.desc) o.textContent=m.desc;
+    }
+  }
+}
+buildTree(); buildOther(); moveControls(); relabelSongs();
+setInterval(function(){ buildTree(); buildOther(); moveControls(); relabelSongs(); choLabel(); },2000);
+})();
+</script>
+
+<style id="nb47style">
+/* ===== NB47 (v117): last-updated labels for the main view and
+   bekkan2 / bekkan3 sections (dates = when each section's content
+   last changed in the archive; update the map when a section changes) ===== */
+.zke-upd{font-size:11px;color:#8a8f98;font-weight:400;margin-left:10px;white-space:nowrap}
+</style>
+<script>
+(function(){
+"use strict";
+if(window.__nb47) return; window.__nb47=1;
+var BY_ID = {
+  "sec-fb": "2026年11月27日",
+  "sec-yt": "2026年11月21日",
+  "sec-gen": "2026年11月21日",
+  "sec-y2024": "2026年11月21日",
+  "sec-channels": "2026年11月21日",
+  "sec-records": "2026年11月21日",
+  "sec-takakubo": "2026年11月21日",
+  "sec-memo": "2026年11月22日",
+  "sec-factcheck": "2026年11月22日",
+  "sec-people": "2026年11月23日",
+  "sec-about": "2026年11月22日",
+  "sec-links": "2026年11月21日"
+};
+var BY_TEXT = [
+  { view: "view-bekkan2", head: "グループ内の投稿", label: "2026年11月22日" },
+  { view: "view-bekkan2", head: "メンバーの感想", label: "2026年11月27日" },
+  { view: "view-bekkan2", head: "感想文", label: "2026年11月22日" },
+  { view: "view-bekkan2", head: "外部リンク集 ― 公式", label: "2026年11月23日" },
+  { view: "view-bekkan2", head: "外部リンク集 ― 記事", label: "2026年11月23日" },
+  { view: "view-bekkan2", head: "上映劇場一覧", label: "2026年11月22日" },
+  { view: "view-bekkan3", head: "", label: "2026年11月22日" }
+];
+function addLabel(head, label){
+  if(!head || head.__nb47) return; head.__nb47 = 1;
+  var sp = document.createElement("span");
+  sp.className = "zke-upd";
+  sp.textContent = "最終更新：" + label;
+  head.appendChild(sp);
+}
+function scan(){
+  Object.keys(BY_ID).forEach(function(id){
+    var el = document.getElementById(id);
+    if(!el) return;
+    var head = (el.tagName === "H2" || el.tagName === "H3") ? el : (el.querySelector("h2,h3") || el);
+    addLabel(head, BY_ID[id]);
+  });
+  BY_TEXT.forEach(function(rule){
+    var view = document.getElementById(rule.view);
+    if(!view) return;
+    Array.prototype.forEach.call(view.querySelectorAll("h2"), function(h){
+      if(rule.head === "" || h.textContent.indexOf(rule.head) === 0) addLabel(h, rule.label);
+    });
+  });
 }
 scan(); setInterval(scan, 900);
 })();
