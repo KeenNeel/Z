@@ -446,6 +446,9 @@ html.zke-unlocked #zkeLock{display:none}
 #zkeLock button:disabled{opacity:.55}
 #zkeLock .zl-err{color:#b00020;font-size:13px;min-height:18px;margin:8px 0 0}
 #zkeLock .zl-note{color:#8a8f98;font-size:11.5px;margin:10px 0 0;line-height:1.6}
+/* v142: NOTHING paints in its pre-script form — the whole body waits for
+   the ready gate (NB59 force-lifts it after 4s if anything goes wrong) */
+html:not(.zke-ready) body>*:not(#zkeLock){visibility:hidden!important}
 /* v118: the footer gets the same treatment — only its final form ever paints */
 .footbar{visibility:hidden;min-height:56px;box-sizing:border-box}
 html.zke-ready .footbar{visibility:visible}
@@ -1099,7 +1102,7 @@ document.getElementById('gmGo').addEventListener('click', function () {
 <h2>注記</h2>
 <p class="note">・2012〜2014年のアカデミー賞結果は、グループ内で確認できる投稿がなく「記録未確認」としました。<br>・コメントの投稿者名はFacebookの仕様上この調査では取得できないため、選者感想は無記名で収録しました。<br>・本資料は非公開グループ内の記録の転記を含むため、取り扱いはグループ内資料に準じます。</p>
 </div></template>
-<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v141）</span></div>
+<div class="footbar"><a class="bar-btn" href="#top"><span class="ui-ic ic-up"></span> トップ</a><button type="button" class="bar-btn" id="fbGacha"><span class="ui-ic ic-gacha"></span> ガチャで選ぶ</button><span class="foot-note">全関映アーカイブ 全81作品（v147）</span></div>
 
 <div class="overlay" id="workModal">
  <div class="modal-card">
@@ -6914,7 +6917,7 @@ function rockRestore(){
 window.ZKE_NB_BGM={
   enter:function(){
     if(rockOn||!sndOn()) return;
-    var want='music/kaite_rock.mp3'; if(rockEl.getAttribute('src')!==want) rockEl.src=want;
+    var want=window.__zkeSceneNotebook?('music/'+String(window.__zkeSceneNotebook).replace(/^music\//,'')):'music/kaite_rock.mp3'; if(rockEl.getAttribute('src')!==want) rockEl.src=want;
     var el=activeEl();
     rockSaved={genre:selVal,t:el?el.currentTime:0};
     stopAll(); rockOn=true;
@@ -10605,7 +10608,7 @@ if(window.__nb26) return; window.__nb26=1;
    On load, fetch the tiny version.txt next to this page (no-store).
    If the published version is newer than this file, reload once
    with a cache-busting ?v= so the browser/CDN serve the new file. */
-var MY_VER=141;
+var MY_VER=147;
 try{
   if(location.protocol!=="http:"&&location.protocol!=="https:") return;
   var m=/[?&]v=(\d+)/.exec(location.search);
@@ -13002,6 +13005,114 @@ function clampBubbles(){
   }
 }
 setInterval(function(){ fixReveal(); clampBubbles(); }, 500);
+})();
+</script>
+
+<script>
+(function(){
+"use strict";
+if(window.__nb59) return; window.__nb59=1;
+/* ===== NB59 (v142): load-time sound rules + shuffle-bag next =====
+   - Every fresh page load starts with the speaker OFF; nothing plays
+     until the visitor answers the sound prompt (or taps the speaker).
+     A reload therefore always stops the previous playback first.
+   - Song end advances by shuffle-bag: every song in the pool plays
+     once before any song repeats, so the picks never pile onto one
+     title. (Replaces NB25's plain-random ZKE_BGM_NEXT.) */
+function forceOff(){
+  try{
+    /* One source of truth: the stored flag must agree with the engine's
+       internal state (OFF at load). Subsystems read different sources —
+       leaving a stale "1" stored makes the theme gate, the next-song
+       guard and the resume helper all disagree with the speaker. */
+    localStorage.setItem("zkeSndOn","0");
+    if(window.ZKE_SND_ON && window.ZKE_SND_ON()){
+      var b=document.querySelector(".snd-btn"); if(b) b.click();
+      localStorage.setItem("zkeSndOn","0");
+    }
+    if(window.ZKE_BGM_STOP) window.ZKE_BGM_STOP();
+  }catch(e){}
+}
+forceOff(); setTimeout(forceOff, 800); setTimeout(forceOff, 2000);
+/* FOUC failsafe: never leave the page gated */
+setTimeout(function(){ document.documentElement.classList.add("zke-ready"); }, 4000);
+function poolOpts(){
+  var sel=document.getElementById("bgmSel"); if(!sel) return {sel:null,opts:[]};
+  var opts=Array.prototype.slice.call(sel.options).filter(function(o){
+    return o.value && o.value.indexOf("song:")===0 && !/theme|kaite_rock|gatya/i.test(o.value);
+  });
+  return {sel:sel, opts:opts};
+}
+window.ZKE_BGM_NEXT=function(){
+  try{
+    /* the ended hook is registered twice in the legacy code, so one song
+       end calls this twice — accept only one call per song end */
+    var nowT=Date.now();
+    if(window.__nb59NextAt && nowT-window.__nb59NextAt<900) return;
+    window.__nb59NextAt=nowT;
+    if(localStorage.getItem("zkeSndOn")!=="1") return;
+    if(window.__zkeBgmStopped) return;
+    var view="main";
+    try{ view=sessionStorage.getItem("zkeView")||"main"; }catch(e){}
+    if(view==="bekkan1") return; /* NB21 rotates the themes itself */
+    var nb=document.getElementById("nbOverlay");
+    if(nb&&nb.classList.contains("open")) return; /* notebook song is fixed */
+    var gz=document.querySelector(".zg-overlay");
+    if(gz){ var st=getComputedStyle(gz); if(st.display!=="none"&&st.visibility!=="hidden") return; }
+    var P=poolOpts(); if(!P.sel||!P.opts.length) return;
+    var cur=P.sel.value;
+    var values=P.opts.map(function(o){ return o.value; });
+    if(values.length===1){ /* a single song exists: replay it */
+      P.sel.value=values[0]; P.sel.dispatchEvent(new Event("change",{bubbles:true})); return;
+    }
+    var bag=[];
+    try{ bag=JSON.parse(sessionStorage.getItem("zkeBgmBag")||"[]"); }catch(e){ bag=[]; }
+    bag=bag.filter(function(v){ return values.indexOf(v)>=0 && v!==cur; });
+    if(!bag.length){
+      bag=values.filter(function(v){ return v!==cur; });
+      for(var i=bag.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var tmp=bag[i]; bag[i]=bag[j]; bag[j]=tmp; }
+    }
+    var v=bag.shift();
+    try{ sessionStorage.setItem("zkeBgmBag", JSON.stringify(bag)); }catch(e){}
+    P.sel.value=v;
+    P.sel.dispatchEvent(new Event("change",{bubbles:true}));
+  }catch(e){}
+};
+/* --- position guard: returning to the main view resumes the song at the
+   position it had when the visitor left, even if a legacy path restarted
+   it from the top --- */
+var lastMain=null, lastView="main", nbWasOpen=false, guardUntil=0;
+function mainPlaying(){
+  var set=window.__nb48Playing; if(!set) return null;
+  var found=null, loose=null;
+  set.forEach(function(a){
+    if(!a || !a.src || a.src.indexOf("/music/")<0) return;
+    if(a.loop) loose=a; else found=a; /* the engine's player never loops;
+       the starter does — always prefer the engine */
+  });
+  return found||loose;
+}
+setInterval(function(){
+  var view="main";
+  try{ view=sessionStorage.getItem("zkeView")||"main"; }catch(e){}
+  var nbEl=document.getElementById("nbOverlay");
+  var nbOpen=!!(nbEl && nbEl.classList.contains("open"));
+  if((lastView==="bekkan1"||lastView==="bekkan2") && view==="main") guardUntil=Date.now()+6000;
+  if(nbWasOpen && !nbOpen && view==="main") guardUntil=Date.now()+6000;
+  var guarding=Date.now()<guardUntil;
+  if(view==="main" && !nbOpen && !guarding){
+    var a=mainPlaying();
+    if(a && a.currentTime>3) lastMain={src:a.src, t:a.currentTime};
+  }
+  lastView=view; nbWasOpen=nbOpen;
+  if(guarding && lastMain && view==="main"){
+    var b=mainPlaying();
+    if(b && b.src===lastMain.src && b.currentTime<lastMain.t-2.5){
+      try{ b.currentTime=lastMain.t; }catch(e){}
+    }
+  }
+  window.__nb59State={ lastMain:lastMain, lastView:lastView, guardUntil:guardUntil, now:Date.now() };
+}, 250);
 })();
 </script>
 
